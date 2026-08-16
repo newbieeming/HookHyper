@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 import com.newbieeming.hookhyper.core.data.RestartAppResult
 import com.newbieeming.hookhyper.core.data.RootAppRestarter
-import com.newbieeming.hookhyper.core.model.DeviceInfoFields
-import com.newbieeming.hookhyper.core.model.PreferenceKeys
+import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
+import com.newbieeming.hookhyper.feature.settings.model.SettingsPreferenceKeys
 import com.newbieeming.hookhyper.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,14 +37,14 @@ class SettingsFeatureViewModel @Inject constructor(
     private val appRestarter: RootAppRestarter,
 ) : MviViewModel<SettingsFeatureState, SettingsFeatureIntent, SettingsFeatureEffect>(
     SettingsFeatureState(
-        enabled = preferences.getBoolean(PreferenceKeys.SETTINGS_EDIT_DEVICE_INFO),
+        enabled = preferences.getBoolean(SettingsPreferenceKeys.EDIT_DEVICE_INFO),
         values = DeviceInfoFields.all.associate { it.preferenceKey to preferences.getString(it.preferenceKey) },
     ),
 ) {
     override fun onIntent(intent: SettingsFeatureIntent) {
         when (intent) {
             is SettingsFeatureIntent.SetEnabled -> {
-                preferences.putBoolean(PreferenceKeys.SETTINGS_EDIT_DEVICE_INFO, intent.enabled)
+                preferences.putBoolean(SettingsPreferenceKeys.EDIT_DEVICE_INFO, intent.enabled)
                 reduce { copy(enabled = intent.enabled) }
             }
             is SettingsFeatureIntent.UpdateValue -> {

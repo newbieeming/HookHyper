@@ -19,11 +19,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.newbieeming.hookhyper.core.model.DeviceInfoFields
 import com.newbieeming.hookhyper.core.ui.component.FeatureScaffold
 import com.newbieeming.hookhyper.core.ui.component.SettingSwitchRow
-import com.newbieeming.hookhyper.core.ui.component.SettingTextField
-import com.newbieeming.hookhyper.core.ui.component.SettingTextFieldGroup
+import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
+import com.newbieeming.hookhyper.feature.settings.ui.DeviceInfoTextField
+import com.newbieeming.hookhyper.feature.settings.ui.DeviceInfoTextFieldGroup
 
 @Composable
 fun SettingsFeatureScreen(
@@ -65,17 +65,16 @@ fun SettingsFeatureScreen(
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut(),
         ) {
-            SettingTextFieldGroup {
+            DeviceInfoTextFieldGroup {
                 deviceInfoFields.forEachIndexed { index, field ->
                     val isLastField = index == deviceInfoFields.lastIndex
-                    SettingTextField(
+                    DeviceInfoTextField(
                         label = deviceInfoLabel(field.preferenceKey),
                         value = state.values[field.preferenceKey].orEmpty(),
                         onValueChange = {
                             viewModel.accept(SettingsFeatureIntent.UpdateValue(field.preferenceKey, it))
                         },
                         modifier = Modifier.focusRequester(focusRequesters[index]),
-                        grouped = true,
                         imeAction = if (isLastField) ImeAction.Done else ImeAction.Next,
                         onImeAction = {
                             if (isLastField) {

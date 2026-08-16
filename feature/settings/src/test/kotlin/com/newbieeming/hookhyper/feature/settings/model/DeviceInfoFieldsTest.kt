@@ -1,4 +1,4 @@
-package com.newbieeming.hookhyper.core.model
+package com.newbieeming.hookhyper.feature.settings.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

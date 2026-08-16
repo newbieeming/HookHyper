@@ -18,13 +18,13 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 | 模块 | 职责 |
 | --- | --- |
 | `app` | Application、Activity 入口、Navigation 3、应用级 MVI、独立 Screen、唯一 Hook 入口及 feature 装配 |
-| `core:model` | 纯 Kotlin 模型、设置键、可复用匹配规则；不得依赖 Android UI |
+| `core:model` | 跨 feature 的纯 Kotlin 契约、共享偏好文件与应用级设置键、可复用规则；不得依赖 Android UI，也不得包含单目标应用的字段、Hook 规则或 feature 设置键 |
 | `core:data` | YukiHookPrefsBridge 设置读写、模块连接状态、需要 Root 的通用操作 |
-| `core:ui` | MVI 基类、主题、通用 Compose 组件、`FeatureEntry` 契约 |
-| `feature:<name>` | 单个目标应用的 UI、State/Intent/Effect、ViewModel、Hilt 注册和 Hooker |
+| `core:ui` | MVI 基类、主题、跨 feature 通用 Compose 组件、`FeatureEntry` 契约；不放 feature 专用表单或页面组合 |
+| `feature:<name>` | 单个目标应用的页面、State/Intent/Effect、ViewModel、专用设置键/模型/匹配规则、资源、测试、Hilt 注册和 Hooker |
 | `build-logic` | SDK、Java 版本与 Android/Kotlin/Compose/Hilt 约定插件 |
 
-依赖应保持单向：`app → feature → core`。feature 之间不得互相依赖；只有被至少两个模块复用且职责稳定的代码才应下沉到 `core`，不要为“可能复用”提前抽象。
+依赖应保持单向：`app → feature → core`。feature 之间不得互相依赖；只有被至少两个模块复用且职责稳定的代码才应下沉到 `core`，不要为“可能复用”提前抽象。移除一个 feature 后，`core` 不应保留其目标包、偏好键、模型、资源、匹配规则、页面组合或测试；如仍有，则这些内容应归入该 feature。
 
 ### App UI 目录约定
 
@@ -63,7 +63,7 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 
 ### 设置与 Hook
 
-- 设置键集中维护在 `core:model` 的 `PreferenceKeys` 或对应领域模型中，命名需带 feature 前缀，避免跨模块冲突。
+- `PreferenceKeys` 只保存跨 feature 的共享偏好文件和应用级键。目标应用的设置键、字段模型和匹配规则放在对应 `feature:<name>/model`；键值仍需带 feature 前缀，避免跨模块冲突。
 - App 进程通过 `HookPreferencesRepository` 读写设置；Hook 进程使用相同的 `PreferenceKeys.FILE_NAME` 和设置键读取 YukiHookPrefsBridge。
 - Hooker 继承 `YukiBaseHooker`，必须通过 `loadApp(name = ...)` 限定目标包。新增 Hook 默认应由设置项控制，未启用时尽早返回。
 - HyperOS 内部类和方法可能随版本变化。反射或 Hook 失败应限制在单个功能内，使用 `runCatching` 与带 feature 名称的日志标签记录，不能导致目标进程因非关键功能崩溃。
@@ -80,8 +80,8 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 4. 创建 Hilt Module，通过 `@IntoSet` 绑定 `FeatureEntry`。
 5. 创建目标应用的 Hooker，并在 `app/.../hook/HookEntry.kt` 的 `YukiHookAPI.encase(...)` 中显式注册。
 6. 将目标包加入 `app/src/main/res/values/arrays.xml` 的 `xposed_scope`；如 App 需要查询目标应用信息，同时更新 `AndroidManifest.xml` 的 `<queries>`。
-7. 在 `core:model` 添加共享设置键，在 feature 内补齐 State、Intent、Effect、ViewModel、Screen 和设置读写。
-8. 同步添加英文与简体中文资源，并为纯逻辑、匹配规则和状态转换补充测试。
+7. 在 `feature:<name>/model` 添加目标应用专用的设置键、模型和匹配规则；只有稳定的跨 feature 契约才放入 `core:model`。随后补齐 State、Intent、Effect、ViewModel、Screen 和设置读写。
+8. 将 feature 专用组件、英文与简体中文资源、纯逻辑和测试放在 feature 模块内；为匹配规则和状态转换补充测试。
 9. 检查根 `.gitignore` 是否已覆盖新模块产物；只有出现新的模块专属生成物时才添加更具体的忽略规则，不提交 `build/`、本地缓存、机器配置或密钥。
 10. 运行相关模块测试，并至少完成一次 Debug APK 构建。
 
@@ -92,19 +92,19 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 Windows：
 
 ```powershell
-.\gradlew.bat :core:model:test :app:testDebugUnitTest :app:assembleDebug
+.\gradlew.bat :core:model:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
 ```
 
 macOS / Linux：
 
 ```bash
-./gradlew :core:model:test :app:testDebugUnitTest :app:assembleDebug
+./gradlew :core:model:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
 ```
 
 按改动范围选择验证方式：
 
 - 文档或资源：检查 Markdown、资源引用和中英文键是否成对。
-- `core:model` 纯逻辑：运行对应单元测试。
+- `core:model` 纯逻辑：运行对应单元测试；feature 专用纯逻辑：运行对应 `:feature:<name>:testDebugUnitTest`。
 - UI 或 feature：运行相关单元测试与 `:app:assembleDebug`，并检查 MIUIX/Material、状态栏 Insets、底部导航和返回行为。
 - Hook、依赖或构建脚本：运行完整命令，并在真实目标进程验证启用、禁用、重启和失败路径。
 

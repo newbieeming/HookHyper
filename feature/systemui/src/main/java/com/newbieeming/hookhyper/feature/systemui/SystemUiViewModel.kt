@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 import com.newbieeming.hookhyper.core.data.RestartAppResult
 import com.newbieeming.hookhyper.core.data.RootAppRestarter
-import com.newbieeming.hookhyper.core.model.PreferenceKeys
+import com.newbieeming.hookhyper.feature.systemui.model.SystemUiPreferenceKeys
 import com.newbieeming.hookhyper.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,18 +36,18 @@ class SystemUiViewModel @Inject constructor(
     private val appRestarter: RootAppRestarter,
 ) : MviViewModel<SystemUiState, SystemUiIntent, SystemUiEffect>(
     SystemUiState(
-        showCarrierOnLockScreen = preferences.getBoolean(PreferenceKeys.SYSTEMUI_LOCK_SHOW_SIM_NAME),
-        forceSoftLightGlass = preferences.getBoolean(PreferenceKeys.SYSTEMUI_FORCE_SOFT_LIGHT_GLASS),
+        showCarrierOnLockScreen = preferences.getBoolean(SystemUiPreferenceKeys.LOCK_SHOW_SIM_NAME),
+        forceSoftLightGlass = preferences.getBoolean(SystemUiPreferenceKeys.FORCE_SOFT_LIGHT_GLASS),
     ),
 ) {
     override fun onIntent(intent: SystemUiIntent) {
         when (intent) {
             is SystemUiIntent.SetShowCarrier -> {
-                preferences.putBoolean(PreferenceKeys.SYSTEMUI_LOCK_SHOW_SIM_NAME, intent.enabled)
+                preferences.putBoolean(SystemUiPreferenceKeys.LOCK_SHOW_SIM_NAME, intent.enabled)
                 reduce { copy(showCarrierOnLockScreen = intent.enabled) }
             }
             is SystemUiIntent.SetSoftLightGlass -> {
-                preferences.putBoolean(PreferenceKeys.SYSTEMUI_FORCE_SOFT_LIGHT_GLASS, intent.enabled)
+                preferences.putBoolean(SystemUiPreferenceKeys.FORCE_SOFT_LIGHT_GLASS, intent.enabled)
                 reduce { copy(forceSoftLightGlass = intent.enabled) }
             }
             SystemUiIntent.RestartApp -> {

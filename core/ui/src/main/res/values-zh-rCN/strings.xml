@@ -1,5 +1,4 @@
 <resources>
     <string name="action_back">返回</string>
     <string name="action_restart_app">重启应用</string>
-    <string name="setting_text_field_placeholder">请输入%1$s</string>
 </resources>

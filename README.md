@@ -50,9 +50,9 @@ HookHyper/
 │        ├─ feature/        # Feature 导航兜底页面
 │        └─ component/      # App 内共享 Scaffold 与自适应组件
 ├─ core/
-│  ├─ model/            # Feature 元数据、设置键、设备信息匹配规则
+│  ├─ model/            # 跨 Feature 的纯 Kotlin 契约、共享偏好文件和应用级设置键
 │  ├─ data/             # 跨进程设置、模块状态、Root 应用重启
-│  └─ ui/               # MVI 基类、主题、通用组件、FeatureEntry 契约
+│  └─ ui/               # MVI 基类、主题、跨 Feature 通用组件、FeatureEntry 契约
 ├─ feature/
 │  ├─ systemui/         # com.android.systemui 的 UI、状态与 Hook
 │  └─ settings/         # com.android.settings 的 UI、状态与 Hook
@@ -106,13 +106,13 @@ MIUIX 仍处于快速迭代阶段。升级时需要同时验证 Kotlin、Compose
 Windows：
 
 ```powershell
-.\gradlew.bat :core:model:test :app:testDebugUnitTest :app:assembleDebug
+.\gradlew.bat :core:model:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
 ```
 
 macOS / Linux：
 
 ```bash
-./gradlew :core:model:test :app:testDebugUnitTest :app:assembleDebug
+./gradlew :core:model:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
 ```
 
 Debug APK 输出到：
@@ -129,18 +129,19 @@ app/build/outputs/apk/debug/app-debug.apk
 2. 实现 `FeatureEntry`，再通过 Hilt `@IntoSet` 注册 UI 入口。
 3. 实现 `YukiBaseHooker`，并加入 `HookEntry` 的 `YukiHookAPI.encase(...)`。
 4. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
-5. 添加设置键、MVI 状态与页面，并同步维护默认英文和简体中文资源。
+5. 将目标应用专用设置键、模型、匹配规则、MVI 状态、页面、资源和测试放入对应 feature；只有跨 feature 的稳定契约才进入 core。
 6. 添加必要测试，运行单元测试和 Debug 构建。
 
 更完整的开发约束与检查清单见 [Agent.md](Agent.md)。
 
 ## 开发说明
 
-- 通用模型、数据能力和 UI 组件分别放入对应的 `core` 模块，feature 之间不直接依赖。
+- `core` 只承载原子化、跨 feature 复用的模型、数据能力和 UI 组件；feature 之间不直接依赖。
+- 一个 feature 被移除后，`core` 不应保留该目标应用的偏好键、字段模型、匹配规则、资源、表单、页面组合或测试；这些内容属于对应 feature。
 - `MainActivity` 不承载页面布局；新增页面放入独立 `ui/<screen>` 包，并使用 State / Intent / Effect 组织交互。
 - Edge-to-Edge 布局中，父层应用 Scaffold Padding 后必须正确消费 Insets，避免子层重复处理系统栏间距。
 - Hook 必须限制目标包，失败应局部降级并记录日志，避免非关键功能导致系统进程崩溃。
-- 设备信息匹配等纯逻辑应优先使用 JVM 单元测试覆盖。
+- 设备信息匹配等 feature 专用纯逻辑应在对应 feature 模块中使用 JVM 单元测试覆盖。
 - 提交前不要包含 `build/`、`.gradle/`、本地 SDK 配置或新的签名凭据。
 
 ## 免责声明

@@ -3,9 +3,10 @@ package com.newbieeming.hookhyper.feature.settings.hook
 import android.util.Log
 import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.newbieeming.hookhyper.core.model.DeviceInfoFields
 import com.newbieeming.hookhyper.core.model.PreferenceKeys
 import com.newbieeming.hookhyper.feature.settings.SettingsFeatureEntry
+import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
+import com.newbieeming.hookhyper.feature.settings.model.SettingsPreferenceKeys
 import java.lang.reflect.Method
 
 object SettingsHooker : YukiBaseHooker() {
@@ -17,7 +18,7 @@ object SettingsHooker : YukiBaseHooker() {
     override fun onHook() {
         loadApp(name = SettingsFeatureEntry.PACKAGE_NAME) {
             val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
-            if (!featurePreferences.getBoolean(PreferenceKeys.SETTINGS_EDIT_DEVICE_INFO)) return@loadApp
+            if (!featurePreferences.getBoolean(SettingsPreferenceKeys.EDIT_DEVICE_INFO)) return@loadApp
 
             val deviceNameKey = DeviceInfoFields.deviceName.preferenceKey
             val osVersionKey = DeviceInfoFields.osVersion.preferenceKey

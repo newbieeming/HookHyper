@@ -12,6 +12,7 @@ import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.newbieeming.hookhyper.core.model.PreferenceKeys
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
+import com.newbieeming.hookhyper.feature.systemui.model.SystemUiPreferenceKeys
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
@@ -21,11 +22,11 @@ object SystemUiHooker : YukiBaseHooker() {
     override fun onHook() {
         loadApp(name = SystemUiFeatureEntry.PACKAGE_NAME) {
             val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
-            if (featurePreferences.getBoolean(PreferenceKeys.SYSTEMUI_LOCK_SHOW_SIM_NAME)) {
+            if (featurePreferences.getBoolean(SystemUiPreferenceKeys.LOCK_SHOW_SIM_NAME)) {
                 runCatching { hookLockScreenCarrier() }
                     .onFailure { Log.e(TAG, "Unable to hook lock-screen carrier", it) }
             }
-            if (featurePreferences.getBoolean(PreferenceKeys.SYSTEMUI_FORCE_SOFT_LIGHT_GLASS)) {
+            if (featurePreferences.getBoolean(SystemUiPreferenceKeys.FORCE_SOFT_LIGHT_GLASS)) {
                 runCatching { hookSoftLightGlass() }
                     .onFailure { Log.e(TAG, "Unable to hook soft-light glass", it) }
             }
