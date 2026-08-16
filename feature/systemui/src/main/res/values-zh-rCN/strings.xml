@@ -1,0 +1,11 @@
+<resources>
+    <string name="feature_systemui_name">系统界面</string>
+    <string name="feature_systemui_description">锁屏、通知栏与控制中心的 HyperOS 增强</string>
+    <string name="systemui_show_carrier_title">锁屏显示运营商名称</string>
+    <string name="systemui_show_carrier_summary">恢复锁屏状态栏中的 SIM 运营商文本；重启系统界面后生效</string>
+    <string name="systemui_soft_light_glass_title">强制启用柔光玻璃</string>
+    <string name="systemui_soft_light_glass_summary">为通知栏、控制中心磁贴和滑块启用玻璃材质；重启系统界面后生效</string>
+    <string name="restart_systemui_success">系统界面已重启</string>
+    <string name="restart_root_required">需要 Root 权限才能重启应用</string>
+    <string name="restart_failed">重启失败：%1$s</string>
+</resources>

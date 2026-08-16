@@ -1,0 +1,11 @@
+<resources>
+    <string name="feature_systemui_name">System UI</string>
+    <string name="feature_systemui_description">HyperOS enhancements for the lock screen, notification shade, and control center</string>
+    <string name="systemui_show_carrier_title">Show carrier name on the lock screen</string>
+    <string name="systemui_show_carrier_summary">Restore the SIM carrier text in the lock-screen status bar. Changes take effect after restarting System UI.</string>
+    <string name="systemui_soft_light_glass_title">Force-enable soft-light glass</string>
+    <string name="systemui_soft_light_glass_summary">Enable glass materials for the notification shade, control center tiles, and sliders. Changes take effect after restarting System UI.</string>
+    <string name="restart_systemui_success">System UI restarted</string>
+    <string name="restart_root_required">Root access is required to restart the app</string>
+    <string name="restart_failed">Restart failed: %1$s</string>
+</resources>

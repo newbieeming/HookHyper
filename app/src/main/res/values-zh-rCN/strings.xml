@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">HookHyper</string>
+    <string name="xposed_description">HyperOS 功能补全与界面增强</string>
+    <string name="nav_home">主页</string>
+    <string name="nav_settings">设置</string>
+    <string name="settings_title">设置</string>
+    <string name="lsposed_connection">LSPosed 连接</string>
+    <string name="action_refresh">刷新</string>
+    <string name="about_title">关于</string>
+    <string name="about_summary">爱折腾</string>
+    <string name="about_github">GitHub</string>
+    <string name="about_coolapk">酷安</string>
+    <string name="about_coolapk_value">个人主页</string>
+    <string name="about_app_version">HookHyper %1$s</string>
+    <string name="action_open_link">打开%1$s</string>
+    <string name="ui_style_title">界面风格</string>
+    <string name="ui_style_summary">选择应用界面的组件风格</string>
+    <string name="action_expand">展开</string>
+    <string name="module_connected">已连接 · %1$s · API %2$s</string>
+    <string name="module_disconnected">未连接，请在 LSPosed 中启用模块和作用域</string>
+    <string name="missing_feature">功能不存在，点击返回</string>
+</resources>

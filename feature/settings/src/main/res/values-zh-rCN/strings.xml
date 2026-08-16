@@ -1,0 +1,18 @@
+<resources>
+    <string name="feature_settings_name">系统设置</string>
+    <string name="feature_settings_description">自定义“关于手机”中展示的设备硬件与系统信息</string>
+    <string name="settings_edit_device_info_title">修改设备信息</string>
+    <string name="settings_edit_device_info_summary">覆盖“关于手机”中的信息；留空的项目保持系统原值，重启系统设置后生效</string>
+    <string name="device_name">设备名称</string>
+    <string name="device_processor">处理器</string>
+    <string name="device_memory">运行内存</string>
+    <string name="device_battery_capacity">电池容量</string>
+    <string name="device_resolution">分辨率</string>
+    <string name="device_screen_size">屏幕尺寸</string>
+    <string name="device_os_version">OS 版本</string>
+    <string name="device_camera">摄像头</string>
+    <string name="device_baseband">基带</string>
+    <string name="restart_settings_success">系统设置已重启</string>
+    <string name="restart_root_required">需要 Root 权限才能重启应用</string>
+    <string name="restart_failed">重启失败：%1$s</string>
+</resources>

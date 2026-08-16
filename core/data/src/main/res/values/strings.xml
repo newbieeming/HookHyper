@@ -1,0 +1,6 @@
+<resources>
+    <string name="restart_invalid_package">Invalid target package name</string>
+    <string name="restart_command_timeout">Command timed out</string>
+    <string name="restart_root_command_failed">Root command failed</string>
+    <string name="restart_root_command_unavailable">Unable to execute the root command</string>
+</resources>

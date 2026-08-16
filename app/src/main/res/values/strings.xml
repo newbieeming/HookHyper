@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">HookHyper</string>
+    <string name="xposed_description">HyperOS feature enhancements and interface improvements</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_settings">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="lsposed_connection">LSPosed connection</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="about_title">About</string>
+    <string name="about_summary">Love tinkering</string>
+    <string name="about_github">GitHub</string>
+    <string name="about_github_value" translatable="false">github.com/newbieeming</string>
+    <string name="about_coolapk">CoolApk</string>
+    <string name="about_coolapk_value">Profile</string>
+    <string name="about_app_version">HookHyper %1$s</string>
+    <string name="action_open_link">Open %1$s</string>
+    <string name="ui_style_title">Interface style</string>
+    <string name="ui_style_summary">Choose the component style used by the app</string>
+    <string name="ui_style_miuix" translatable="false">MIUIX</string>
+    <string name="ui_style_material" translatable="false">Material</string>
+    <string name="action_expand">Expand</string>
+    <string name="module_connected">Connected · %1$s · API %2$s</string>
+    <string name="module_disconnected">Not connected. Enable the module and its scope in LSPosed.</string>
+    <string name="missing_feature">Feature not found. Tap to go back.</string>
+</resources>
