@@ -6,6 +6,7 @@
     <string name="device_info_text_field_placeholder">请输入%1$s</string>
     <string name="device_name">设备名称</string>
     <string name="device_processor">处理器</string>
+    <string name="device_processor_detail">处理器详情</string>
     <string name="device_memory">运行内存</string>
     <string name="device_battery_capacity">电池容量</string>
     <string name="device_resolution">分辨率</string>
@@ -13,6 +14,10 @@
     <string name="device_os_version">OS 版本</string>
     <string name="device_camera">摄像头</string>
     <string name="device_baseband">基带</string>
+    <string name="device_cert_model">认证型号</string>
+    <string name="device_hardware_version">硬件版本</string>
+    <string name="device_android_version">Android 版本</string>
+    <string name="device_kernel_version">内核版本</string>
     <string name="restart_settings_success">系统设置已重启</string>
     <string name="restart_root_required">需要 Root 权限才能重启应用</string>
     <string name="restart_failed">重启失败：%1$s</string>

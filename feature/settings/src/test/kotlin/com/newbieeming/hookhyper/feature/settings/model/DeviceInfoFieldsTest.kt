@@ -5,59 +5,64 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class DeviceInfoFieldsTest {
-    @Test
-    fun `recognizes Chinese values shown by HyperOS device cards`() {
-        assertEquals("settings_device_memory", DeviceInfoFields.preferenceKeyForValue("12 + 4 GB"))
-        assertEquals("settings_device_battery", DeviceInfoFields.preferenceKeyForValue("5000 mAh"))
-        assertEquals("settings_device_screen_resolution", DeviceInfoFields.preferenceKeyForValue("3200 x 1440"))
-        assertEquals("settings_device_cpu", DeviceInfoFields.preferenceKeyForValue("骁龙 8 至尊版"))
-        assertEquals("settings_device_baseband", DeviceInfoFields.preferenceKeyForValue("MPSS.DE.4.0"))
-        assertEquals("settings_device_name", DeviceInfoFields.preferenceKeyForValue("Xiaomi 15 Ultra"))
-        assertNull(DeviceInfoFields.preferenceKeyForValue("unknown"))
+    // 模拟应用资源解析：stringsName → 中文字符串
+    private val mockResolve: (String) -> String? = { name ->
+        when (name) {
+            "model_number" -> "设备型号"
+            "device_cpu" -> "处理器"
+            "device_memory" -> "运行内存"
+            "appfunc_name_battery_capacity" -> "电池容量"
+            "device_screen_resolution" -> "分辨率"
+            "device_screen_size" -> "屏幕尺寸"
+            "device_miui_version" -> "OS版本"
+            "device_camera" -> "摄像头"
+            "model_name" -> "认证型号"
+            "hardware_version" -> "硬件版本"
+            else -> null
+        }
     }
 
     @Test
-    fun `recognizes English titles shown by HyperOS device cards`() {
-        assertEquals("settings_device_name", DeviceInfoFields.preferenceKeyForTitle("Device name"))
-        assertEquals("settings_device_cpu", DeviceInfoFields.preferenceKeyForTitle("CPU"))
-        assertEquals("settings_device_memory", DeviceInfoFields.preferenceKeyForTitle("RAM"))
-        assertEquals("settings_device_battery", DeviceInfoFields.preferenceKeyForTitle("Battery capacity"))
-        assertEquals("settings_device_screen_size", DeviceInfoFields.preferenceKeyForTitle("Screen size"))
-        assertEquals("settings_device_screen_resolution", DeviceInfoFields.preferenceKeyForTitle("Resolution"))
-        assertEquals("settings_device_os_version", DeviceInfoFields.preferenceKeyForTitle("OS version"))
-        assertEquals("settings_device_camera", DeviceInfoFields.preferenceKeyForTitle("Camera"))
-        assertEquals("settings_device_baseband", DeviceInfoFields.preferenceKeyForTitle("Baseband version"))
+    fun `unique title match uses resolved resource string`() {
+        assertEquals("settings_device_name", DeviceInfoFields.resolveKey("设备型号", "", mockResolve))
+        assertEquals("settings_device_memory", DeviceInfoFields.resolveKey("运行内存", "", mockResolve))
+        assertEquals("settings_device_battery", DeviceInfoFields.resolveKey("电池容量", "", mockResolve))
+        assertEquals("settings_device_screen_size", DeviceInfoFields.resolveKey("屏幕尺寸", "", mockResolve))
+        assertEquals("settings_device_screen_resolution", DeviceInfoFields.resolveKey("分辨率", "", mockResolve))
+        assertEquals("settings_device_os_version", DeviceInfoFields.resolveKey("OS版本", "", mockResolve))
+        assertEquals("settings_device_camera", DeviceInfoFields.resolveKey("摄像头", "", mockResolve))
+        assertEquals("settings_device_cert_model", DeviceInfoFields.resolveKey("认证型号", "", mockResolve))
+        assertEquals("settings_device_hardware_version", DeviceInfoFields.resolveKey("硬件版本", "", mockResolve))
     }
 
     @Test
-    fun `recognizes English values shown by HyperOS device cards`() {
+    fun `duplicate title falls back to value - cpu`() {
+        // 处理器 title 命中 cpuName + cpuDetail 两个 → 走 value
+        // 不含 GHz → cpuName（简称）
         assertEquals(
-            "settings_device_cpu",
-            DeviceInfoFields.preferenceKeyForValue("Snapdragon® 8 Elite Gen 5 Mobile Platform"),
+            "settings_device_cpu_name",
+            DeviceInfoFields.resolveKey("处理器", "第五代骁龙®8至尊版移动平台", mockResolve),
         )
-        assertEquals("settings_device_memory", DeviceInfoFields.preferenceKeyForValue("12.0+4.0 GB"))
-        assertEquals("settings_device_battery", DeviceInfoFields.preferenceKeyForValue("7560mAh(typ)"))
-        assertEquals("settings_device_screen_size", DeviceInfoFields.preferenceKeyForValue("6.9”"))
+        // 含 GHz → cpuDetail（详情）
         assertEquals(
-            "settings_device_screen_resolution",
-            DeviceInfoFields.preferenceKeyForValue("2608 x 1200 Full RGB"),
-        )
-        assertEquals(
-            "settings_device_camera",
-            DeviceInfoFields.preferenceKeyForValue("Front32MP | Rear50MP+50MP+50MP"),
-        )
-        assertEquals(
-            "settings_device_os_version",
-            DeviceInfoFields.preferenceKeyForValue("4.0.0.15.XPMCNXM.D00"),
+            "settings_device_cpu_detail",
+            DeviceInfoFields.resolveKey("处理器", "第五代骁龙®8至尊版移动平台\n八核 最高 4.6GHz", mockResolve),
         )
     }
 
     @Test
-    fun `does not confuse storage with RAM`() {
-        assertNull(
-            DeviceInfoFields.preferenceKeyForValue(
-                "110.7GB/264GB (8GB with storage extension)",
-            ),
+    fun `no title falls back to value regex`() {
+        assertEquals("settings_device_baseband", DeviceInfoFields.resolveKey("", "MPSS.DE.9.0-e64d0ee8fe", mockResolve))
+        assertEquals("settings_device_android_version", DeviceInfoFields.resolveKey("", "17 | Android 安全更新：2026年8月1日", mockResolve))
+        assertEquals(
+            "settings_device_kernel_version",
+            DeviceInfoFields.resolveKey("", "6.12.69-android16-6-gb1493ec68d4a-abogki514973465-4k", mockResolve),
         )
+    }
+
+    @Test
+    fun `no match returns null`() {
+        assertNull(DeviceInfoFields.resolveKey("", "unknown", mockResolve))
+        assertNull(DeviceInfoFields.resolveKey("", "110.7GB/264GB (8GB with storage extension)", mockResolve))
     }
 }

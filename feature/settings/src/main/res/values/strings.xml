@@ -6,6 +6,7 @@
     <string name="device_info_text_field_placeholder">Enter %1$s</string>
     <string name="device_name">Device name</string>
     <string name="device_processor">Processor</string>
+    <string name="device_processor_detail">Processor detail</string>
     <string name="device_memory">Memory</string>
     <string name="device_battery_capacity">Battery capacity</string>
     <string name="device_resolution">Resolution</string>
@@ -13,6 +14,10 @@
     <string name="device_os_version">OS version</string>
     <string name="device_camera">Camera</string>
     <string name="device_baseband">Baseband</string>
+    <string name="device_cert_model">Certification model</string>
+    <string name="device_hardware_version">Hardware version</string>
+    <string name="device_android_version">Android version</string>
+    <string name="device_kernel_version">Kernel version</string>
     <string name="restart_settings_success">System settings restarted</string>
     <string name="restart_root_required">Root access is required to restart the app</string>
     <string name="restart_failed">Restart failed: %1$s</string>

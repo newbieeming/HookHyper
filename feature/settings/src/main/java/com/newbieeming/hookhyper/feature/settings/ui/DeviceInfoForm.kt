@@ -35,6 +35,7 @@ import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
 import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun DeviceInfoTextField(
@@ -99,7 +100,7 @@ private fun DeviceInfoTextFieldContent(
     LaunchedEffect(isFocused) {
         if (isFocused) {
             bringIntoViewRequester.bringIntoView()
-            delay(IME_ANIMATION_SETTLE_MILLIS)
+            delay(IME_ANIMATION_SETTLE_MILLIS.milliseconds)
             bringIntoViewRequester.bringIntoView()
         }
     }
@@ -123,7 +124,9 @@ private fun DeviceInfoTextFieldContent(
             borderColor = Color.Transparent,
             cornerRadius = 16.dp,
             useLabelAsPlaceholder = true,
-            singleLine = true,
+            singleLine = false,
+            minLines = DEVICE_INFO_MIN_LINES,
+            maxLines = DEVICE_INFO_MAX_LINES,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             modifier = fieldModifier.border(
@@ -138,7 +141,9 @@ private fun DeviceInfoTextFieldContent(
             onValueChange = onValueChange,
             label = { Text(label) },
             placeholder = { Text(stringResource(R.string.device_info_text_field_placeholder, label)) },
-            singleLine = true,
+            singleLine = false,
+            minLines = DEVICE_INFO_MIN_LINES,
+            maxLines = DEVICE_INFO_MAX_LINES,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             modifier = fieldModifier,
@@ -155,3 +160,5 @@ private fun DeviceInfoTextFieldContent(
 }
 
 private const val IME_ANIMATION_SETTLE_MILLIS = 300L
+private const val DEVICE_INFO_MIN_LINES = 1
+private const val DEVICE_INFO_MAX_LINES = 6

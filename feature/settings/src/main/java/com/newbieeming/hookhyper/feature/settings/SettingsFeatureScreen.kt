@@ -95,7 +95,8 @@ fun SettingsFeatureScreen(
 private fun deviceInfoLabel(preferenceKey: String): String {
     val resourceId = when (preferenceKey) {
         "settings_device_name" -> R.string.device_name
-        "settings_device_cpu" -> R.string.device_processor
+        "settings_device_cpu_name" -> R.string.device_processor
+        "settings_device_cpu_detail" -> R.string.device_processor_detail
         "settings_device_memory" -> R.string.device_memory
         "settings_device_battery" -> R.string.device_battery_capacity
         "settings_device_screen_resolution" -> R.string.device_resolution
@@ -103,6 +104,10 @@ private fun deviceInfoLabel(preferenceKey: String): String {
         "settings_device_os_version" -> R.string.device_os_version
         "settings_device_camera" -> R.string.device_camera
         "settings_device_baseband" -> R.string.device_baseband
+        "settings_device_cert_model" -> R.string.device_cert_model
+        "settings_device_hardware_version" -> R.string.device_hardware_version
+        "settings_device_android_version" -> R.string.device_android_version
+        "settings_device_kernel_version" -> R.string.device_kernel_version
         else -> error("Unsupported device info preference: $preferenceKey")
     }
     return stringResource(resourceId)
