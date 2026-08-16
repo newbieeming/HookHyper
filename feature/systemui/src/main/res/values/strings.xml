@@ -5,6 +5,10 @@
     <string name="systemui_show_carrier_summary">Restore the SIM carrier text in the lock-screen status bar. Changes take effect after restarting System UI.</string>
     <string name="systemui_soft_light_glass_title">Force-enable soft-light glass</string>
     <string name="systemui_soft_light_glass_summary">Enable glass materials for the notification shade, control center tiles, and sliders. Changes take effect after restarting System UI.</string>
+    <string name="systemui_custom_time_format_title">Show AM/PM on the clock</string>
+    <string name="systemui_custom_time_format_summary">Add AM/PM to the status bar clock. Changes take effect after restarting System UI.</string>
+    <string name="systemui_aa_prefix_title">AM/PM before time</string>
+    <string name="systemui_aa_prefix_summary">Place AM/PM before the time instead of after.</string>
     <string name="restart_systemui_success">System UI restarted</string>
     <string name="restart_root_required">Root access is required to restart the app</string>
     <string name="restart_failed">Restart failed: %1$s</string>

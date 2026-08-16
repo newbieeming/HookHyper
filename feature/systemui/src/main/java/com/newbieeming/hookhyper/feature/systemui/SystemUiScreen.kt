@@ -1,5 +1,10 @@
 package com.newbieeming.hookhyper.feature.systemui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,5 +52,23 @@ fun SystemUiScreen(
             checked = state.forceSoftLightGlass,
             onCheckedChange = { viewModel.accept(SystemUiIntent.SetSoftLightGlass(it)) },
         )
+        SettingSwitchRow(
+            title = stringResource(R.string.systemui_custom_time_format_title),
+            summary = stringResource(R.string.systemui_custom_time_format_summary),
+            checked = state.customTimeFormat,
+            onCheckedChange = { viewModel.accept(SystemUiIntent.SetCustomTimeFormat(it)) },
+        )
+        AnimatedVisibility(
+            visible = state.customTimeFormat,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut(),
+        ) {
+            SettingSwitchRow(
+                title = stringResource(R.string.systemui_aa_prefix_title),
+                summary = stringResource(R.string.systemui_aa_prefix_summary),
+                checked = state.aaPrefix,
+                onCheckedChange = { viewModel.accept(SystemUiIntent.SetAaPrefix(it)) },
+            )
+        }
     }
 }

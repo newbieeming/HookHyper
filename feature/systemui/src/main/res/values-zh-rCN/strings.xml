@@ -5,6 +5,10 @@
     <string name="systemui_show_carrier_summary">恢复锁屏状态栏中的 SIM 运营商文本；重启系统界面后生效</string>
     <string name="systemui_soft_light_glass_title">强制启用柔光玻璃</string>
     <string name="systemui_soft_light_glass_summary">为通知栏、控制中心磁贴和滑块启用玻璃材质；重启系统界面后生效</string>
+    <string name="systemui_custom_time_format_title">状态栏时钟显示 AM/PM</string>
+    <string name="systemui_custom_time_format_summary">在状态栏时钟后追加 AM/PM 标记；重启系统界面后生效</string>
+    <string name="systemui_aa_prefix_title">AM/PM 显示在时间前面</string>
+    <string name="systemui_aa_prefix_summary">将 AM/PM 放在时间前面而非后面</string>
     <string name="restart_systemui_success">系统界面已重启</string>
     <string name="restart_root_required">需要 Root 权限才能重启应用</string>
     <string name="restart_failed">重启失败：%1$s</string>

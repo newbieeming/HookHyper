@@ -1,6 +1,7 @@
 package com.newbieeming.hookhyper.feature.systemui.hook
 
 import android.content.Context
+import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -30,6 +31,11 @@ object SystemUiHooker : YukiBaseHooker() {
                 runCatching { hookSoftLightGlass() }
                     .onFailure { Log.e(TAG, "Unable to hook soft-light glass", it) }
             }
+            if (featurePreferences.getBoolean(SystemUiPreferenceKeys.CUSTOM_TIME_FORMAT)) {
+                val aaPrefix = featurePreferences.getBoolean(SystemUiPreferenceKeys.TIME_FORMAT_AA_PREFIX)
+                runCatching { hookTimeFormat(aaPrefix) }
+                    .onFailure { Log.e(TAG, "Unable to hook time format", it) }
+            }
         }
     }
 
@@ -52,6 +58,47 @@ object SystemUiHooker : YukiBaseHooker() {
                     }
                 }
             }
+    }
+
+    private fun com.highcapable.yukihookapi.hook.param.PackageParam.hookTimeFormat(aaPrefix: Boolean) {
+        val amPms12h = arrayOf("AM", "AM", "AM", "PM", "PM", "PM", "PM")
+
+        Resources::class.java.resolve().firstMethod {
+            name = "getString"
+            parameterCount = 1
+        }.hook {
+            after {
+                val res = instance<Resources>()
+                val resId = args(0).int()
+                val resName = runCatching {
+                    res.getResourceEntryName(resId)
+                }.getOrNull() ?: return@after
+                when (resName) {
+                    "fmt_time_12hour_minute",
+                    "fmt_time_24hour_minute" -> {
+                        val original = result?.toString().orEmpty()
+                        if (!original.contains("aa", ignoreCase = true)) {
+                            result = if (aaPrefix) "aa $original" else "$original aa"
+                        }
+                    }
+                }
+            }
+        }
+
+        Resources::class.java.resolve().firstMethod {
+            name = "getStringArray"
+            parameterCount = 1
+        }.hook {
+            after {
+                val resId = args(0).int()
+                val resName = runCatching {
+                    instance<Resources>().getResourceEntryName(resId)
+                }.getOrNull() ?: return@after
+                if (resName == "detailed_am_pms") {
+                    result = amPms12h
+                }
+            }
+        }
     }
 
     private fun com.highcapable.yukihookapi.hook.param.PackageParam.hookSoftLightGlass() {
