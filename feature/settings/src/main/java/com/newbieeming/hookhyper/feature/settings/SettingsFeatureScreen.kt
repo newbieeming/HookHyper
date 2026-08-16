@@ -11,7 +11,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.newbieeming.hookhyper.core.model.DeviceInfoFields
@@ -28,6 +33,12 @@ fun SettingsFeatureScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val deviceInfoFields = DeviceInfoFields.all
+    val focusRequesters = remember(deviceInfoFields.size) {
+        List(deviceInfoFields.size) { FocusRequester() }
+    }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     LaunchedEffect(viewModel, snackbarHostState) {
         viewModel.effects.collect { effect ->
             if (effect is SettingsFeatureEffect.ShowMessage) {
@@ -55,14 +66,25 @@ fun SettingsFeatureScreen(
             exit = shrinkVertically() + fadeOut(),
         ) {
             SettingTextFieldGroup {
-                DeviceInfoFields.all.forEach { field ->
+                deviceInfoFields.forEachIndexed { index, field ->
+                    val isLastField = index == deviceInfoFields.lastIndex
                     SettingTextField(
                         label = deviceInfoLabel(field.preferenceKey),
                         value = state.values[field.preferenceKey].orEmpty(),
                         onValueChange = {
                             viewModel.accept(SettingsFeatureIntent.UpdateValue(field.preferenceKey, it))
                         },
+                        modifier = Modifier.focusRequester(focusRequesters[index]),
                         grouped = true,
+                        imeAction = if (isLastField) ImeAction.Done else ImeAction.Next,
+                        onImeAction = {
+                            if (isLastField) {
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                            } else {
+                                focusRequesters[index + 1].requestFocus()
+                            }
+                        },
                     )
                 }
             }
