@@ -128,7 +128,7 @@ object SystemUiHooker : YukiBaseHooker() {
                 runCatching {
                     Settings.Secure.putInt(context.contentResolver, "background_blur_enable", 1)
                 }
-            }, 500)
+            }, 800)
         }.onFailure { Log.w(TAG, "Unable to refresh background blur setting", it) }
     }
 
