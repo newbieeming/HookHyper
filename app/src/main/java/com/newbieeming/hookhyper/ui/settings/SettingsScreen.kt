@@ -45,6 +45,7 @@ import com.newbieeming.hookhyper.ui.app.AppState
 import com.newbieeming.hookhyper.ui.component.AdaptiveCard
 import com.newbieeming.hookhyper.ui.component.AdaptiveText
 import com.newbieeming.hookhyper.ui.component.ScreenScaffold
+import com.newbieeming.hookhyper.core.ui.component.SettingSwitchRow
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
@@ -75,6 +76,16 @@ fun SettingsScreen(
                     style = state.uiStyle,
                     onSelected = { onIntent(AppIntent.SelectUiStyle(it)) },
                     modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                )
+            }
+            item {
+                SettingSwitchRow(
+                    title = stringResource(R.string.predictive_back_title),
+                    summary = stringResource(R.string.predictive_back_summary),
+                    checked = state.predictiveBackEnabled,
+                    onCheckedChange = {
+                        onIntent(AppIntent.SetPredictiveBackEnabled(it))
+                    },
                 )
             }
             item {

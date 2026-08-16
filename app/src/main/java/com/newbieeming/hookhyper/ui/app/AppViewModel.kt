@@ -3,6 +3,7 @@ package com.newbieeming.hookhyper.ui.app
 import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 import com.newbieeming.hookhyper.core.data.ModuleStatusProvider
 import com.newbieeming.hookhyper.core.model.FeatureMetadata
+import com.newbieeming.hookhyper.core.model.PreferenceKeys
 import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,7 @@ class AppViewModel @Inject constructor(
 ) : MviViewModel<AppState, AppIntent, AppEffect>(
     AppState(
         uiStyle = preferences.getUiStyle(),
+        predictiveBackEnabled = preferences.getBoolean(PreferenceKeys.PREDICTIVE_BACK_ENABLED),
         moduleStatus = moduleStatusProvider.current(),
         features = featureSet.map(FeatureEntry::metadata).sortedBy(FeatureMetadata::fallbackName),
     ),
@@ -30,6 +32,10 @@ class AppViewModel @Inject constructor(
                 preferences.setUiStyle(intent.style)
                 reduce { copy(uiStyle = intent.style) }
                 sendEffect(AppEffect.UiStyleChanged)
+            }
+            is AppIntent.SetPredictiveBackEnabled -> {
+                preferences.putBoolean(PreferenceKeys.PREDICTIVE_BACK_ENABLED, intent.enabled)
+                reduce { copy(predictiveBackEnabled = intent.enabled) }
             }
             AppIntent.RefreshModuleStatus -> reduce { copy(moduleStatus = moduleStatusProvider.current()) }
         }

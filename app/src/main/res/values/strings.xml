@@ -18,6 +18,8 @@
     <string name="ui_style_summary">Choose the component style used by the app</string>
     <string name="ui_style_miuix" translatable="false">MIUIX</string>
     <string name="ui_style_material" translatable="false">Material</string>
+    <string name="predictive_back_title">Predictive back gesture</string>
+    <string name="predictive_back_summary">Preview the previous page while swiping back</string>
     <string name="action_expand">Expand</string>
     <string name="module_connected">Connected · %1$s · API %2$s</string>
     <string name="module_disconnected">Not connected. Enable the module and its scope in LSPosed.</string>
