@@ -6,6 +6,7 @@ import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.newbieeming.hookhyper.core.model.PreferenceKeys
 import com.newbieeming.hookhyper.feature.settings.SettingsFeatureEntry
 import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
+import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields.osVersion
 import com.newbieeming.hookhyper.feature.settings.model.SettingsPreferenceKeys
 import java.lang.reflect.Method
 
@@ -13,11 +14,25 @@ object SettingsHooker : YukiBaseHooker() {
     private const val TAG = "HookHyper-Settings"
     private const val CARD_INFO = "com.android.settings.device.DeviceCardInfo"
     private const val BASE_CARD = "com.android.settings.device.BaseDeviceCardItem"
+    private const val ABOUT_PHONE = "com.android.settings.device.MiuiAboutPhoneUtils"
 
     override fun onHook() {
         loadApp(name = SettingsFeatureEntry.PACKAGE_NAME) {
             val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
             if (!featurePreferences.getBoolean(SettingsPreferenceKeys.EDIT_DEVICE_INFO)) return@loadApp
+
+            runCatching {
+                ABOUT_PHONE.toClass().resolve().firstMethod {
+                    name = "getOsVersionCode"
+                    emptyParameters()
+                }.hook {
+                    after {
+                        featurePreferences.getString(osVersion.preferenceKey).takeIf(String::isNotBlank)?.let {
+                            result = it
+                        }
+                    }
+                }
+            }.onFailure { Log.e(TAG, "Unable to hook OS version", it) }
 
             runCatching {
                 // 特殊处理摄像头FirstValue、SecondValue
