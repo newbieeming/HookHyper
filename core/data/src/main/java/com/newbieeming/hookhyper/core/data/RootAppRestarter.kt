@@ -31,8 +31,12 @@ class RootAppRestarter @Inject constructor(
         val command = if (packageName == SYSTEM_UI_PACKAGE) {
             "killall $packageName"
         } else {
-            "am force-stop $packageName; sleep 1; " +
-                "monkey -p $packageName -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1"
+            val component = context.packageManager
+                .getLaunchIntentForPackage(packageName)?.component?.flattenToString()
+                ?: return@withContext RestartAppResult.Failure(
+                    context.getString(R.string.restart_invalid_package)
+                )
+            "am force-stop $packageName; sleep 1; am start -n $component"
         }
 
         when (val result = runAsRoot(command)) {
