@@ -43,6 +43,7 @@ fun DeviceInfoTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    supportingText: String? = null,
     imeAction: ImeAction = ImeAction.Done,
     onImeAction: () -> Unit = {},
 ) {
@@ -51,6 +52,7 @@ fun DeviceInfoTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+        supportingText = supportingText,
         imeAction = imeAction,
         onImeAction = onImeAction,
     )
@@ -92,6 +94,7 @@ private fun DeviceInfoTextFieldContent(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    supportingText: String? = null,
     imeAction: ImeAction,
     onImeAction: () -> Unit,
 ) {
@@ -141,6 +144,7 @@ private fun DeviceInfoTextFieldContent(
             onValueChange = onValueChange,
             label = { Text(label) },
             placeholder = { Text(stringResource(R.string.device_info_text_field_placeholder, label)) },
+            supportingText = supportingText?.let { { Text(it) } },
             singleLine = false,
             minLines = DEVICE_INFO_MIN_LINES,
             maxLines = DEVICE_INFO_MAX_LINES,

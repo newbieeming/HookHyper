@@ -1,5 +1,7 @@
 package com.newbieeming.hookhyper.feature.settings.model
 
+import com.newbieeming.hookhyper.core.data.SystemProperties
+
 object SettingsPreferenceKeys {
     const val EDIT_DEVICE_INFO = "settings_edit_device_info"
 }
@@ -8,6 +10,7 @@ data class DeviceInfoField(
     val desc: String,
     val preferenceKey: String,
     val stringsName: String = "",
+    val originValue: String = ""
 )
 
 object DeviceInfoFields {
@@ -54,35 +57,43 @@ object DeviceInfoFields {
     val osVersion = DeviceInfoField(
         desc = "OS版本",
         preferenceKey = "settings_device_os_version",
+        originValue = SystemProperties.get("ro.mi.os.version.incremental", "")
     )
 
     val xmsVersion = DeviceInfoField(
         desc = "XMS版本",
         preferenceKey = "settings_device_os_xms_version",
         stringsName = "device_xms_version",
+        originValue = SystemProperties.get("persist.sys.xms.version")
     )
     val roXmsVersion = DeviceInfoField(
         desc = "ROXMS版本",
         preferenceKey = "settings_device_os_ro_xms_version",
         stringsName = "device_ro_xms_version",
+        originValue = SystemProperties.get("ro.mi.xms.version.incremental")
     )
     val certModel = DeviceInfoField(
         desc = "认证型号",
         preferenceKey = "settings_device_cert_model",
         stringsName = "model_name",
+        originValue = SystemProperties.get("ro.product.cert")
     )
     val hardwareVersion = DeviceInfoField(
         desc = "硬件版本",
         preferenceKey = "settings_device_hardware_version",
         stringsName = "hardware_version",
+        originValue = SystemProperties.get("ro.miui.cust_hardware")
     )
     val baseband = DeviceInfoField(
         desc = "基带版本",
         preferenceKey = "settings_device_baseband",
+        originValue = SystemProperties.get("gsm.version.baseband").split(",").toSet()
+            .joinToString(",")
     )
     val androidVersion = DeviceInfoField(
         desc = "Android 版本",
         preferenceKey = "settings_device_android_version",
+        originValue = SystemProperties.get("ro.product.build.version.release")
     )
     val kernelVersion = DeviceInfoField(
         desc = "内核版本",

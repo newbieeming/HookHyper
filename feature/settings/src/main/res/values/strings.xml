@@ -4,6 +4,7 @@
     <string name="settings_edit_device_info_title">Edit device information</string>
     <string name="settings_edit_device_info_summary">Override information in About phone. Empty fields keep the original system values. Changes take effect after restarting System settings.</string>
     <string name="device_info_text_field_placeholder">Enter %1$s</string>
+    <string name="device_info_origin_value">Original: %1$s</string>
     <string name="device_name">Device name</string>
     <string name="device_processor">Processor</string>
     <string name="device_processor_detail">Processor detail</string>

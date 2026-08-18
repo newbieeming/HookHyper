@@ -72,9 +72,16 @@ fun SettingsFeatureScreen(
                         label = deviceInfoLabel(field.preferenceKey),
                         value = state.values[field.preferenceKey].orEmpty(),
                         onValueChange = {
-                            viewModel.accept(SettingsFeatureIntent.UpdateValue(field.preferenceKey, it))
+                            viewModel.accept(
+                                SettingsFeatureIntent.UpdateValue(
+                                    field.preferenceKey,
+                                    it
+                                )
+                            )
                         },
                         modifier = Modifier.focusRequester(focusRequesters[index]),
+                        supportingText = field.originValue.takeIf { it.isNotBlank() }
+                            ?.let { stringResource(R.string.device_info_origin_value, it) },
                         imeAction = if (isLastField) ImeAction.Done else ImeAction.Next,
                         onImeAction = {
                             if (isLastField) {
