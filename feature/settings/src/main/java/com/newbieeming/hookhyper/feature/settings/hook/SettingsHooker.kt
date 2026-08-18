@@ -7,6 +7,8 @@ import com.newbieeming.hookhyper.core.model.PreferenceKeys
 import com.newbieeming.hookhyper.feature.settings.SettingsFeatureEntry
 import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
 import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields.osVersion
+import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields.roXmsVersion
+import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields.xmsVersion
 import com.newbieeming.hookhyper.feature.settings.model.SettingsPreferenceKeys
 import java.lang.reflect.Method
 
@@ -32,6 +34,27 @@ object SettingsHooker : YukiBaseHooker() {
                         }
                     }
                 }
+                ABOUT_PHONE.toClass().resolve().firstMethod {
+                    name = "getRoXmsVersion"
+                    emptyParameters()
+                }.hook {
+                    after {
+                        featurePreferences.getString(roXmsVersion.preferenceKey).takeIf(String::isNotBlank)?.let {
+                            result = it
+                        }
+                    }
+                }
+                ABOUT_PHONE.toClass().resolve().firstMethod {
+                    name = "getXmsVersion"
+                    emptyParameters()
+                }.hook {
+                    after {
+                        featurePreferences.getString(xmsVersion.preferenceKey).takeIf(String::isNotBlank)?.let {
+                            result = it
+                        }
+                    }
+                }
+
             }.onFailure { Log.e(TAG, "Unable to hook OS version", it) }
 
             runCatching {

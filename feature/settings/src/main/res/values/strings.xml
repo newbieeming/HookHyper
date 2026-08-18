@@ -12,6 +12,8 @@
     <string name="device_resolution">Resolution</string>
     <string name="device_screen_size">Screen size</string>
     <string name="device_os_version">OS version</string>
+    <string name="device_xms_version">XMS version</string>
+    <string name="device_ro_xms_version">RO XMS version</string>
     <string name="device_camera">Camera</string>
     <string name="device_baseband">Baseband</string>
     <string name="device_cert_model">Certification model</string>

@@ -12,6 +12,8 @@
     <string name="device_resolution">分辨率</string>
     <string name="device_screen_size">屏幕尺寸</string>
     <string name="device_os_version">OS 版本</string>
+    <string name="device_xms_version">XMS 版本</string>
+    <string name="device_ro_xms_version">RO XMS 版本</string>
     <string name="device_camera">摄像头</string>
     <string name="device_baseband">基带</string>
     <string name="device_cert_model">认证型号</string>

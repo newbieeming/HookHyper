@@ -102,6 +102,8 @@ private fun deviceInfoLabel(preferenceKey: String): String {
         "settings_device_screen_resolution" -> R.string.device_resolution
         "settings_device_screen_size" -> R.string.device_screen_size
         "settings_device_os_version" -> R.string.device_os_version
+        "settings_device_os_xms_version" -> R.string.device_xms_version
+        "settings_device_os_ro_xms_version" -> R.string.device_ro_xms_version
         "settings_device_camera" -> R.string.device_camera
         "settings_device_baseband" -> R.string.device_baseband
         "settings_device_cert_model" -> R.string.device_cert_model

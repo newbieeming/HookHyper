@@ -54,7 +54,17 @@ object DeviceInfoFields {
     val osVersion = DeviceInfoField(
         desc = "OS版本",
         preferenceKey = "settings_device_os_version",
-        stringsName = "device_miui_version",
+    )
+
+    val xmsVersion = DeviceInfoField(
+        desc = "XMS版本",
+        preferenceKey = "settings_device_os_xms_version",
+        stringsName = "device_xms_version",
+    )
+    val roXmsVersion = DeviceInfoField(
+        desc = "ROXMS版本",
+        preferenceKey = "settings_device_os_ro_xms_version",
+        stringsName = "device_ro_xms_version",
     )
     val certModel = DeviceInfoField(
         desc = "认证型号",
@@ -89,6 +99,8 @@ object DeviceInfoFields {
         screenSize,
         camera,
         osVersion,
+        xmsVersion,
+        roXmsVersion,
         certModel,
         hardwareVersion,
         baseband,
@@ -145,6 +157,7 @@ object DeviceInfoFields {
         """平台|澎湃|高通|天玑|骁龙|玄戒|Snapdragon|Dimensity|MediaTek|Qualcomm|Mobile\s+Platform""",
         RegexOption.IGNORE_CASE,
     )
+
     // 基带版本：高通 MPSS、联发科 MOLY、展锐 SRNC/SP、通用 MODEM 等
     private val BASEBAND_REGEX = Regex(
         """\b(?:MPSS|MOLY|MODEM|SRNC|BP_)\b""",
