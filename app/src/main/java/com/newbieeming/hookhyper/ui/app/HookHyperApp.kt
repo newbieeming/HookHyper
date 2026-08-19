@@ -1,14 +1,30 @@
 package com.newbieeming.hookhyper.ui.app
 
+import android.os.Build
+import android.util.Log
+import android.view.RoundedCorner
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
+import androidx.core.view.doOnLayout
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -22,8 +38,6 @@ import androidx.navigation3.scene.SceneInfo
 import androidx.navigation3.scene.SinglePaneSceneStrategy
 import androidx.navigation3.scene.rememberSceneState
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigationevent.NavigationEvent
-import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.newbieeming.hookhyper.core.ui.theme.HookHyperTheme
@@ -31,13 +45,33 @@ import com.newbieeming.hookhyper.ui.feature.MissingFeatureScreen
 import com.newbieeming.hookhyper.ui.navigation.FeatureRoute
 import com.newbieeming.hookhyper.ui.navigation.HomeRoute
 
-/** Root navigation and detail-page predictive-back integration. */
+@Composable
+private fun rememberDeviceCornerRadius(): RoundedCornerShape {
+    val view = LocalView.current
+    val density = LocalDensity.current
+    var radiusPx by remember { mutableIntStateOf(0) }
+    LaunchedEffect(view) {
+        view.doOnLayout {
+            radiusPx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                listOf(
+                    RoundedCorner.POSITION_TOP_LEFT,
+                    RoundedCorner.POSITION_TOP_RIGHT,
+                    RoundedCorner.POSITION_BOTTOM_LEFT,
+                    RoundedCorner.POSITION_BOTTOM_RIGHT,
+                ).maxOf { view.rootWindowInsets?.getRoundedCorner(it)?.radius ?: 0 }
+            } else 0
+        }
+    }
+    val radius = with(density) { radiusPx.toDp() }.takeIf { it > 0.dp }?.minus(2.dp)?.coerceAtLeast(0.dp) ?: 0.dp
+    return remember(radius) { RoundedCornerShape(radius) }
+}
+
 @Composable
 fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val backStack = rememberNavBackStack(HomeRoute)
-    val predictiveBackShape = rememberPredictiveBackShape()
-    val gestureZoneWidth = rememberGestureZoneWidth()
+    val cornerRadius = rememberDeviceCornerRadius()
+    Log.d("HookHyperApp", "cornerRadius: $cornerRadius")
 
     HookHyperTheme(style = state.uiStyle) {
         val onBack: () -> Unit = { backStack.removeLastOrNull() }
@@ -61,10 +95,10 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
                         onBack = onBack,
                         modifier = Modifier
                             .fillMaxSize()
-                            .predictiveBackClip(
-                                progress = LocalPredictiveBackProgress.current,
-                                shape = LocalPredictiveBackShape.current,
-                            ),
+                            .graphicsLayer {
+                                shape = cornerRadius
+                                clip = true
+                            },
                     ) ?: MissingFeatureScreen(onBack = onBack)
                 }
             },
@@ -95,28 +129,21 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
             )
         }
 
-        val navigationProgress =
-            (navigationEventState.transitionState as? NavigationEventTransitionState.InProgress)
-                ?.latestEvent
-                ?.progress
-                ?.coerceIn(0f, 1f)
-                ?: 0f
-        CompositionLocalProvider(
-            LocalPredictiveBackProgress provides navigationProgress,
-            LocalPredictiveBackShape provides predictiveBackShape,
-            LocalPredictiveBackGestureZoneWidth provides gestureZoneWidth,
-        ) {
-            NavDisplay(
-                sceneState = sceneState,
-                navigationEventState = navigationEventState,
-                modifier = Modifier.fillMaxSize(),
-                predictivePopTransitionSpec = { swipeEdge ->
-                    val direction = if (swipeEdge == NavigationEvent.EDGE_RIGHT) -1 else 1
-                    EnterTransition.None togetherWith slideOutHorizontally { width ->
-                        (width * PredictiveBackMaxTranslationFraction * direction).toInt()
-                    }
-                },
-            )
-        }
+        NavDisplay(
+            sceneState = sceneState,
+            navigationEventState = navigationEventState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            predictivePopTransitionSpec = { _ ->
+                val easing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+                fadeIn(
+                    animationSpec = tween(durationMillis = 350, easing = easing),
+                    initialAlpha = 0.1f,
+                ) togetherWith slideOutHorizontally(
+                    animationSpec = tween(durationMillis = 350, easing = easing),
+                ) { width -> width }
+            },
+        )
     }
 }
