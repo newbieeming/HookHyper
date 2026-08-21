@@ -1,6 +1,8 @@
 name: Build release APK
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -31,11 +33,20 @@ jobs:
         with:
           cache-provider: basic
 
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.RELEASE_STORE_BASE64 }}" | base64 -d > my.jks
+
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x gradlew
 
       - name: Build release APK
         run: ./gradlew :app:assembleRelease --no-daemon
+        env:
+          RELEASE_STORE_FILE: my.jks
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
       - name: Prepare artifact name
         id: artifact

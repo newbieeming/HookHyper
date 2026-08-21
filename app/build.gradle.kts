@@ -21,10 +21,21 @@ android {
 
     signingConfigs {
         create("me") {
-            storeFile = file("../sign/newbieeming.jks")
-            storePassword = "newbieeming"
-            keyAlias = "newbieeming"
-            keyPassword = "newbieeming"
+            val localStoreFileStr = project.findProperty("RELEASE_STORE_FILE") as String?
+                ?: System.getenv("RELEASE_STORE_FILE")
+            val localStorePwd = project.findProperty("RELEASE_STORE_PASSWORD") as String?
+                ?: System.getenv("RELEASE_STORE_PASSWORD")
+            val localKeyAlias = project.findProperty("RELEASE_KEY_ALIAS") as String?
+                ?: System.getenv("RELEASE_KEY_ALIAS")
+            val localKeyPwd = project.findProperty("RELEASE_KEY_PASSWORD") as String?
+                ?: System.getenv("RELEASE_KEY_PASSWORD")
+
+            if (!localStoreFileStr.isNullOrBlank()) {
+                storeFile = rootProject.file(localStoreFileStr)
+                storePassword = localStorePwd
+                keyAlias = localKeyAlias
+                keyPassword = localKeyPwd
+            }
         }
     }
 
