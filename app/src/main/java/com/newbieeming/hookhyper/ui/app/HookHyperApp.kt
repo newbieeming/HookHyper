@@ -7,6 +7,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
@@ -135,13 +137,27 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
+            transitionSpec = {
+                val easing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+                slideInHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { it } +
+                    fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = 100, easing = easing)) togetherWith
+                    slideOutHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { -it / 4 } +
+                    fadeOut(animationSpec = tween(durationMillis = 300, easing = easing))
+            },
+            popTransitionSpec = {
+                val easing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+                slideInHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { -it / 4 } +
+                    fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = 100, easing = easing)) togetherWith
+                    slideOutHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { it } +
+                    fadeOut(animationSpec = tween(durationMillis = 300, easing = easing))
+            },
             predictivePopTransitionSpec = { _ ->
                 val easing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
                 fadeIn(
-                    animationSpec = tween(durationMillis = 350, easing = easing),
+                    animationSpec = tween(durationMillis = 400, easing = easing),
                     initialAlpha = 0.1f,
                 ) togetherWith slideOutHorizontally(
-                    animationSpec = tween(durationMillis = 350, easing = easing),
+                    animationSpec = tween(durationMillis = 400, easing = easing),
                 ) { width -> width }
             },
         )
