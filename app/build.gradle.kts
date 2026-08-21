@@ -45,6 +45,12 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+    androidResources.additionalParameters += listOf(
+        "--allow-reserved-package-id",
+        "--package-id",
+        "0x64"
+    )
 }
 
 androidComponents {

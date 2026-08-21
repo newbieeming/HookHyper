@@ -70,5 +70,11 @@ fun SystemUiScreen(
                 onCheckedChange = { viewModel.accept(SystemUiIntent.SetAaPrefix(it)) },
             )
         }
+        SettingSwitchRow(
+            title = stringResource(R.string.systemui_replace_fingerprint_icon_title),
+            summary = stringResource(R.string.systemui_replace_fingerprint_icon_summary),
+            checked = state.replaceFingerprintIcon,
+            onCheckedChange = { viewModel.accept(SystemUiIntent.SetReplaceFingerprintIcon(it)) },
+        )
     }
 }

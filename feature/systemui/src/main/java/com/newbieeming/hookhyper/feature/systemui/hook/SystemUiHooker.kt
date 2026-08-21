@@ -11,7 +11,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
+import com.highcapable.yukihookapi.hook.factory.injectModuleAppResources
 import com.newbieeming.hookhyper.core.model.PreferenceKeys
+import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiPreferenceKeys
 import java.lang.reflect.Field
@@ -35,6 +37,10 @@ object SystemUiHooker : YukiBaseHooker() {
                 val aaPrefix = featurePreferences.getBoolean(SystemUiPreferenceKeys.TIME_FORMAT_AA_PREFIX)
                 runCatching { hookTimeFormat(aaPrefix) }
                     .onFailure { Log.e(TAG, "Unable to hook time format", it) }
+            }
+            if (featurePreferences.getBoolean(SystemUiPreferenceKeys.REPLACE_FINGERPRINT_ICON)) {
+                runCatching { hookFingerprintIcon() }
+                    .onFailure { Log.e(TAG, "Unable to hook fingerprint icon", it) }
             }
         }
     }
@@ -96,6 +102,39 @@ object SystemUiHooker : YukiBaseHooker() {
                 }.getOrNull() ?: return@after
                 if (resName == "detailed_am_pms") {
                     result = amPms12h
+                }
+            }
+        }
+    }
+
+    private fun com.highcapable.yukihookapi.hook.param.PackageParam.hookFingerprintIcon() {
+        val replacements = mapOf(
+            "finger_circle_image_normal" to R.drawable.finger_circle_image_normal,
+            "finger_circle_image_light" to R.drawable.finger_circle_image_light,
+            "finger_circle_image_grey" to R.drawable.finger_circle_image_grey,
+            "finger_circle_image_aod" to R.drawable.finger_circle_image_aod,
+            "finger_circle_image_grey_enroll" to R.drawable.finger_circle_image_grey,
+        )
+        // 注入模块资源，使模块 R.drawable.xxx 在宿主中可用
+        onAppLifecycle {
+            onCreate {
+                injectModuleAppResources()
+            }
+        }
+        // hook getFingerIconResource 直接替换返回的资源 ID
+        "com.miui.keyguard.biometrics.fod.MiuiGxzwAnimManager".toClass().resolve().firstMethod {
+            name = "getFingerIconResource"
+            parameterCount = 1
+        }.hook {
+            after {
+                val original = result as? Int ?: return@after
+                val res = appResources ?: return@after
+                val resName = runCatching {
+                    res.getResourceEntryName(original)
+                }.getOrNull() ?: return@after
+                replacements[resName]?.let { moduleResId ->
+                    result = moduleResId
+                    Log.d(TAG, "Replaced: $resName -> 0x${Integer.toHexString(moduleResId)}")
                 }
             }
         }

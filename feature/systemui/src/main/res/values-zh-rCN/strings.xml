@@ -9,6 +9,8 @@
     <string name="systemui_custom_time_format_summary">在状态栏时钟后追加 AM/PM 标记；重启系统界面后生效</string>
     <string name="systemui_aa_prefix_title">AM/PM 显示在时间前面</string>
     <string name="systemui_aa_prefix_summary">将 AM/PM 放在时间前面而非后面</string>
+    <string name="systemui_replace_fingerprint_icon_title">更换指纹图标</string>
+    <string name="systemui_replace_fingerprint_icon_summary">将屏下指纹图标替换为魅族样式；重启系统界面后生效</string>
     <string name="restart_systemui_success">系统界面已重启</string>
     <string name="restart_root_required">需要 Root 权限才能重启应用</string>
     <string name="restart_failed">重启失败：%1$s</string>

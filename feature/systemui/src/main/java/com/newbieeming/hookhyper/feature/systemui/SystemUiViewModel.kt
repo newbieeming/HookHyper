@@ -17,6 +17,7 @@ data class SystemUiState(
     val forceSoftLightGlass: Boolean = false,
     val customTimeFormat: Boolean = false,
     val aaPrefix: Boolean = false,
+    val replaceFingerprintIcon: Boolean = false,
     val isRestarting: Boolean = false,
 )
 
@@ -25,6 +26,7 @@ sealed interface SystemUiIntent {
     data class SetSoftLightGlass(val enabled: Boolean) : SystemUiIntent
     data class SetCustomTimeFormat(val enabled: Boolean) : SystemUiIntent
     data class SetAaPrefix(val enabled: Boolean) : SystemUiIntent
+    data class SetReplaceFingerprintIcon(val enabled: Boolean) : SystemUiIntent
     data object RestartApp : SystemUiIntent
 }
 
@@ -44,6 +46,7 @@ class SystemUiViewModel @Inject constructor(
         forceSoftLightGlass = preferences.getBoolean(SystemUiPreferenceKeys.FORCE_SOFT_LIGHT_GLASS),
         customTimeFormat = preferences.getBoolean(SystemUiPreferenceKeys.CUSTOM_TIME_FORMAT),
         aaPrefix = preferences.getBoolean(SystemUiPreferenceKeys.TIME_FORMAT_AA_PREFIX),
+        replaceFingerprintIcon = preferences.getBoolean(SystemUiPreferenceKeys.REPLACE_FINGERPRINT_ICON),
     ),
 ) {
     override fun onIntent(intent: SystemUiIntent) {
@@ -63,6 +66,10 @@ class SystemUiViewModel @Inject constructor(
             is SystemUiIntent.SetAaPrefix -> {
                 preferences.putBoolean(SystemUiPreferenceKeys.TIME_FORMAT_AA_PREFIX, intent.enabled)
                 reduce { copy(aaPrefix = intent.enabled) }
+            }
+            is SystemUiIntent.SetReplaceFingerprintIcon -> {
+                preferences.putBoolean(SystemUiPreferenceKeys.REPLACE_FINGERPRINT_ICON, intent.enabled)
+                reduce { copy(replaceFingerprintIcon = intent.enabled) }
             }
             SystemUiIntent.RestartApp -> {
                 restartApp()
