@@ -3,7 +3,6 @@ package com.newbieeming.hookhyper.ui.home
 import android.annotation.SuppressLint
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -92,9 +91,10 @@ private fun FeatureRow(feature: FeatureMetadata, onClick: () -> Unit) {
         }
     } else {
         Surface(
-            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().clickable(onClick = onClick),
+            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
             tonalElevation = 2.dp,
+            onClick = onClick,
         ) {
             ListItem(
                 headlineContent = { Text(appInfo?.first ?: feature.fallbackName, fontWeight = FontWeight.SemiBold) },
