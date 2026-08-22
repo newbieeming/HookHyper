@@ -23,8 +23,7 @@ class RootAppRestarter @Inject constructor(
             return@withContext RestartAppResult.Failure(context.getString(R.string.restart_invalid_package))
         }
 
-        val rootCheck = runAsRoot("id")
-        if (rootCheck !is RootCommandResult.Success || !rootCheck.output.contains("uid=0")) {
+        if (!checkRootWithRetry()) {
             return@withContext RestartAppResult.RootRequired
         }
 
@@ -43,6 +42,23 @@ class RootAppRestarter @Inject constructor(
             is RootCommandResult.Success -> RestartAppResult.Success
             is RootCommandResult.Error -> RestartAppResult.Failure(result.reason)
         }
+    }
+
+    /**
+     * 检测 root 权限，支持重试。
+     * 首次调用 su 时如果 Magisk 弹出授权弹窗，su 会阻塞等待用户操作；
+     * 用户授权后 su 可能已超时退出，此时重试即可成功。
+     */
+    private fun checkRootWithRetry(maxRetries: Int = 3): Boolean {
+        repeat(maxRetries) {
+            when (val result = runAsRoot("id")) {
+                is RootCommandResult.Success -> {
+                    if (result.output.contains("uid=0")) return true
+                }
+                is RootCommandResult.Error -> { /* 继续重试 */ }
+            }
+        }
+        return false
     }
 
     private fun runAsRoot(command: String): RootCommandResult = try {
