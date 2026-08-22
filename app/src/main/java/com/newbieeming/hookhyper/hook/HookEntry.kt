@@ -4,8 +4,7 @@ import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
 import com.newbieeming.hookhyper.BuildConfig
-import com.newbieeming.hookhyper.feature.settings.hook.SettingsHooker
-import com.newbieeming.hookhyper.feature.systemui.hook.SystemUiHooker
+import com.newbieeming.hookhyper.hook.gen.GeneratedHookEntry
 
 @InjectYukiHookWithXposed(
     isUsingXposedModuleStatus = true,
@@ -19,5 +18,5 @@ object HookEntry : IYukiHookXposedInit {
         }
     }
 
-    override fun onHook() = YukiHookAPI.encase(SystemUiHooker, SettingsHooker)
+    override fun onHook() = GeneratedHookEntry.register()
 }

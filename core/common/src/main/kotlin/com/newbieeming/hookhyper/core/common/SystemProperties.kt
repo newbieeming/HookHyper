@@ -1,4 +1,4 @@
-package com.newbieeming.hookhyper.core.data
+package com.newbieeming.hookhyper.core.common
 
 /**
  * 读取 Android System Properties 的工具类。

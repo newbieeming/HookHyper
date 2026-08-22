@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.newbieeming.hookhyper.R
-import com.newbieeming.hookhyper.core.model.UiStyle
+import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import top.yukonga.miuix.kmp.basic.NavigationBar as MiuixNavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationBarItem as MiuixNavigationBarItem

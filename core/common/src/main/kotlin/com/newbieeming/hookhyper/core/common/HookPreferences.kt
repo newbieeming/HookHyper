@@ -1,4 +1,4 @@
-package com.newbieeming.hookhyper.core.model
+package com.newbieeming.hookhyper.core.common
 
 enum class UiStyle {
     MIUIX,

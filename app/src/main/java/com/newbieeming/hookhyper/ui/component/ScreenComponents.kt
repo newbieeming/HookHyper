@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.newbieeming.hookhyper.core.model.UiStyle
+import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.component.SystemSettingsTopBar
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard

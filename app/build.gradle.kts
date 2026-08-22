@@ -82,8 +82,9 @@ androidComponents {
 }
 
 dependencies {
-    implementation(project(":core:model"))
+    implementation(project(":core:common"))
     implementation(project(":core:data"))
+    implementation(project(":core:hook"))
     implementation(project(":core:ui"))
     implementation(project(":feature:systemui"))
     implementation(project(":feature:settings"))
@@ -107,6 +108,7 @@ dependencies {
     implementation(libs.yukihookapi.api)
     compileOnly(libs.xposed.api)
     ksp(libs.yukihookapi.ksp.xposed)
+    ksp(project(":core:hook-ksp-processor"))
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

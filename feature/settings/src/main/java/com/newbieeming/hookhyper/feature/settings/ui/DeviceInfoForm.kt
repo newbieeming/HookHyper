@@ -28,7 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.newbieeming.hookhyper.core.model.UiStyle
+import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import com.newbieeming.hookhyper.feature.settings.R
 import kotlinx.coroutines.delay

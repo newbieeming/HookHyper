@@ -9,8 +9,8 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 FeatHyper 重构，
 
 | 目标应用 | 作用域 | 功能 |
 | --- | --- | --- |
-| 系统界面 | `com.android.systemui` | 在锁屏状态栏显示 SIM 运营商名称；为通知栏和控制中心强制启用柔光玻璃效果 |
-| 系统设置 | `com.android.settings` | 自定义“关于手机”中的设备名称、处理器、内存、电池、分辨率、屏幕尺寸、OS 版本、摄像头和基带信息 |
+| 系统界面 | `com.android.systemui` | 在锁屏状态栏显示 SIM 运营商名称；为通知栏和控制中心强制启用柔光玻璃效果；自定义状态栏时间格式（含 AM/PM 前缀选项）；替换指纹解锁图标样式 |
+| 系统设置 | `com.android.settings` | 自定义”关于手机”中的设备名称、处理器、内存、电池、分辨率、屏幕尺寸、OS 版本、摄像头和基带信息 |
 
 设置会通过 YukiHookPrefsBridge 与被 Hook 进程共享。功能开关或字段修改后，可在对应 feature 页面使用“重启应用”使其生效；该操作需要 Root 权限。
 
@@ -38,29 +38,52 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 FeatHyper 重构，
 
 ```text
 HookHyper/
-├─ app/                 # Activity 入口、应用级 MVI、导航、独立 Screen、Xposed 入口
+├─ app/                    # Activity 入口、应用级 MVI、导航、独立 Screen、Xposed 入口
 │  └─ src/main/java/com/newbieeming/hookhyper/
-│     ├─ MainActivity.kt    # Edge-to-Edge 与 Compose 启动入口
-│     ├─ hook/              # 唯一 Xposed Hook 入口
+│     ├─ MainActivity.kt       # Edge-to-Edge 与 Compose 启动入口
+│     ├─ hook/                 # 唯一 Xposed Hook 入口（HookEntry）
 │     └─ ui/
-│        ├─ app/            # MVI Contract、ViewModel、应用级 Compose 宿主
-│        ├─ navigation/     # Navigation 3 强类型路由
-│        ├─ home/           # 主页 Screen
-│        ├─ settings/       # 全局设置 Screen
-│        ├─ feature/        # Feature 导航兜底页面
-│        └─ component/      # App 内共享 Scaffold 与自适应组件
+│        ├─ app/               # MVI Contract、ViewModel、应用级 Compose 宿主
+│        ├─ navigation/        # Navigation 3 强类型路由
+│        ├─ home/              # 主页 Screen
+│        ├─ settings/          # 全局设置 Screen
+│        ├─ feature/           # Feature 导航兜底页面
+│        └─ component/         # App 内共享 Scaffold 与自适应组件
 ├─ core/
-│  ├─ model/            # 跨 Feature 的纯 Kotlin 契约、共享偏好文件和应用级设置键
-│  ├─ data/             # 跨进程设置、模块状态、Root 应用重启
-│  └─ ui/               # MVI 基类、主题、跨 Feature 通用组件、FeatureEntry 契约
+│  ├─ common/              # 跨模块共享的模型、常量、枚举和系统工具
+│  ├─ data/                # 跨进程偏好仓库、模块状态、Root 应用重启
+│  ├─ ui/                  # MVI 基类、主题、跨 Feature 通用组件、FeatureEntry 契约
+│  └─ hook/                # @HookModule 注解、SubHooker 接口、ModularHooker 基类
+│  └─ hook-ksp-processor/  # KSP 处理器：编译期扫描 @HookModule，自动生成 HookRegistry
 ├─ feature/
-│  ├─ systemui/         # com.android.systemui 的 UI、状态与 Hook
-│  └─ settings/         # com.android.settings 的 UI、状态与 Hook
-├─ build-logic/         # Gradle Convention Plugins 与统一构建配置
-└─ gradle/              # Version Catalog 与 Gradle Wrapper
+│  ├─ systemui/            # com.android.systemui 的 UI、状态与 Hook 子模块
+│  └─ settings/            # com.android.settings 的 UI、状态与 Hook 子模块
+├─ build-logic/            # Gradle Convention Plugins 与统一构建配置
+└─ gradle/                 # Version Catalog 与 Gradle Wrapper
 ```
 
 一个 `feature` 对应一个目标应用。每个 feature 通过 Hilt `@IntoSet` 注册 `FeatureEntry`，宿主据此生成主页列表，无需维护重复的 UI 清单或运行时扫描 Dex。Xposed Hook 由 `app` 中唯一的 `HookEntry` 统一装配。
+
+### Hook 模块化架构
+
+每个 feature 的 Hook 逻辑通过 `@HookModule` 注解 + KSP 自动生成，`HookEntry` 通过 `ServiceLoader` 自动发现所有模块：
+
+```text
+HookEntry (app)  ── ServiceLoader.load(Registrar) ── 自动发现所有 feature 模块
+  ├─ SystemuiHooker (KSP 自动生成)  ─── 遍历 HookRegistry
+  │   ├─ LockScreenCarrierHook    @HookModule(key = "systemui_lock_show_sim_name")
+  │   ├─ SoftLightGlassHook       @HookModule(key = "systemui_force_soft_light_glass")
+  │   ├─ TimeFormatHook           @HookModule(key = "systemui_custom_time_format")
+  │   └─ FingerprintIconHook      @HookModule(key = "systemui_replace_fingerprint_icon")
+  └─ SettingsHooker (KSP 自动生成)  ─── 遍历 HookRegistry
+      ├─ VersionInfoHook          @HookModule(key = "settings_edit_device_info")
+      └─ DeviceCardHook           @HookModule(key = "settings_edit_device_info")
+```
+
+- `SubHooker` 接口定义子模块契约，`@HookModule` 注解声明目标包名和偏好键。
+- 每个 feature 模块的 KSP 处理器自动生成 `HookRegistry`（子模块列表）、主 Hooker 和 `Registrar`。
+- `HookEntry` 通过 `ServiceLoader` 扫描所有 `Registrar` 实现，无需手动注册。
+- 新增功能只需实现 `SubHooker` + `@HookModule`，新增 feature 模块只需应用 `hook.module` 插件，无需修改 `HookEntry`。
 
 ## 应用 UI 架构
 
@@ -106,13 +129,13 @@ MIUIX 仍处于快速迭代阶段。升级时需要同时验证 Kotlin、Compose
 Windows：
 
 ```powershell
-.\gradlew.bat :core:model:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
+.\gradlew.bat :core:common:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
 ```
 
 macOS / Linux：
 
 ```bash
-./gradlew :core:model:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
+./gradlew :core:common:test :feature:settings:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
 ```
 
 Debug APK 输出到：
@@ -127,10 +150,13 @@ app/build/outputs/apk/debug/app-debug.apk
 
 1. 在 `settings.gradle.kts` 注册模块，并在 `app/build.gradle.kts` 添加依赖。
 2. 实现 `FeatureEntry`，再通过 Hilt `@IntoSet` 注册 UI 入口。
-3. 实现 `YukiBaseHooker`，并加入 `HookEntry` 的 `YukiHookAPI.encase(...)`。
-4. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
-5. 将目标应用专用设置键、模型、匹配规则、MVI 状态、页面、资源和测试放入对应 feature；只有跨 feature 的稳定契约才进入 core。
-6. 添加必要测试，运行单元测试和 Debug 构建。
+3. 在 feature 模块的 `build.gradle.kts` 中应用 `alias(libs.plugins.hook.module)` 插件。
+4. 为每个 Hook 功能创建 `SubHooker` 实现类，加上 `@HookModule(packageName, preferenceKey)` 注解，KSP 会自动生成 `HookRegistry`、主 Hooker 和 `Registrar`。
+5. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
+6. 将目标应用专用设置键、模型、匹配规则、MVI 状态、页面、资源和测试放入对应 feature；只有跨 feature 的稳定契约才进入 core。
+7. 添加必要测试，运行单元测试和 Debug 构建。
+
+`HookEntry` 通过 `ServiceLoader` 自动发现所有 `Registrar`，无需手动注册新模块的 Hooker。
 
 更完整的开发约束与检查清单见 [Agent.md](Agent.md)。
 
@@ -140,7 +166,7 @@ app/build/outputs/apk/debug/app-debug.apk
 - 一个 feature 被移除后，`core` 不应保留该目标应用的偏好键、字段模型、匹配规则、资源、表单、页面组合或测试；这些内容属于对应 feature。
 - `MainActivity` 不承载页面布局；新增页面放入独立 `ui/<screen>` 包，并使用 State / Intent / Effect 组织交互。
 - Edge-to-Edge 布局中，父层应用 Scaffold Padding 后必须正确消费 Insets，避免子层重复处理系统栏间距。
-- Hook 必须限制目标包，失败应局部降级并记录日志，避免非关键功能导致系统进程崩溃。
+- Hook 以 `SubHooker` 子模块为单位组织，通过 `@HookModule` 注解声明开关键，KSP 自动生成注册表；主 Hooker 遍历执行，失败应局部降级并记录日志，避免非关键功能导致系统进程崩溃。
 - 设备信息匹配等 feature 专用纯逻辑应在对应 feature 模块中使用 JVM 单元测试覆盖。
 - 提交前不要包含 `build/`、`.gradle/`、本地 SDK 配置或新的签名凭据。
 

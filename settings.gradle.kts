@@ -26,8 +26,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "HookHyper"
 include(":app")
-include(":core:model")
+include(":core:common")
 include(":core:data")
 include(":core:ui")
+include(":core:hook")
+include(":core:hook-ksp-processor")
 include(":feature:systemui")
 include(":feature:settings")

@@ -1,6 +1,6 @@
 package com.newbieeming.hookhyper.feature.settings.model
 
-import com.newbieeming.hookhyper.core.data.SystemProperties
+import com.newbieeming.hookhyper.core.common.SystemProperties
 
 object SettingsPreferenceKeys {
     const val EDIT_DEVICE_INFO = "settings_edit_device_info"

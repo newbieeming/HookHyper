@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library.compose)
     alias(libs.plugins.android.hilt)
+    alias(libs.plugins.hook.module)
 }
 
 android {
@@ -8,7 +9,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
+    implementation(project(":core:common"))
     implementation(project(":core:data"))
     implementation(project(":core:ui"))
     implementation(platform(libs.androidx.compose.bom))

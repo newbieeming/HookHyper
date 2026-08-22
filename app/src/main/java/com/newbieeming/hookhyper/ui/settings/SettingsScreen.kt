@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.newbieeming.hookhyper.BuildConfig
 import com.newbieeming.hookhyper.R
 import com.newbieeming.hookhyper.core.data.ModuleStatus
-import com.newbieeming.hookhyper.core.model.UiStyle
+import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import com.newbieeming.hookhyper.ui.app.AppIntent
 import com.newbieeming.hookhyper.ui.app.AppState
@@ -145,12 +145,12 @@ private fun ModuleStatusCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 MiuixIcon(Icons.Default.Info, contentDescription = null)
-                MiuixText(moduleStatusText(status))
+                MiuixText(rememberModuleStatusText(status))
             }
         } else {
             AssistChip(
                 onClick = onRefresh,
-                label = { Text(moduleStatusText(status)) },
+                label = { Text(rememberModuleStatusText(status)) },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Info,
@@ -209,10 +209,9 @@ private fun UiStyleDropdown(
     onSelected: (UiStyle) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val styleLabels = listOf(
-        stringResource(R.string.ui_style_miuix),
-        stringResource(R.string.ui_style_material),
-    )
+    val miuixLabel = stringResource(R.string.ui_style_miuix)
+    val materialLabel = stringResource(R.string.ui_style_material)
+    val styleLabels = remember(miuixLabel, materialLabel) { listOf(miuixLabel, materialLabel) }
     val selectedStyleIndex = UiStyle.entries.indexOf(style)
     if (LocalUiStyle.current == UiStyle.MIUIX) {
         MiuixCard(
@@ -297,7 +296,7 @@ private fun StyleSelectorButton(
 }
 
 @Composable
-private fun moduleStatusText(status: ModuleStatus) = if (status.isConnected) {
+private fun rememberModuleStatusText(status: ModuleStatus): String = if (status.isConnected) {
     stringResource(
         R.string.module_connected,
         status.frameworkName,

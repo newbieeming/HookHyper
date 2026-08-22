@@ -49,7 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.newbieeming.hookhyper.core.model.UiStyle
+import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.R
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard

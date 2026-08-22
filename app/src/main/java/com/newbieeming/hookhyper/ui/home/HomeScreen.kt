@@ -32,8 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.newbieeming.hookhyper.R
-import com.newbieeming.hookhyper.core.model.FeatureMetadata
-import com.newbieeming.hookhyper.core.model.UiStyle
+import com.newbieeming.hookhyper.core.common.FeatureMetadata
+import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import com.newbieeming.hookhyper.ui.component.ScreenScaffold
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard

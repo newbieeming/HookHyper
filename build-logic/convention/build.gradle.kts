@@ -52,10 +52,15 @@ gradlePlugin {
             id = "hookhyper.android.hilt"
             implementationClass = "AndroidHiltConventionPlugin"
         }
-        // 纯 JVM 库（core:model 使用）
+        // 纯 JVM 库（core:common 使用）
         register("jvmLibrary") {
             id = "hookhyper.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
+        }
+        // Hook 模块化（KSP 注解处理器 + core:hook 依赖）
+        register("hookModule") {
+            id = "hookhyper.hook.module"
+            implementationClass = "HookModuleConventionPlugin"
         }
     }
 }

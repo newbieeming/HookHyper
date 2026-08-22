@@ -1,7 +1,6 @@
 package com.newbieeming.hookhyper.ui.app
 
 import android.os.Build
-import android.util.Log
 import android.view.RoundedCorner
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.CubicBezierEasing
@@ -68,12 +67,17 @@ private fun rememberDeviceCornerRadius(): RoundedCornerShape {
     return remember(radius) { RoundedCornerShape(radius) }
 }
 
+private val TransitionEasing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+private const val SlideDuration = 500
+private const val FadeDuration = 300
+private const val FadeDelay = 100
+private const val PredictiveDuration = 400
+
 @Composable
 fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val backStack = rememberNavBackStack(HomeRoute)
     val cornerRadius = rememberDeviceCornerRadius()
-    Log.d("HookHyperApp", "cornerRadius: $cornerRadius")
 
     HookHyperTheme(style = state.uiStyle) {
         val onBack: () -> Unit = { backStack.removeLastOrNull() }
@@ -138,26 +142,23 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
             transitionSpec = {
-                val easing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
-                slideInHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { it } +
-                    fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = 100, easing = easing)) togetherWith
-                    slideOutHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { -it / 4 } +
-                    fadeOut(animationSpec = tween(durationMillis = 300, easing = easing))
+                slideInHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { it } +
+                    fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
+                    slideOutHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / 4 } +
+                    fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
             },
             popTransitionSpec = {
-                val easing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
-                slideInHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { -it / 4 } +
-                    fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = 100, easing = easing)) togetherWith
-                    slideOutHorizontally(animationSpec = tween(durationMillis = 500, easing = easing)) { it } +
-                    fadeOut(animationSpec = tween(durationMillis = 300, easing = easing))
+                slideInHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / 4 } +
+                    fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
+                    slideOutHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { it } +
+                    fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
             },
-            predictivePopTransitionSpec = { _ ->
-                val easing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+            predictivePopTransitionSpec = {
                 fadeIn(
-                    animationSpec = tween(durationMillis = 400, easing = easing),
+                    animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
                     initialAlpha = 0.1f,
                 ) togetherWith slideOutHorizontally(
-                    animationSpec = tween(durationMillis = 400, easing = easing),
+                    animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
                 ) { width -> width }
             },
         )

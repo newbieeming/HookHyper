@@ -2,8 +2,8 @@ package com.newbieeming.hookhyper.core.data
 
 import android.content.Context
 import com.highcapable.yukihookapi.hook.factory.prefs
-import com.newbieeming.hookhyper.core.model.PreferenceKeys
-import com.newbieeming.hookhyper.core.model.UiStyle
+import com.newbieeming.hookhyper.core.common.PreferenceKeys
+import com.newbieeming.hookhyper.core.common.UiStyle
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -3,7 +3,7 @@ package com.newbieeming.hookhyper.feature.settings
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.newbieeming.hookhyper.core.model.FeatureMetadata
+import com.newbieeming.hookhyper.core.common.FeatureMetadata
 import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject

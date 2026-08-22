@@ -38,6 +38,9 @@ kotlinSerialization = "1.8.1"
 # ── Coroutines ───────────────────────────────────────────────────────────────
 coroutines      = "1.10.2"
 
+# ── Code generation ──────────────────────────────────────────────────────────
+kotlinPoet      = "2.0.0"
+
 # ── Utilities ────────────────────────────────────────────────────────────────
 timber          = "5.0.1"
 
@@ -98,6 +101,10 @@ kotlinx-coroutines-android      = { group = "org.jetbrains.kotlinx",      name =
 timber                          = { group = "com.jakewharton.timber",     name = "timber",                     version.ref = "timber" }
 errorprone-annotations          = { group = "com.google.errorprone",      name = "error_prone_annotations",    version.ref = "errorprone" }
 
+# ── KSP / Code generation ──────────────────────────────────────────────────
+ksp-api                          = { group = "com.google.devtools.ksp",    name = "symbol-processing-api",      version.ref = "ksp" }
+kotlinpoet-ksp                   = { group = "com.squareup",              name = "kotlinpoet-ksp",             version.ref = "kotlinPoet" }
+
 # ── Testing ──────────────────────────────────────────────────────────────────
 junit                           = { group = "junit",                      name = "junit",                      version.ref = "junit" }
 androidx-junit                  = { group = "androidx.test.ext",          name = "junit",                      version.ref = "junitVersion" }
@@ -121,3 +128,4 @@ android-library             = { id = "hookhyper.android.library" }
 android-library-compose     = { id = "hookhyper.android.library.compose" }
 android-hilt                = { id = "hookhyper.android.hilt" }
 jvm-library                 = { id = "hookhyper.jvm.library" }
+hook-module                 = { id = "hookhyper.hook.module" }
