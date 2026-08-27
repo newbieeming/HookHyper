@@ -44,9 +44,6 @@ android {
             signingConfig = signingConfigs.findByName("me")
             isMinifyEnabled = true
             isShrinkResources = true
-            optimization {
-                enable = true
-            }
         }
         debug {
             signingConfig = signingConfigs.findByName("me")
@@ -55,6 +52,12 @@ android {
 
     buildFeatures {
         buildConfig = true
+    }
+
+    // KSP consumes these feature metadata files while generating HookEntry. They are
+    // not needed at runtime, and multiple feature modules legitimately provide them.
+    packaging {
+        resources.excludes += "hookhyper-registrars.txt"
     }
 
     androidResources.additionalParameters += listOf(

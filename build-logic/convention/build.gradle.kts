@@ -13,7 +13,6 @@ kotlin {
 dependencies {
     compileOnly(libs.plugins.agp.application.toDep())
     compileOnly(libs.plugins.agp.library.toDep())
-    compileOnly(libs.plugins.kotlin.android.toDep())
     compileOnly(libs.plugins.kotlin.compose.toDep())
     compileOnly(libs.plugins.kotlin.jvm.toDep())
     compileOnly(libs.plugins.hilt.toDep())

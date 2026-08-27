@@ -1,0 +1,86 @@
+# Detekt 配置文件，所有配置可参考：
+# https://github.com/detekt/detekt/blob/main/detekt-core/src/main/resources/default-detekt-config.yml
+# 本文件的部分配置值参考自：
+# https://github.com/JetBrains/Exposed/blob/main/detekt/detekt-config.yml
+
+comments:
+  AbsentOrWrongFileLicense:
+    active: false
+
+# 复杂度规则
+complexity:
+  # 方法参数限制
+  LongParameterList:
+    # 每个方法最多允许的参数数量
+    allowedFunctionParameters: 8
+    # 构造方法最多允许的参数数量
+    allowedConstructorParameters: 8
+  # 条件复杂度
+  ComplexCondition:
+    # 每个判断允许的条件数
+    allowedConditions: 6
+  # 方法数量限制
+  TooManyFunctions:
+    # 每个类允许的方法数量
+    allowedFunctionsPerClass: 40
+    # 每个文件允许的方法数量
+    allowedFunctionsPerFile: 100
+    # 每个 object 允许的方法数量
+    allowedFunctionsPerObject: 28
+    # 每个接口允许的方法数量
+    allowedFunctionsPerInterface: 12
+  # 认知复杂度
+  CyclomaticComplexMethod:
+    # 允许的最大复杂度级别
+    allowedComplexity: 26
+  # 方法长度限制
+  LongMethod:
+    # 方法最大行数
+    allowedLines: 90
+
+# 风格规则
+style:
+  DestructuringDeclarationWithTooManyEntries:
+    active: true
+    maxDestructuringEntries: 4
+  MaxLineLength:
+    active: false
+    maxLineLength: 160
+  ReturnCount:
+    active: false
+  WildcardImport:
+    active: false
+  # 魔法值规则
+  MagicNumber:
+    active: true
+    # 忽略命名参数中的魔法值
+    ignoreNamedArgument: true
+    # 忽略区间中的魔法值
+    ignoreRanges: true
+  ThrowsCount:
+    active: false
+  # 分支（if）语句大括号限制
+  BracesOnIfStatements:
+    active: true
+    # 单行判断无需大括号，例如： if(bool) a else b
+    singleLine: never
+    # 多行分支始终需要大括号
+    multiLine: always
+  # 分支（when）语句大括号限制
+  BracesOnWhenStatements:
+    active: true
+  # 链式调用换行限制：要么全都换行，要么全都不换行
+  CascadingCallWrapping:
+    active: true
+  # 限制双重否定必须简化，例如：`!!isValid` 简化为 `isValid`
+  DoubleNegativeExpression:
+    active: true
+  # 限制使用等号进行判空
+  EqualsNullCall:
+    active: true
+  # 禁止在 Kotlin 中使用 Void
+  ForbiddenVoid:
+    active: true
+  # 仅返回单一常量的返回需声明为 const
+  FunctionOnlyReturningConstant:
+    active: true

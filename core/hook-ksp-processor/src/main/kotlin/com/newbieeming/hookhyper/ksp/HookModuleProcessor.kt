@@ -195,13 +195,17 @@ private class HookModuleProcessor(
     }
 
     private fun readAggregationFile(): List<String> {
-        // 从 feature 模块的 build 目录读取
+        // 从 feature 模块所有已生成的变体输出读取。不能把路径固定为 debug，
+        // 否则 release 构建无法生成 GeneratedHookEntry。
         val rootDir = System.getProperty("user.dir")
         return listOf("feature/systemui", "feature/settings").flatMap { path ->
-            val file = java.io.File(rootDir, "$path/build/generated/ksp/debug/resources/$AGGREGATE_FILE")
-            if (file.exists()) file.readLines().map { it.trim() }.filter { it.isNotBlank() }
-            else emptyList()
-        }
+            val kspOutputDir = java.io.File(rootDir, "$path/build/generated/ksp")
+            kspOutputDir.listFiles()
+                .orEmpty()
+                .map { variantDir -> java.io.File(variantDir, "resources/$AGGREGATE_FILE") }
+                .filter(java.io.File::isFile)
+                .flatMap { file -> file.readLines().map(String::trim).filter(String::isNotBlank) }
+        }.distinct()
     }
 }
 

@@ -15,3 +15,5 @@
 # library model does not expose AnnotatedType, so suppress only this exact
 # optional reference instead of disabling missing-class checks globally.
 -dontwarn java.lang.reflect.AnnotatedType
+-keep class com.newbieeming.hookhyper.hook.gen.GeneratedHookEntry { *; }
+-keep class com.newbieeming.hookhyper.feature.**.hook.** { *; }

@@ -2,7 +2,7 @@
 # ── Build toolchain ──────────────────────────────────────────────────────────
 agp             = "9.2.1"
 kotlin          = "2.2.10"
-ksp             = "2.2.10-2.0.2"
+ksp             = "2.3.6"
 
 # ── AndroidX core ────────────────────────────────────────────────────────────
 coreKtx         = "1.16.0"
@@ -48,6 +48,10 @@ timber          = "5.0.1"
 junit           = "4.13.2"
 junitVersion    = "1.2.1"
 espressoCore    = "3.6.1"
+
+detekt = "2.0.0-alpha.4"
+spotless = "8.1.0"
+
 
 [libraries]
 # ── AndroidX core ────────────────────────────────────────────────────────────
@@ -120,6 +124,9 @@ kotlin-jvm              = { id = "org.jetbrains.kotlin.jvm",                    
 kotlin-serialization    = { id = "org.jetbrains.kotlin.plugin.serialization",     version.ref = "kotlin" }
 hilt                    = { id = "com.google.dagger.hilt.android",                version.ref = "hilt" }
 ksp                     = { id = "com.google.devtools.ksp",                       version.ref = "ksp" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+
 
 # ── Convention plugins（由 build-logic 提供，业务模块统一使用这些）──────────
 android-application         = { id = "hookhyper.android.application" }
