@@ -60,7 +60,9 @@ private fun rememberDeviceCornerRadius(): RoundedCornerShape {
                     RoundedCorner.POSITION_BOTTOM_LEFT,
                     RoundedCorner.POSITION_BOTTOM_RIGHT,
                 ).maxOf { view.rootWindowInsets?.getRoundedCorner(it)?.radius ?: 0 }
-            } else 0
+            } else {
+                0
+            }
         }
     }
     val radius = with(density) { radiusPx.toDp() }.takeIf { it > 0.dp }?.minus(2.dp)?.coerceAtLeast(0.dp) ?: 0.dp
@@ -72,6 +74,7 @@ private const val SlideDuration = 500
 private const val FadeDuration = 300
 private const val FadeDelay = 100
 private const val PredictiveDuration = 400
+private const val SlideOffsetDivisor = 4
 
 @Composable
 fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
@@ -144,11 +147,11 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
             transitionSpec = {
                 slideInHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { it } +
                     fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
-                    slideOutHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / 4 } +
+                    slideOutHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / SlideOffsetDivisor } +
                     fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
             },
             popTransitionSpec = {
-                slideInHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / 4 } +
+                slideInHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / SlideOffsetDivisor } +
                     fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
                     slideOutHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { it } +
                     fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))

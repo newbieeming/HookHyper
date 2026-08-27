@@ -63,7 +63,7 @@ android {
     androidResources.additionalParameters += listOf(
         "--allow-reserved-package-id",
         "--package-id",
-        "0x64"
+        "0x64",
     )
 }
 
@@ -120,7 +120,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
-
 
 val buildTime = providers.provider {
     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss XXX")

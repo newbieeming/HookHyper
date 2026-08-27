@@ -36,10 +36,10 @@ import com.newbieeming.hookhyper.core.common.FeatureMetadata
 import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import com.newbieeming.hookhyper.ui.component.ScreenScaffold
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
-import top.yukonga.miuix.kmp.utils.PressFeedbackType
 
 @Composable
 fun HomeScreen(

@@ -1,9 +1,9 @@
 package com.newbieeming.hookhyper.ui.app
 
-import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
-import com.newbieeming.hookhyper.core.data.ModuleStatusProvider
 import com.newbieeming.hookhyper.core.common.FeatureMetadata
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
+import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
+import com.newbieeming.hookhyper.core.data.ModuleStatusProvider
 import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -20,11 +20,6 @@ import top.yukonga.miuix.kmp.basic.NavigationBar as MiuixNavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationBarItem as MiuixNavigationBarItem
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 
-enum class AppTab {
-    HOME,
-    SETTINGS,
-}
-
 @Composable
 fun AppScaffold(
     selectedTab: AppTab,

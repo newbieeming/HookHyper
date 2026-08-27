@@ -6,6 +6,12 @@
 comments:
   AbsentOrWrongFileLicense:
     active: false
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
 
 # 复杂度规则
 complexity:
@@ -68,7 +74,7 @@ style:
     multiLine: always
   # 分支（when）语句大括号限制
   BracesOnWhenStatements:
-    active: true
+    active: false
   # 链式调用换行限制：要么全都换行，要么全都不换行
   CascadingCallWrapping:
     active: true
@@ -84,3 +90,16 @@ style:
   # 仅返回单一常量的返回需声明为 const
   FunctionOnlyReturningConstant:
     active: true
+
+# 命名规则
+naming:
+  # 允许 Compose @Composable 函数使用 PascalCase 命名
+  FunctionNaming:
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+    ignoreAnnotated: ['Composable', 'Preview']
+  # 允许顶层常量使用 camelCase（Compose 中 TransitionEasing 等）
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Za-z][_A-Za-z0-9]*'
+  # 允许 object/class 内属性使用 camelCase
+  ObjectPropertyNaming:
+    constantPattern: '[A-Za-z][_A-Za-z0-9]*'

@@ -37,20 +37,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.newbieeming.hookhyper.BuildConfig
 import com.newbieeming.hookhyper.R
-import com.newbieeming.hookhyper.core.data.ModuleStatus
 import com.newbieeming.hookhyper.core.common.UiStyle
+import com.newbieeming.hookhyper.core.data.ModuleStatus
+import com.newbieeming.hookhyper.core.ui.component.SettingSwitchRow
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import com.newbieeming.hookhyper.ui.app.AppIntent
 import com.newbieeming.hookhyper.ui.app.AppState
 import com.newbieeming.hookhyper.ui.component.AdaptiveCard
 import com.newbieeming.hookhyper.ui.component.AdaptiveText
 import com.newbieeming.hookhyper.ui.component.ScreenScaffold
-import com.newbieeming.hookhyper.core.ui.component.SettingSwitchRow
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
-import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 
 @Composable
 fun SettingsScreen(

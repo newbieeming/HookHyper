@@ -42,11 +42,14 @@ subprojects {
 
         kotlin {
             target("src/**/*.kt")
-            ktlint().editorConfigOverride(
-                mapOf(
-                    "android" to true,
-                ),
-            )
+            ktlint()
+                .editorConfigOverride(
+                    mapOf(
+                        "android" to true,
+                        "ktlint_standard_function-naming" to "disabled",
+                        "ktlint_standard_property-naming" to "disabled",
+                    ),
+                )
         }
 
         kotlinGradle {
