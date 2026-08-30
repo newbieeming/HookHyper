@@ -12,6 +12,7 @@
     <string name="systemui_replace_fingerprint_icon_title">Replace fingerprint icon</string>
     <string name="systemui_replace_fingerprint_icon_summary">Replace the in-display fingerprint icon with Meizu style. Changes take effect after restarting System UI.</string>
     <string name="restart_systemui_success">System UI restarted</string>
-    <string name="restart_root_required">Root access is required to restart the app</string>
-    <string name="restart_failed">Restart failed: %1$s</string>
+    <string name="category_lock_screen">Lock screen</string>
+    <string name="category_status_bar">Status bar</string>
+    <string name="category_notification_bar">Notification bar</string>
 </resources>

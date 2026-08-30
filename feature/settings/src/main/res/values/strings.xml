@@ -22,6 +22,5 @@
     <string name="device_android_version">Android version</string>
     <string name="device_kernel_version">Kernel version</string>
     <string name="restart_settings_success">System settings restarted</string>
-    <string name="restart_root_required">Root access is required to restart the app</string>
-    <string name="restart_failed">Restart failed: %1$s</string>
+    <string name="category_device">Properties</string>
 </resources>

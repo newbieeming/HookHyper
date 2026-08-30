@@ -14,15 +14,13 @@ class HookPreferencesRepository @Inject constructor(
 ) {
     private fun bridge() = context.prefs(PreferenceKeys.FILE_NAME)
 
-    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean =
-        bridge().getBoolean(key, defaultValue)
+    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean = bridge().getBoolean(key, defaultValue)
 
     fun putBoolean(key: String, value: Boolean) {
         bridge().edit { putBoolean(key, value) }
     }
 
-    fun getString(key: String, defaultValue: String = ""): String =
-        bridge().getString(key, defaultValue)
+    fun getString(key: String, defaultValue: String = ""): String = bridge().getString(key, defaultValue)
 
     fun putString(key: String, value: String) {
         bridge().edit { putString(key, value) }

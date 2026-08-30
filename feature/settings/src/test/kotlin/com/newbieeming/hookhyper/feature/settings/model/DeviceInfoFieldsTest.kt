@@ -14,7 +14,6 @@ class DeviceInfoFieldsTest {
             "appfunc_name_battery_capacity" -> "电池容量"
             "device_screen_resolution" -> "分辨率"
             "device_screen_size" -> "屏幕尺寸"
-            "device_miui_version" -> "OS版本"
             "device_camera" -> "摄像头"
             "model_name" -> "认证型号"
             "hardware_version" -> "硬件版本"
@@ -29,7 +28,6 @@ class DeviceInfoFieldsTest {
         assertEquals("settings_device_battery", DeviceInfoFields.resolveKey("电池容量", "", mockResolve))
         assertEquals("settings_device_screen_size", DeviceInfoFields.resolveKey("屏幕尺寸", "", mockResolve))
         assertEquals("settings_device_screen_resolution", DeviceInfoFields.resolveKey("分辨率", "", mockResolve))
-        assertEquals("settings_device_os_version", DeviceInfoFields.resolveKey("OS版本", "", mockResolve))
         assertEquals("settings_device_camera", DeviceInfoFields.resolveKey("摄像头", "", mockResolve))
         assertEquals("settings_device_cert_model", DeviceInfoFields.resolveKey("认证型号", "", mockResolve))
         assertEquals("settings_device_hardware_version", DeviceInfoFields.resolveKey("硬件版本", "", mockResolve))

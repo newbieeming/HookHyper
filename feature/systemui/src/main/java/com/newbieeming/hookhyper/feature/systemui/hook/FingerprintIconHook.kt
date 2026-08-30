@@ -1,25 +1,40 @@
 package com.newbieeming.hookhyper.feature.systemui.hook
 
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.factory.injectModuleAppResources
 import com.highcapable.yukihookapi.hook.param.PackageParam
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
+import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
-import com.newbieeming.hookhyper.feature.systemui.model.SystemUiPreferenceKeys
+import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 
 @HookModule(
     packageName = SystemUiFeatureEntry.PACKAGE_NAME,
-    preferenceKey = SystemUiPreferenceKeys.REPLACE_FINGERPRINT_ICON,
+    preferenceKey = "systemui_replace_fingerprint_icon",
 )
-class FingerprintIconHook : SubHooker {
+class FingerprintIconHook :
+    SubHooker,
+    FeatureHook<SystemUiHookDef> {
 
-    override val preferenceKey = SystemUiPreferenceKeys.REPLACE_FINGERPRINT_ICON
+    override val def = SystemUiHookDef.REPLACE_FINGERPRINT_ICON
 
     private companion object {
         private const val TAG = "FingerprintIconHook"
+    }
+
+    @Composable
+    override fun Content() {
+        HookSwitchPreference(
+            preferenceKey = preferenceKey,
+            title = stringResource(R.string.systemui_replace_fingerprint_icon_title),
+            summary = stringResource(R.string.systemui_replace_fingerprint_icon_summary),
+        )
     }
 
     override fun PackageParam.onHook() {

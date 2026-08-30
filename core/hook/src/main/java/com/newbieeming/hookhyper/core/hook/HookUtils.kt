@@ -13,8 +13,7 @@ object HookUtils {
     fun Any.field(name: String): Any? = javaClass.findField(name).get(this)
 
     /** 调用实例方法。 */
-    fun Any.call(name: String, vararg arguments: Any?): Any? =
-        javaClass.findMethod(name, arguments).invoke(this, *arguments)
+    fun Any.call(name: String, vararg arguments: Any?): Any? = javaClass.findMethod(name, arguments).invoke(this, *arguments)
 
     /** 向上遍历类继承链查找字段。 */
     fun Class<*>.findField(name: String): Field {

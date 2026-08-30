@@ -25,11 +25,9 @@ object SystemProperties {
      * @return 属性值，若不存在则返回 [default]
      */
     @JvmStatic
-    fun get(key: String, default: String = ""): String {
-        return try {
-            GET_METHOD?.invoke(null, key, default) as? String ?: default
-        } catch (_: Exception) {
-            default
-        }
+    fun get(key: String, default: String = ""): String = try {
+        GET_METHOD?.invoke(null, key, default) as? String ?: default
+    } catch (_: Exception) {
+        default
     }
 }

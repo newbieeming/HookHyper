@@ -2,11 +2,11 @@ package com.newbieeming.hookhyper.core.data
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 sealed interface RestartAppResult {
     data object Success : RestartAppResult
@@ -33,7 +33,7 @@ class RootAppRestarter @Inject constructor(
             val component = context.packageManager
                 .getLaunchIntentForPackage(packageName)?.component?.flattenToString()
                 ?: return@withContext RestartAppResult.Failure(
-                    context.getString(R.string.restart_invalid_package)
+                    context.getString(R.string.restart_invalid_package),
                 )
             "am force-stop $packageName; sleep 1; am start -n $component"
         }
@@ -73,9 +73,11 @@ class RootAppRestarter @Inject constructor(
             if (process.exitValue() == 0) {
                 RootCommandResult.Success(output)
             } else {
-                RootCommandResult.Error(output.ifBlank {
-                    context.getString(R.string.restart_root_command_failed)
-                })
+                RootCommandResult.Error(
+                    output.ifBlank {
+                        context.getString(R.string.restart_root_command_failed)
+                    },
+                )
             }
         }
     } catch (_: Exception) {

@@ -7,6 +7,8 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.param.PackageParam
 import com.newbieeming.hookhyper.core.hook.HookModule
@@ -14,19 +16,33 @@ import com.newbieeming.hookhyper.core.hook.HookUtils.call
 import com.newbieeming.hookhyper.core.hook.HookUtils.field
 import com.newbieeming.hookhyper.core.hook.HookUtils.staticField
 import com.newbieeming.hookhyper.core.hook.SubHooker
+import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
+import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
-import com.newbieeming.hookhyper.feature.systemui.model.SystemUiPreferenceKeys
+import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 
 @HookModule(
     packageName = SystemUiFeatureEntry.PACKAGE_NAME,
-    preferenceKey = SystemUiPreferenceKeys.FORCE_SOFT_LIGHT_GLASS,
+    preferenceKey = "systemui_force_soft_light_glass",
 )
-class SoftLightGlassHook : SubHooker {
+class SoftLightGlassHook :
+    SubHooker,
+    FeatureHook<SystemUiHookDef> {
 
-    override val preferenceKey = SystemUiPreferenceKeys.FORCE_SOFT_LIGHT_GLASS
+    override val def = SystemUiHookDef.FORCE_SOFT_LIGHT_GLASS
 
     private companion object {
         private const val TAG = "SoftLightGlassHook"
+    }
+
+    @Composable
+    override fun Content() {
+        HookSwitchPreference(
+            preferenceKey = preferenceKey,
+            title = stringResource(R.string.systemui_soft_light_glass_title),
+            summary = stringResource(R.string.systemui_soft_light_glass_summary),
+        )
     }
 
     override fun PackageParam.onHook() {

@@ -12,6 +12,7 @@
     <string name="systemui_replace_fingerprint_icon_title">更换指纹图标</string>
     <string name="systemui_replace_fingerprint_icon_summary">将屏下指纹图标替换为魅族样式；重启系统界面后生效</string>
     <string name="restart_systemui_success">系统界面已重启</string>
-    <string name="restart_root_required">需要 Root 权限才能重启应用</string>
-    <string name="restart_failed">重启失败：%1$s</string>
+    <string name="category_lock_screen">锁屏</string>
+    <string name="category_status_bar">状态栏</string>
+    <string name="category_notification_bar">通知栏</string>
 </resources>

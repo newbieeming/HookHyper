@@ -39,7 +39,7 @@ import com.newbieeming.hookhyper.BuildConfig
 import com.newbieeming.hookhyper.R
 import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.data.ModuleStatus
-import com.newbieeming.hookhyper.core.ui.component.SettingSwitchRow
+import com.newbieeming.hookhyper.core.ui.component.SwitchPreference
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import com.newbieeming.hookhyper.ui.app.AppIntent
 import com.newbieeming.hookhyper.ui.app.AppState
@@ -79,7 +79,7 @@ fun SettingsScreen(
                 )
             }
             item {
-                SettingSwitchRow(
+                SwitchPreference(
                     title = stringResource(R.string.predictive_back_title),
                     summary = stringResource(R.string.predictive_back_summary),
                     checked = state.predictiveBackEnabled,

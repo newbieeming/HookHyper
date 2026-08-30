@@ -22,6 +22,5 @@
     <string name="device_android_version">Android 版本</string>
     <string name="device_kernel_version">内核版本</string>
     <string name="restart_settings_success">系统设置已重启</string>
-    <string name="restart_root_required">需要 Root 权限才能重启应用</string>
-    <string name="restart_failed">重启失败：%1$s</string>
+    <string name="category_device">属性</string>
 </resources>

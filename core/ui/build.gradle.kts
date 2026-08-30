@@ -8,6 +8,7 @@ android {
 
 dependencies {
     api(project(":core:common"))
+    implementation(project(":core:data"))
     implementation(platform(libs.androidx.compose.bom))
     api(libs.androidx.compose.material3)
     api(libs.androidx.compose.ui)

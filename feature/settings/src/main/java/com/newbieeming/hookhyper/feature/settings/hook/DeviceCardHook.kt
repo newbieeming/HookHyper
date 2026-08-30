@@ -9,15 +9,15 @@ import com.newbieeming.hookhyper.core.hook.HookUtils.call
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.feature.settings.SettingsFeatureEntry
 import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
-import com.newbieeming.hookhyper.feature.settings.model.SettingsPreferenceKeys
+import com.newbieeming.hookhyper.feature.settings.model.SettingsHookDef
 
 @HookModule(
     packageName = SettingsFeatureEntry.PACKAGE_NAME,
-    preferenceKey = SettingsPreferenceKeys.EDIT_DEVICE_INFO,
+    preferenceKey = "settings_edit_device_info",
 )
 class DeviceCardHook : SubHooker {
 
-    override val preferenceKey = SettingsPreferenceKeys.EDIT_DEVICE_INFO
+    override val preferenceKey = SettingsHookDef.EDIT_DEVICE_INFO.preferenceKey
 
     private companion object {
         const val TAG = "DeviceCardHook"

@@ -2,20 +2,36 @@ package com.newbieeming.hookhyper.feature.systemui.hook
 
 import android.view.View
 import android.widget.TextView
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.param.PackageParam
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
+import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
+import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
-import com.newbieeming.hookhyper.feature.systemui.model.SystemUiPreferenceKeys
+import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 
 @HookModule(
     packageName = SystemUiFeatureEntry.PACKAGE_NAME,
-    preferenceKey = SystemUiPreferenceKeys.LOCK_SHOW_SIM_NAME,
+    preferenceKey = "systemui_lock_show_sim_name",
 )
-class LockScreenCarrierHook : SubHooker {
+class LockScreenCarrierHook :
+    SubHooker,
+    FeatureHook<SystemUiHookDef> {
 
-    override val preferenceKey = SystemUiPreferenceKeys.LOCK_SHOW_SIM_NAME
+    override val def = SystemUiHookDef.LOCK_SHOW_SIM_NAME
+
+    @Composable
+    override fun Content() {
+        HookSwitchPreference(
+            preferenceKey = preferenceKey,
+            title = stringResource(R.string.systemui_show_carrier_title),
+            summary = stringResource(R.string.systemui_show_carrier_summary),
+        )
+    }
 
     override fun PackageParam.onHook() {
         "com.android.systemui.statusbar.phone.KeyguardStatusBarView".toClass().resolve()
