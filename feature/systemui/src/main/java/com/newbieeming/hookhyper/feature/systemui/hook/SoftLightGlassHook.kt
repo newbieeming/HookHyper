@@ -22,10 +22,7 @@ import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 
-@HookModule(
-    packageName = SystemUiFeatureEntry.PACKAGE_NAME,
-    preferenceKey = "systemui_force_soft_light_glass",
-)
+@HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
 class SoftLightGlassHook :
     SubHooker,
     FeatureHook<SystemUiHookDef> {

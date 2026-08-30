@@ -10,7 +10,7 @@ import com.highcapable.yukihookapi.hook.param.PackageParam
  */
 interface SubHooker {
 
-    /** 控制此模块开关的偏好键名，与 [@HookModule.preferenceKey] 一致。 */
+    /** 控制此模块开关的偏好键名。 */
     val preferenceKey: String
 
     /** 在目标应用的 [PackageParam] 上下文中执行 Hook 逻辑。 */

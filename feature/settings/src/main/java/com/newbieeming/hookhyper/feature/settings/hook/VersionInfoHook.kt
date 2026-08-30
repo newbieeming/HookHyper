@@ -10,10 +10,7 @@ import com.newbieeming.hookhyper.feature.settings.SettingsFeatureEntry
 import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
 import com.newbieeming.hookhyper.feature.settings.model.SettingsHookDef
 
-@HookModule(
-    packageName = SettingsFeatureEntry.PACKAGE_NAME,
-    preferenceKey = "settings_edit_device_info",
-)
+@HookModule(packageName = SettingsFeatureEntry.PACKAGE_NAME)
 class VersionInfoHook : SubHooker {
 
     override val preferenceKey = SettingsHookDef.EDIT_DEVICE_INFO.preferenceKey

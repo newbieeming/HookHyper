@@ -32,9 +32,7 @@ fun SystemUiScreen(
     }
 
     val hooks: List<HookContent> = remember {
-        HookRegistry.modules
-            .map { it.second() }
-            .filterIsInstance<HookContent>()
+        HookRegistry.modules.filterIsInstance<HookContent>()
     }
 
     CompositionLocalProvider(LocalPreferencesRepository provides viewModel.preferences) {

@@ -14,10 +14,7 @@ import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 
-@HookModule(
-    packageName = SystemUiFeatureEntry.PACKAGE_NAME,
-    preferenceKey = "systemui_replace_fingerprint_icon",
-)
+@HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
 class FingerprintIconHook :
     SubHooker,
     FeatureHook<SystemUiHookDef> {

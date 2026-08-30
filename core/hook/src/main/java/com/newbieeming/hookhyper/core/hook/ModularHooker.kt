@@ -21,11 +21,11 @@ abstract class ModularHooker(
     override fun onHook() {
         loadApp(name = targetPackage) {
             val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
-            for ((key, factory) in modules()) {
-                if (!featurePreferences.getBoolean(key)) continue
-                with(factory()) {
+            for (hooker in modules()) {
+                if (!featurePreferences.getBoolean(hooker.preferenceKey)) continue
+                with(hooker) {
                     runCatching { this@loadApp.onHook() }
-                        .onFailure { Log.e(tag, "Hook failed: $key", it) }
+                        .onFailure { Log.e(tag, "Hook failed: ${hooker.preferenceKey}", it) }
                 }
             }
         }
@@ -39,11 +39,11 @@ abstract class ModularHooker(
          * 通过反射获取当前子类同包下 KSP 生成的 HookRegistry.modules。
          */
         @Suppress("UNCHECKED_CAST")
-        private fun Any.modules(): List<Pair<String, () -> SubHooker>> = runCatching {
+        private fun Any.modules(): List<SubHooker> = runCatching {
             val pkg = javaClass.`package`?.name ?: return@runCatching emptyList()
             val clazz = Class.forName("$pkg.$REGISTRY_CLASS")
             val field = clazz.getDeclaredField(REGISTRY_FIELD).apply { isAccessible = true }
-            field.get(null) as List<Pair<String, () -> SubHooker>>
+            field.get(null) as List<SubHooker>
         }.getOrElse {
             Log.e("ModularHooker", "HookRegistry not found for ${javaClass.name}", it)
             emptyList()

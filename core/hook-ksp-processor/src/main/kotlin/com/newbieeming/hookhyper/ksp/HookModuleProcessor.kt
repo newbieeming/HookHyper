@@ -51,16 +51,15 @@ private class HookModuleProcessor(
                 it.annotationType.resolve().declaration.qualifiedName?.asString() == ANNOTATION_NAME
             }
             val targetPkg = annotation.arg("packageName") as? String
-            val key = annotation.arg("preferenceKey") as? String
-            if (targetPkg.isNullOrBlank() || key.isNullOrBlank()) {
-                logger.error("@HookModule requires packageName and preferenceKey", symbol); continue
+            if (targetPkg.isNullOrBlank()) {
+                logger.error("@HookModule requires packageName", symbol); continue
             }
 
             val fqName = symbol.qualifiedName?.asString()
                 ?: run { logger.error("Cannot resolve qualified name", symbol); continue }
 
             val classPkg = symbol.packageName.asString()
-            entries += HookEntry(targetPkg, key, classPkg, ClassName.bestGuess(fqName))
+            entries += HookEntry(targetPkg, classPkg, ClassName.bestGuess(fqName))
         }
 
         if (entries.isNotEmpty()) {
@@ -92,15 +91,11 @@ private class HookModuleProcessor(
 
     private fun generateHookRegistry(pkg: String, entries: List<HookEntry>) {
         val subHooker = ClassName("com.newbieeming.hookhyper.core.hook", "SubHooker")
-        val pairType = Pair::class.asTypeName().parameterizedBy(
-            String::class.asTypeName(),
-            ClassName("kotlin", "Function0").parameterizedBy(subHooker),
-        )
-        val listType = List::class.asTypeName().parameterizedBy(pairType)
+        val listType = List::class.asTypeName().parameterizedBy(subHooker)
 
         val code = CodeBlock.builder().add("listOf(\n").indent()
         for (entry in entries) {
-            code.add("%S to { %T() },\n", entry.key, entry.className)
+            code.add("%T(),\n", entry.className)
         }
         code.unindent().add(")\n")
 
@@ -211,7 +206,6 @@ private class HookModuleProcessor(
 
 private data class HookEntry(
     val targetPkg: String,
-    val key: String,
     val classPkg: String,
     val className: ClassName,
 )
