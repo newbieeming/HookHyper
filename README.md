@@ -53,6 +53,7 @@ HookHyper/
 │  ├─ common/              # 跨模块共享的模型、常量、枚举和系统工具
 │  ├─ data/                # 跨进程偏好仓库、模块状态、Root 应用重启
 │  ├─ ui/                  # MVI 基类、主题、跨 Feature 通用组件、FeatureEntry 契约
+│  │                       # HookFeatureScreen、HookCategory、HookDef、FeatureHook 等
 │  └─ hook/                # @HookModule 注解、SubHooker 接口、ModularHooker 基类
 │  └─ hook-ksp-processor/  # KSP 处理器：编译期扫描 @HookModule，自动生成 HookRegistry
 ├─ feature/
@@ -71,19 +72,19 @@ HookHyper/
 ```text
 HookEntry (app)  ── ServiceLoader.load(Registrar) ── 自动发现所有 feature 模块
   ├─ SystemuiHooker (KSP 自动生成)  ─── 遍历 HookRegistry
-  │   ├─ LockScreenCarrierHook    @HookModule(key = "systemui_lock_show_sim_name")
-  │   ├─ SoftLightGlassHook       @HookModule(key = "systemui_force_soft_light_glass")
-  │   ├─ TimeFormatHook           @HookModule(key = "systemui_custom_time_format")
-  │   └─ FingerprintIconHook      @HookModule(key = "systemui_replace_fingerprint_icon")
+  │   ├─ LockScreenCarrierHook    @HookModule(packageName = "com.android.systemui")
+  │   ├─ SoftLightGlassHook
+  │   ├─ TimeFormatHook
+  │   └─ FingerprintIconHook
   └─ SettingsHooker (KSP 自动生成)  ─── 遍历 HookRegistry
-      ├─ VersionInfoHook          @HookModule(key = "settings_edit_device_info")
-      └─ DeviceCardHook           @HookModule(key = "settings_edit_device_info")
+      ├─ VersionInfoHook          @HookModule(packageName = "com.android.settings")
+      └─ DeviceCardHook
 ```
 
-- `SubHooker` 接口定义子模块契约，`@HookModule` 注解声明目标包名和偏好键。
-- 每个 feature 模块的 KSP 处理器自动生成 `HookRegistry`（子模块列表）、主 Hooker 和 `Registrar`。
+- `@HookModule` 注解仅声明目标包名，KSP 据此生成 `HookRegistry`、主 Hooker 和 `Registrar`。
+- Hook 类实现 `SubHooker`（运行时 Hook 逻辑）和 `FeatureHook<T>`（UI 元数据），`preferenceKey` 从实例读取。
 - `HookEntry` 通过 `ServiceLoader` 扫描所有 `Registrar` 实现，无需手动注册。
-- 新增功能只需实现 `SubHooker` + `@HookModule`，新增 feature 模块只需应用 `hook.module` 插件，无需修改 `HookEntry`。
+- 新增功能只需实现 `SubHooker` + `@HookModule` + `FeatureHook<T>`，新增 feature 模块只需应用 `hook.module` 插件。
 
 ## 应用 UI 架构
 
@@ -100,6 +101,22 @@ HookEntry (app)  ── ServiceLoader.load(Registrar) ── 自动发现所有 
 - `SettingsScreen` 展示模块连接状态、界面风格和关于信息，所有持久化操作通过 `AppIntent` 交给 ViewModel。
 - feature 自己维护 State、Intent、Effect、ViewModel 与 Screen，再通过 `FeatureEntry.Content` 接入应用导航。
 - MIUIX 与 Material 共享同一份状态和导航，只在 Scaffold、导航栏和基础组件层进行自适应渲染。
+
+### Feature Hook UI 架构
+
+每个 feature 的 Screen 通过 `HookFeatureScreen` 渲染，只需传入 hooks 列表即可：
+
+```text
+HookFeatureScreen (core:ui)
+  └─ LazyFeatureScaffold
+       └─ 按 HookCategory 分组 → stickyHeader 磁吸 + 折叠
+            └─ 每个 HookContent.Content() 自提供 UI
+```
+
+- `HookCategory` 定义分类（锁屏、状态栏、通知栏等），带 `id`、`order`、`titleResId`。
+- `HookDef` 定义 hook 元数据（`preferenceKey`、`category`、`order`），各 feature 枚举实现。
+- `FeatureHook<T>` 统一 `SubHooker` + `HookContent` + `HookDef`，hook 类只需声明 `def` 枚举条目。
+- `HookSwitchPreference` 封装偏好读写的开关行，`LocalPreferencesRepository` 提供 CompositionLocal 注入。
 
 应用使用嵌套 Scaffold：外层负责底部导航，Screen/Feature 内层负责顶部栏和内容。外层 Padding 在传入 `NavDisplay` 后会通过 `consumeWindowInsets` 消费，避免内层 `SystemSettingsTopBar` 再次应用状态栏 Insets，造成顶部间距翻倍。
 
@@ -121,6 +138,9 @@ MIUIX 仍处于快速迭代阶段。升级时需要同时验证 Kotlin、Compose
 - JDK 21（Gradle Daemon Toolchain）
 - Android SDK 37
 - Windows、macOS 或 Linux
+- Android Studio 需安装以下插件（Settings → Plugins）：
+  - **detekt**：Kotlin 静态分析，检查代码复杂度、命名规范、潜在 Bug 等，提供 IDE 内联告警
+  - **Spotless Gradle**：代码格式检查，基于 ktlint 统一代码风格，提交前自动格式化
 
 项目的 compile SDK 为 37、target SDK 为 36、min SDK 为 24，Java/Kotlin JVM 字节码目标为 17。依赖版本集中维护在 `gradle/libs.versions.toml`，SDK 与 Java 版本集中维护在 `build-logic/convention/src/main/kotlin/DevKitBuildConfig.kt`。
 
@@ -151,10 +171,12 @@ app/build/outputs/apk/debug/app-debug.apk
 1. 在 `settings.gradle.kts` 注册模块，并在 `app/build.gradle.kts` 添加依赖。
 2. 实现 `FeatureEntry`，再通过 Hilt `@IntoSet` 注册 UI 入口。
 3. 在 feature 模块的 `build.gradle.kts` 中应用 `alias(libs.plugins.hook.module)` 插件。
-4. 为每个 Hook 功能创建 `SubHooker` 实现类，加上 `@HookModule(packageName, preferenceKey)` 注解，KSP 会自动生成 `HookRegistry`、主 Hooker 和 `Registrar`。
-5. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
-6. 将目标应用专用设置键、模型、匹配规则、MVI 状态、页面、资源和测试放入对应 feature；只有跨 feature 的稳定契约才进入 core。
-7. 添加必要测试，运行单元测试和 Debug 构建。
+4. 定义 `HookCategory` 枚举（分类）和 `HookDef` 枚举（hook 元数据）。
+5. 为每个 Hook 功能创建类，实现 `SubHooker` + `FeatureHook<T>`，加上 `@HookModule(packageName)` 注解。KSP 会自动生成 `HookRegistry`、主 Hooker 和 `Registrar`。
+6. 在 `HookContent.Content()` 中实现该 hook 的设置 UI。
+7. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
+8. 在 Screen 中通过 `HookFeatureScreen` 渲染 hooks 列表，提供 `LocalPreferencesRepository` 和 `LocalCategoryTitleResolver`。
+9. 添加必要测试，运行单元测试和 Debug 构建。
 
 `HookEntry` 通过 `ServiceLoader` 自动发现所有 `Registrar`，无需手动注册新模块的 Hooker。
 
@@ -166,7 +188,7 @@ app/build/outputs/apk/debug/app-debug.apk
 - 一个 feature 被移除后，`core` 不应保留该目标应用的偏好键、字段模型、匹配规则、资源、表单、页面组合或测试；这些内容属于对应 feature。
 - `MainActivity` 不承载页面布局；新增页面放入独立 `ui/<screen>` 包，并使用 State / Intent / Effect 组织交互。
 - Edge-to-Edge 布局中，父层应用 Scaffold Padding 后必须正确消费 Insets，避免子层重复处理系统栏间距。
-- Hook 以 `SubHooker` 子模块为单位组织，通过 `@HookModule` 注解声明开关键，KSP 自动生成注册表；主 Hooker 遍历执行，失败应局部降级并记录日志，避免非关键功能导致系统进程崩溃。
+- Hook 以 `SubHooker` 子模块为单位组织，通过 `@HookModule` 注解声明目标包名，KSP 自动生成 `List<SubHooker>` 注册表；主 Hooker 遍历执行，失败应局部降级并记录日志，避免非关键功能导致系统进程崩溃。
 - 设备信息匹配等 feature 专用纯逻辑应在对应 feature 模块中使用 JVM 单元测试覆盖。
 - 提交前不要包含 `build/`、`.gradle/`、本地 SDK 配置或新的签名凭据。
 
