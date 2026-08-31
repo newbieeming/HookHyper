@@ -9,8 +9,14 @@
     <string name="systemui_aa_prefix_summary">将 AM/PM 放在时间前面而非后面</string>
     <string name="systemui_replace_fingerprint_icon_title">更换指纹图标</string>
     <string name="systemui_replace_fingerprint_icon_summary">将屏下指纹图标替换为魅族样式；重启系统界面后生效</string>
+    <string name="systemui_super_island_dimensions_title">自定义超级岛尺寸</string>
+    <string name="systemui_super_island_dimensions_summary">以 dp 填写数值；留空则使用系统默认值。重启系统界面后生效</string>
+    <string name="super_island_dimension_hint">默认值：%1$s dp</string>
+    <string name="super_island_big_island_min_width">最小宽度</string>
+    <string name="super_island_height">高度</string>
     <string name="restart_systemui_success">系统界面已重启</string>
     <string name="category_lock_screen">锁屏</string>
     <string name="category_status_bar">状态栏</string>
     <string name="category_notification_bar">通知栏</string>
+    <string name="category_super_island">超级岛</string>
 </resources>

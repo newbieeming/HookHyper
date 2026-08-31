@@ -13,8 +13,8 @@ android {
 
     defaultConfig {
         applicationId = "com.newbieeming.hookhyper"
-        versionCode = 1_000_002
-        versionName = "1.0.2"
+        versionCode = 1_000_003
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -1,3 +1,25 @@
+# v1.0.3
+
+## ✨ 新功能
+
+- **超级岛尺寸**：SystemUI 新增“超级岛”分类，可自定义最小宽度与高度
+
+## 🔧 改进
+
+- **Feature 架构重构**：抽取公共 `FeatureEntryImpl`、`FeatureViewModel`、`FeatureScreen`，新增 feature 只需继承并提供 metadata + ViewModel
+- **Hook UI 合并**：设备信息相关的三个 Hook（DeviceCard、VersionInfo、DeviceSettingsContent）合并为单一 `DeviceInfoHook`
+- **Hook 自动发现**：`FeatureEntryImpl` 通过反射自动探测 `HookRegistry`，无需手动注册 hooks 列表
+- **ViewModel 公共化**：重启逻辑、effect 通道、偏好注入统一由 `FeatureViewModel` 基类管理
+- **Hook 注册表增量生成**：KSP 改为聚合生成，新增 Hook 不会导致同模块既有 Hook 从注册表中丢失
+
+## 🏠 其他
+
+- 更新 README 和 Agent.md 文档，反映新架构
+- 移除 `AppState.features` 冗余依赖
+- 更新版本号至 1.0.3
+
+---
+
 # v1.0.2
 
 ## ✨ 新功能

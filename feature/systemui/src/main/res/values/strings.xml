@@ -9,8 +9,14 @@
     <string name="systemui_aa_prefix_summary">Place AM/PM before the time instead of after.</string>
     <string name="systemui_replace_fingerprint_icon_title">Replace fingerprint icon</string>
     <string name="systemui_replace_fingerprint_icon_summary">Replace the in-display fingerprint icon with Meizu style. Changes take effect after restarting System UI.</string>
+    <string name="systemui_super_island_dimensions_title">Customize Super Island size</string>
+    <string name="systemui_super_island_dimensions_summary">Enter values in dp; leave blank to use the system default. Changes take effect after restarting System UI.</string>
+    <string name="super_island_dimension_hint">Default: %1$s dp</string>
+    <string name="super_island_big_island_min_width">Minimum width</string>
+    <string name="super_island_height">Height</string>
     <string name="restart_systemui_success">System UI restarted</string>
     <string name="category_lock_screen">Lock screen</string>
     <string name="category_status_bar">Status bar</string>
     <string name="category_notification_bar">Notification bar</string>
+    <string name="category_super_island">Super Island</string>
 </resources>

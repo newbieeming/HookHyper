@@ -22,6 +22,14 @@ import com.squareup.kotlinpoet.ksp.writeTo
 private const val ANNOTATION_NAME = "com.newbieeming.hookhyper.core.hook.HookModule"
 private const val AGGREGATE_FILE = "hookhyper-registrars.txt"
 
+/**
+ * Generated registries depend on every annotated class in their module.
+ *
+ * Marking them as aggregating is essential: an incremental KSP round may otherwise expose
+ * only the changed symbol, which would replace a registry with that single HookModule.
+ */
+private val AGGREGATING_DEPENDENCIES = Dependencies(aggregating = true)
+
 class HookModuleProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
         HookModuleProcessor(environment.codeGenerator, environment.logger)
@@ -106,7 +114,7 @@ private class HookModuleProcessor(
             .build()
 
         FileSpec.builder(pkg, "HookRegistry").addType(obj).build()
-            .writeTo(codeGenerator, Dependencies(false))
+            .writeTo(codeGenerator, AGGREGATING_DEPENDENCIES)
     }
 
     private fun generateHooker(genPkg: String, targetPkg: String) {
@@ -119,7 +127,7 @@ private class HookModuleProcessor(
             .build()
 
         FileSpec.builder(genPkg, "FeatureHooker").addType(obj).build()
-            .writeTo(codeGenerator, Dependencies(false))
+            .writeTo(codeGenerator, AGGREGATING_DEPENDENCIES)
     }
 
     private fun generateRegistrar(genPkg: String) {
@@ -140,10 +148,10 @@ private class HookModuleProcessor(
             .build()
 
         FileSpec.builder(genPkg, "FeatureRegistrar").addType(obj).build()
-            .writeTo(codeGenerator, Dependencies(false))
+            .writeTo(codeGenerator, AGGREGATING_DEPENDENCIES)
 
         // 写入聚合文件，供 app 模块读取
-        codeGenerator.createNewFile(Dependencies(false), "", AGGREGATE_FILE, "")
+        codeGenerator.createNewFile(AGGREGATING_DEPENDENCIES, "", AGGREGATE_FILE, "")
             .bufferedWriter().use { it.write("$genPkg.FeatureRegistrar\n") }
     }
 
@@ -186,7 +194,7 @@ private class HookModuleProcessor(
             .build()
 
         FileSpec.builder(genPkg, "GeneratedHookEntry").addType(obj).build()
-            .writeTo(codeGenerator, Dependencies(false))
+            .writeTo(codeGenerator, AGGREGATING_DEPENDENCIES)
     }
 
     private fun readAggregationFile(): List<String> {

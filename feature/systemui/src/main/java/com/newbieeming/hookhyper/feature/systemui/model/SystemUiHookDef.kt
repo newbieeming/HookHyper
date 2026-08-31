@@ -4,6 +4,7 @@ import com.newbieeming.hookhyper.core.ui.component.HookDef
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiCategory.LOCK_SCREEN
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiCategory.NOTIFICATION_BAR
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiCategory.STATUS_BAR
+import com.newbieeming.hookhyper.feature.systemui.model.SystemUiCategory.SUPER_ISLAND
 
 /**
  * SystemUI 模块所有 Hook 的元数据定义。
@@ -34,6 +35,11 @@ enum class SystemUiHookDef(
     FORCE_SOFT_LIGHT_GLASS(
         preferenceKey = "systemui_force_soft_light_glass",
         category = NOTIFICATION_BAR,
+        order = 0,
+    ),
+    SUPER_ISLAND_DIMENSIONS(
+        preferenceKey = "systemui_super_island_dimensions",
+        category = SUPER_ISLAND,
         order = 0,
     ),
 
