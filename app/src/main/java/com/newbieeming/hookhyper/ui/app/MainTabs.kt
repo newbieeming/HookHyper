@@ -13,6 +13,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.ui.component.AppScaffold
 import com.newbieeming.hookhyper.ui.component.AppTab
 import com.newbieeming.hookhyper.ui.home.HomeScreen
@@ -29,6 +30,7 @@ private val PagerNavigationSpringSpec: SpringSpec<Float> = spring(
 @Composable
 internal fun MainTabs(
     state: AppState,
+    features: List<FeatureEntry>,
     onIntent: (AppIntent) -> Unit,
     onOpenFeature: (String) -> Unit,
 ) {
@@ -62,7 +64,7 @@ internal fun MainTabs(
         ) { page ->
             when (AppTab.entries[page]) {
                 AppTab.HOME -> HomeScreen(
-                    features = state.features,
+                    features = features,
                     onOpenFeature = onOpenFeature,
                 )
                 AppTab.SETTINGS -> SettingsScreen(

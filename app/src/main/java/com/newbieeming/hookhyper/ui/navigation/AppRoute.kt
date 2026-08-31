@@ -10,4 +10,4 @@ data object HomeRoute : NavKey
 data object SettingsRoute : NavKey
 
 @Serializable
-data class FeatureRoute(val featureId: String) : NavKey
+data class FeatureRoute(val targetPackageName: String) : NavKey

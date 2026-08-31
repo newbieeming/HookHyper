@@ -1,6 +1,7 @@
 package com.newbieeming.hookhyper.ui.home
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -32,8 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.newbieeming.hookhyper.R
-import com.newbieeming.hookhyper.core.common.FeatureMetadata
 import com.newbieeming.hookhyper.core.common.UiStyle
+import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
 import com.newbieeming.hookhyper.ui.component.ScreenScaffold
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -43,33 +44,32 @@ import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
 @Composable
 fun HomeScreen(
-    features: List<FeatureMetadata>,
+    features: List<FeatureEntry>,
     onOpenFeature: (String) -> Unit,
 ) {
+    val context = LocalContext.current
+    val items = remember(context, features) {
+        features.map { feature ->
+            HomeFeature(feature, context.targetAppInfo(feature.targetPackageName))
+        }.sortedBy { it.appInfo?.label ?: it.feature.targetPackageName }
+    }
     ScreenScaffold(title = stringResource(R.string.app_name)) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding).fillMaxSize(),
             contentPadding = PaddingValues(top = 8.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(features, key = FeatureMetadata::id) { feature ->
-                FeatureRow(feature = feature, onClick = { onOpenFeature(feature.id) })
+            items(items, key = { it.feature.targetPackageName }) { item ->
+                FeatureRow(item, onClick = { onOpenFeature(item.feature.targetPackageName) })
             }
         }
     }
 }
 
-@SuppressLint("QueryPermissionsNeeded")
 @Composable
-private fun FeatureRow(feature: FeatureMetadata, onClick: () -> Unit) {
-    val context = LocalContext.current
-    val appInfo = remember(feature.packageName) {
-        runCatching {
-            val info: ApplicationInfo = context.packageManager.getApplicationInfo(feature.packageName, 0)
-            context.packageManager.getApplicationLabel(info).toString() to
-                context.packageManager.getApplicationIcon(info).toBitmap().asImageBitmap()
-        }.getOrNull()
-    }
+private fun FeatureRow(item: HomeFeature, onClick: () -> Unit) {
+    val feature = item.feature
+    val appInfo = item.appInfo
     if (LocalUiStyle.current == UiStyle.MIUIX) {
         MiuixCard(
             modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
@@ -84,8 +84,8 @@ private fun FeatureRow(feature: FeatureMetadata, onClick: () -> Unit) {
             ) {
                 FeatureIcon(appInfo)
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    MiuixText(appInfo?.first ?: feature.fallbackName, fontWeight = FontWeight.SemiBold)
-                    MiuixText(feature.packageName)
+                    MiuixText(appInfo?.label ?: feature.targetPackageName, fontWeight = FontWeight.SemiBold)
+                    MiuixText(feature.targetPackageName)
                 }
             }
         }
@@ -97,8 +97,8 @@ private fun FeatureRow(feature: FeatureMetadata, onClick: () -> Unit) {
             onClick = onClick,
         ) {
             ListItem(
-                headlineContent = { Text(appInfo?.first ?: feature.fallbackName, fontWeight = FontWeight.SemiBold) },
-                supportingContent = { Text(feature.packageName, style = MaterialTheme.typography.labelMedium) },
+                headlineContent = { Text(appInfo?.label ?: feature.targetPackageName, fontWeight = FontWeight.SemiBold) },
+                supportingContent = { Text(feature.targetPackageName, style = MaterialTheme.typography.labelMedium) },
                 leadingContent = { FeatureIcon(appInfo) },
             )
         }
@@ -106,12 +106,31 @@ private fun FeatureRow(feature: FeatureMetadata, onClick: () -> Unit) {
 }
 
 @Composable
-private fun FeatureIcon(appInfo: Pair<String, ImageBitmap>?) {
+private fun FeatureIcon(appInfo: TargetAppInfo?) {
     if (appInfo != null) {
-        Image(appInfo.second, contentDescription = null, modifier = Modifier.size(48.dp))
+        Image(appInfo.icon, contentDescription = null, modifier = Modifier.size(48.dp))
     } else if (LocalUiStyle.current == UiStyle.MIUIX) {
         MiuixIcon(Icons.Default.Android, contentDescription = null, modifier = Modifier.size(48.dp))
     } else {
         Icon(Icons.Default.Android, contentDescription = null, modifier = Modifier.size(48.dp))
     }
 }
+
+private data class HomeFeature(
+    val feature: FeatureEntry,
+    val appInfo: TargetAppInfo?,
+)
+
+private data class TargetAppInfo(
+    val label: String,
+    val icon: ImageBitmap,
+)
+
+@SuppressLint("QueryPermissionsNeeded")
+private fun Context.targetAppInfo(packageName: String): TargetAppInfo? = runCatching {
+    val info: ApplicationInfo = packageManager.getApplicationInfo(packageName, 0)
+    TargetAppInfo(
+        label = packageManager.getApplicationLabel(info).toString(),
+        icon = packageManager.getApplicationIcon(info).toBitmap().asImageBitmap(),
+    )
+}.getOrNull()

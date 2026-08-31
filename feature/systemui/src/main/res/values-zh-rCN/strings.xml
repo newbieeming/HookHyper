@@ -1,6 +1,4 @@
 <resources>
-    <string name="feature_systemui_name">系统界面</string>
-    <string name="feature_systemui_description">锁屏、通知栏与控制中心的 HyperOS 增强</string>
     <string name="systemui_show_carrier_title">锁屏显示运营商名称</string>
     <string name="systemui_show_carrier_summary">恢复锁屏状态栏中的 SIM 运营商文本；重启系统界面后生效</string>
     <string name="systemui_soft_light_glass_title">强制启用柔光玻璃</string>

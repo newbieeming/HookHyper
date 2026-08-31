@@ -1,30 +1,21 @@
 package com.newbieeming.hookhyper.feature.settings
 
-import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.newbieeming.hookhyper.core.common.FeatureMetadata
-import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
-import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.newbieeming.hookhyper.core.ui.component.HookContent
+import com.newbieeming.hookhyper.core.ui.feature.FeatureEntryImpl
+import com.newbieeming.hookhyper.core.ui.feature.FeatureViewModel
+import com.newbieeming.hookhyper.feature.settings.hook.HookRegistry
 import javax.inject.Inject
 
-class SettingsFeatureEntry @Inject constructor(
-    @param:ApplicationContext context: Context,
-) : FeatureEntry {
-    override val metadata = FeatureMetadata(
-        id = ID,
-        packageName = PACKAGE_NAME,
-        fallbackName = context.getString(R.string.feature_settings_name),
-        description = context.getString(R.string.feature_settings_description),
-    )
+class SettingsFeatureEntry @Inject constructor() : FeatureEntryImpl() {
+    override val targetPackageName = PACKAGE_NAME
+    override val hooks: List<HookContent> = HookRegistry.modules.filterIsInstance<HookContent>()
 
     @Composable
-    override fun Content(onBack: () -> Unit, modifier: Modifier) {
-        SettingsFeatureScreen(onBack = onBack, modifier = modifier)
-    }
+    override fun provideViewModel(): FeatureViewModel = hiltViewModel<SettingsFeatureViewModel>()
 
     companion object {
-        const val ID = "settings"
         const val PACKAGE_NAME = "com.android.settings"
     }
 }

@@ -1,6 +1,5 @@
 package com.newbieeming.hookhyper.ui.app
 
-import com.newbieeming.hookhyper.core.common.FeatureMetadata
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 import com.newbieeming.hookhyper.core.data.ModuleStatusProvider
@@ -19,12 +18,12 @@ class AppViewModel @Inject constructor(
         uiStyle = preferences.getUiStyle(),
         predictiveBackEnabled = preferences.getBoolean(PreferenceKeys.PREDICTIVE_BACK_ENABLED),
         moduleStatus = moduleStatusProvider.current(),
-        features = featureSet.map(FeatureEntry::metadata).sortedBy(FeatureMetadata::fallbackName),
     ),
 ) {
-    private val featureEntries = featureSet.associateBy { it.metadata.id }
+    val features: List<FeatureEntry> = featureSet.sortedBy(FeatureEntry::targetPackageName)
+    private val featureEntries = featureSet.associateBy(FeatureEntry::targetPackageName)
 
-    fun feature(id: String): FeatureEntry? = featureEntries[id]
+    fun feature(targetPackageName: String): FeatureEntry? = featureEntries[targetPackageName]
 
     override fun onIntent(intent: AppIntent) {
         when (intent) {

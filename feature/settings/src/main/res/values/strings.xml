@@ -1,6 +1,4 @@
 <resources>
-    <string name="feature_settings_name">System settings</string>
-    <string name="feature_settings_description">Customize device hardware and system information shown in About phone</string>
     <string name="settings_edit_device_info_title">Edit device information</string>
     <string name="settings_edit_device_info_summary">Override information in About phone. Empty fields keep the original system values. Changes take effect after restarting System settings.</string>
     <string name="device_info_text_field_placeholder">Enter %1$s</string>

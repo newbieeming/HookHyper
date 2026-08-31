@@ -95,12 +95,13 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
                 entry<HomeRoute> {
                     MainTabs(
                         state = state,
+                        features = viewModel.features,
                         onIntent = viewModel::accept,
                         onOpenFeature = { backStack.add(FeatureRoute(it)) },
                     )
                 }
                 entry<FeatureRoute> { route ->
-                    viewModel.feature(route.featureId)?.Content(
+                    viewModel.feature(route.targetPackageName)?.Content(
                         onBack = onBack,
                         modifier = Modifier
                             .fillMaxSize()

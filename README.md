@@ -52,8 +52,10 @@ HookHyper/
 ├─ core/
 │  ├─ common/              # 跨模块共享的模型、常量、枚举和系统工具
 │  ├─ data/                # 跨进程偏好仓库、模块状态、Root 应用重启
-│  ├─ ui/                  # MVI 基类、主题、跨 Feature 通用组件、FeatureEntry 契约
-│  │                       # HookFeatureScreen、HookCategory、HookDef、FeatureHook 等
+│  ├─ ui/                  # MVI 基类、主题、跨 Feature 通用组件
+│  │  └─ feature/          # FeatureEntry 契约、FeatureEntryImpl、FeatureViewModel
+│  │                       # FeatureScreen、LocalFeatureViewModel、HookFeatureScreen
+│  │  └─ component/        # HookCategory、HookDef、FeatureHook、HookSwitchPreference
 │  └─ hook/                # @HookModule 注解、SubHooker 接口、ModularHooker 基类
 │  └─ hook-ksp-processor/  # KSP 处理器：编译期扫描 @HookModule，自动生成 HookRegistry
 ├─ feature/
@@ -77,8 +79,7 @@ HookEntry (app)  ── ServiceLoader.load(Registrar) ── 自动发现所有 
   │   ├─ TimeFormatHook
   │   └─ FingerprintIconHook
   └─ SettingsHooker (KSP 自动生成)  ─── 遍历 HookRegistry
-      ├─ VersionInfoHook          @HookModule(packageName = "com.android.settings")
-      └─ DeviceCardHook
+      └─ DeviceInfoHook            @HookModule(packageName = "com.android.settings")
 ```
 
 - `@HookModule` 注解仅声明目标包名，KSP 据此生成 `HookRegistry`、主 Hooker 和 `Registrar`。
@@ -102,21 +103,28 @@ HookEntry (app)  ── ServiceLoader.load(Registrar) ── 自动发现所有 
 - feature 自己维护 State、Intent、Effect、ViewModel 与 Screen，再通过 `FeatureEntry.Content` 接入应用导航。
 - MIUIX 与 Material 共享同一份状态和导航，只在 Scaffold、导航栏和基础组件层进行自适应渲染。
 
-### Feature Hook UI 架构
+### Feature 架构
 
-每个 feature 的 Screen 通过 `HookFeatureScreen` 渲染，只需传入 hooks 列表即可：
+每个 feature 通过继承 `FeatureEntryImpl` 实现，只需提供 `metadata` 和 `provideViewModel`：
 
 ```text
-HookFeatureScreen (core:ui)
-  └─ LazyFeatureScaffold
-       └─ 按 HookCategory 分组 → stickyHeader 磁吸 + 折叠
-            └─ 每个 HookContent.Content() 自提供 UI
+FeatureEntryImpl (core:ui)
+  ├─ hooks：自动探测 HookRegistry.modules（反射扫描子包）
+  ├─ Content：provideViewModel → FeatureScreen
+  └─ FeatureScreen
+       ├─ 收集 FeatureViewModel 状态（isRestarting、effects）
+       ├─ 提供 LocalPreferencesRepository、LocalFeatureViewModel
+       └─ HookFeatureScreen
+            └─ 按 HookCategory 分组 → stickyHeader 磁吸 + 折叠
+                 └─ 每个 HookContent.Content() 自提供 UI
 ```
 
+- `FeatureViewModel` 封装公共重启逻辑与 effect 通道，子类 override `packageName` 和 `restartSuccessMessage`。
+- `FeatureScreen` 自动处理 ViewModel 状态收集、Snackbar effect 和 CompositionLocal 注入。
+- `LocalFeatureViewModel` 供 hook UI 获取当前 ViewModel，配合 `featureViewModel<T>()` 类型安全访问。
 - `HookCategory` 定义分类（锁屏、状态栏、通知栏等），带 `id`、`order`、`titleResId`。
 - `HookDef` 定义 hook 元数据（`preferenceKey`、`category`、`order`），各 feature 枚举实现。
 - `FeatureHook<T>` 统一 `SubHooker` + `HookContent` + `HookDef`，hook 类只需声明 `def` 枚举条目。
-- `HookSwitchPreference` 封装偏好读写的开关行，`LocalPreferencesRepository` 提供 CompositionLocal 注入。
 
 应用使用嵌套 Scaffold：外层负责底部导航，Screen/Feature 内层负责顶部栏和内容。外层 Padding 在传入 `NavDisplay` 后会通过 `consumeWindowInsets` 消费，避免内层 `SystemSettingsTopBar` 再次应用状态栏 Insets，造成顶部间距翻倍。
 
@@ -169,16 +177,16 @@ app/build/outputs/apk/debug/app-debug.apk
 新增 `feature:<name>` 时需要同时完成以下装配：
 
 1. 在 `settings.gradle.kts` 注册模块，并在 `app/build.gradle.kts` 添加依赖。
-2. 实现 `FeatureEntry`，再通过 Hilt `@IntoSet` 注册 UI 入口。
-3. 在 feature 模块的 `build.gradle.kts` 中应用 `alias(libs.plugins.hook.module)` 插件。
-4. 定义 `HookCategory` 枚举（分类）和 `HookDef` 枚举（hook 元数据）。
-5. 为每个 Hook 功能创建类，实现 `SubHooker` + `FeatureHook<T>`，加上 `@HookModule(packageName)` 注解。KSP 会自动生成 `HookRegistry`、主 Hooker 和 `Registrar`。
-6. 在 `HookContent.Content()` 中实现该 hook 的设置 UI。
-7. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
-8. 在 Screen 中通过 `HookFeatureScreen` 渲染 hooks 列表，提供 `LocalPreferencesRepository` 和 `LocalCategoryTitleResolver`。
+2. 创建 `FeatureEntry` 实现，继承 `FeatureEntryImpl`，提供 `metadata` 和 `provideViewModel`。通过 Hilt `@IntoSet` 注册。
+3. 创建 `FeatureViewModel` 子类，override `packageName` 和 `restartSuccessMessage`。
+4. 在 feature 模块的 `build.gradle.kts` 中应用 `alias(libs.plugins.hook.module)` 插件。
+5. 定义 `HookCategory` 枚举（分类）和 `HookDef` 枚举（hook 元数据）。
+6. 为每个 Hook 功能创建类，实现 `SubHooker` + `FeatureHook<T>`，加上 `@HookModule(packageName)` 注解。KSP 会自动生成 `HookRegistry`、主 Hooker 和 `Registrar`。
+7. 在 `HookContent.Content()` 中实现该 hook 的设置 UI，可通过 `featureViewModel<T>()` 获取 ViewModel。
+8. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
 9. 添加必要测试，运行单元测试和 Debug 构建。
 
-`HookEntry` 通过 `ServiceLoader` 自动发现所有 `Registrar`，无需手动注册新模块的 Hooker。
+`HookEntry` 通过 `ServiceLoader` 自动发现所有 `Registrar`，无需手动注册新模块的 Hooker。`FeatureEntryImpl` 自动探测 `HookRegistry` 并实现 `Content()`，无需手动编写 Screen。
 
 更完整的开发约束与检查清单见 [Agent.md](Agent.md)。
 

@@ -46,10 +46,14 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 
 ### Feature 与 UI
 
-- 每个 feature 提供一个实现 `FeatureEntry` 的入口，`metadata.id` 必须全局唯一，包名应定义为该入口的常量。
+- 每个 feature 继承 `FeatureEntryImpl`，只需提供 `metadata` 和 `provideViewModel`。`metadata.id` 必须全局唯一，包名应定义为该入口的常量。
+- `FeatureEntryImpl` 自动探测 `HookRegistry.modules`（反射扫描子包），自动实现 `Content()` 调用 `FeatureScreen`。
 - 使用 Hilt `@Binds`、`@IntoSet` 注册 `FeatureEntry`；宿主通过集合注入生成主页列表，不维护重复的 UI 清单，也不扫描 Dex。
+- `FeatureViewModel` 是公共 ViewModel 基类，封装重启逻辑与 effect 通道。子类 override `packageName` 和 `restartSuccessMessage`。
+- `FeatureScreen` 自动处理 ViewModel 状态收集、Snackbar effect、`LocalPreferencesRepository` 和 `LocalFeatureViewModel` 注入。
+- hook UI 通过 `featureViewModel<T>()` 类型安全获取当前 ViewModel，无需手动访问 CompositionLocal。
 - `MainActivity` 只负责 Activity 生命周期与 `setContent`；应用级 MVI 放在 `ui/app`，路由放在 `ui/navigation`，页面按 `ui/<screen>` 分包，跨页面组件放在 `ui/component`。
-- 页面状态采用不可变 `State`，用户操作使用 `Intent`，一次性事件使用 `Effect`；ViewModel 继承 `MviViewModel`。
+- 需要自定义状态的 feature ViewModel 继承 `FeatureViewModel`，在 `provideViewModel` 中通过 `hiltViewModel<MyViewModel>()` 创建。
 - Composable 只负责渲染状态和分发 Intent。状态收集使用 `collectAsStateWithLifecycle()`，副作用在合适的 effect/协程作用域中处理。
 - 通用设置控件优先复用 `core:ui`，并确保 MIUIX 与 Material 两种主题均可用。不要在 feature 中复制全局 Scaffold、主题或 MVI 基础设施。
 - 可见文案不得硬编码。默认资源放在 `values/strings.xml`（英文），简体中文放在 `values-zh-rCN/strings.xml`；新增、修改或删除文案时同步维护两份资源。
@@ -78,16 +82,18 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 
 1. 在 `settings.gradle.kts` 中 `include(":feature:<name>")`，创建模块构建脚本并复用 `build-logic` 中的约定插件。
 2. 在 `app/build.gradle.kts` 添加对新 feature 的 `implementation(project(...))` 依赖。
-3. 创建 `FeatureEntry` 实现，提供唯一 ID、目标包名、名称、描述和页面内容。
-4. 创建 Hilt Module，通过 `@IntoSet` 绑定 `FeatureEntry`。
-5. 定义 `HookCategory` 枚举和 `HookDef` 枚举，声明分类与 hook 元数据。
-6. 为每个 Hook 功能创建类，实现 `SubHooker` + `FeatureHook<T>`，加上 `@HookModule(packageName)` 注解。在 `HookContent.Content()` 中实现设置 UI。
-7. 将目标包加入 `app/src/main/res/values/arrays.xml` 的 `xposed_scope`；如 App 需要查询目标应用信息，同时更新 `AndroidManifest.xml` 的 `<queries>`。
-8. 在 `feature:<name>/model` 添加目标应用专用的设置键、模型和匹配规则；只有稳定的跨 feature 契约才放入 `core:common`。随后补齐 State、Intent、Effect、ViewModel、Screen 和设置读写。
-9. 在 Screen 中通过 `HookFeatureScreen` 渲染 hooks 列表，提供 `LocalPreferencesRepository` 和分类标题解析器。
+3. 创建 `FeatureEntry` 实现，继承 `FeatureEntryImpl`，提供 `metadata` 和 `provideViewModel`。
+4. 创建 `FeatureViewModel` 子类，override `packageName` 和 `restartSuccessMessage`；如需自定义状态，添加 `StateFlow` 和 `accept(Intent)`。
+5. 创建 Hilt Module，通过 `@IntoSet` 绑定 `FeatureEntry`。
+6. 定义 `HookCategory` 枚举和 `HookDef` 枚举，声明分类与 hook 元数据。
+7. 为每个 Hook 功能创建类，实现 `SubHooker` + `FeatureHook<T>`，加上 `@HookModule(packageName)` 注解。在 `HookContent.Content()` 中实现设置 UI，通过 `featureViewModel<T>()` 获取 ViewModel。
+8. 将目标包加入 `app/src/main/res/values/arrays.xml` 的 `xposed_scope`；如 App 需要查询目标应用信息，同时更新 `AndroidManifest.xml` 的 `<queries>`。
+9. 在 `feature:<name>/model` 添加目标应用专用的设置键、模型和匹配规则；只有稳定的跨 feature 契约才放入 `core:common`。
 10. 将 feature 专用组件、英文与简体中文资源、纯逻辑和测试放在 feature 模块内；为匹配规则和状态转换补充测试。
 11. 检查根 `.gitignore` 是否已覆盖新模块产物；只有出现新的模块专属生成物时才添加更具体的忽略规则，不提交 `build/`、本地缓存、机器配置或密钥。
 12. 运行相关模块测试，并至少完成一次 Debug APK 构建。
+
+`FeatureEntryImpl` 自动探测 `HookRegistry` 并实现 `Content()`，无需手动编写 Screen 或 `HookFeatureScreen` 调用。
 
 ## 构建与验证
 
