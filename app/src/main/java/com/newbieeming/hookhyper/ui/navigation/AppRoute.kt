@@ -11,3 +11,9 @@ data object SettingsRoute : NavKey
 
 @Serializable
 data class FeatureRoute(val targetPackageName: String) : NavKey
+
+@Serializable
+data class HookCategoryRoute(
+    val targetPackageName: String,
+    val categoryId: String,
+) : NavKey

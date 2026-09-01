@@ -1,12 +1,13 @@
 package com.newbieeming.hookhyper.core.ui.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -29,9 +30,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SignalCellularAlt
+import androidx.compose.material.icons.filled.ViewCarousel
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -350,57 +357,117 @@ fun SwitchPreference(
     }
 }
 
-/**
- * 可折叠分类的磁吸头部。整行可点击切换展开/折叠。
- *
- * @param title 分类标题
- * @param expanded 当前是否展开
- * @param onToggle 切换回调
- */
+/** 打开 Hook 分类二级页的列表项。 */
 @Composable
-fun HookCategoryHeader(
-    title: String,
-    expanded: Boolean,
-    onToggle: () -> Unit,
+fun HookCategoryPreference(
+    category: HookCategory,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onToggle),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        Row(
-            modifier = Modifier
+    val presentation = category.presentation()
+    val title = stringResource(category.titleResId)
+    if (LocalUiStyle.current == UiStyle.MIUIX) {
+        MiuixCard(
+            modifier = modifier
+                .padding(horizontal = 16.dp, vertical = 4.dp)
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .clickable(onClick = onClick),
+            insideMargin = PaddingValues(0.dp),
         ) {
-            if (LocalUiStyle.current == UiStyle.MIUIX) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CategoryIcon(presentation)
                 MiuixText(
                     text = title,
-                    modifier = Modifier.weight(1f),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 10.dp),
+                    fontSize = 17.sp,
                 )
-            } else {
-                Text(
-                    text = title,
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Icon(
-                modifier = Modifier.padding(start = 8.dp),
-                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = if (expanded) "Collapse" else "Expand",
-            )
+        }
+    } else {
+        Surface(
+            modifier = modifier
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.large)
+                .clickable(onClick = onClick),
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 1.dp,
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CategoryIcon(presentation)
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 10.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Icon(
+                    Icons.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
 
+@Suppress("MagicNumber")
+@Composable
+private fun CategoryIcon(presentation: CategoryPresentation) {
+    Box(
+        modifier = Modifier
+            .size(28.dp)
+            .clip(RoundedCornerShape(7.dp))
+            .background(presentation.background),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = presentation.imageVector,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = Color.White,
+        )
+    }
+}
+
+private data class CategoryPresentation(
+    val imageVector: ImageVector,
+    val background: Color,
+)
+
+@Suppress("MagicNumber")
+private fun HookCategory.presentation(): CategoryPresentation = when (id) {
+    "lock_screen" -> CategoryPresentation(Icons.Default.Lock, Color(0xFF5C6BC0))
+    "status_bar" -> CategoryPresentation(Icons.Default.SignalCellularAlt, Color(0xFF42A5F5))
+    "notification_bar" -> CategoryPresentation(Icons.Default.Notifications, Color(0xFFFFA726))
+    "super_island" -> CategoryPresentation(Icons.Default.ViewCarousel, Color(0xFF8E6BE8))
+    "device" -> CategoryPresentation(Icons.Default.PhoneAndroid, Color(0xFF78909C))
+    else -> CategoryPresentation(Icons.Default.Settings, Color(0xFF78909C))
+}
+
 private object CenteredBringIntoViewSpec : BringIntoViewSpec {
-    override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float = offset - (containerSize - size) / 2f
+    override fun calculateScrollDistance(
+        offset: Float,
+        size: Float,
+        containerSize: Float,
+    ): Float = offset - (containerSize - size) / 2f
 }

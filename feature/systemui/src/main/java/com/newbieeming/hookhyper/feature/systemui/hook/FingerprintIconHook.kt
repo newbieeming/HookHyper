@@ -14,16 +14,13 @@ import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 
+@Suppress("LabeledExpression")
 @HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
 class FingerprintIconHook :
     SubHooker,
     FeatureHook<SystemUiHookDef> {
 
     override val def = SystemUiHookDef.REPLACE_FINGERPRINT_ICON
-
-    private companion object {
-        private const val TAG = "FingerprintIconHook"
-    }
 
     @Composable
     override fun Content() {
@@ -65,5 +62,9 @@ class FingerprintIconHook :
                 }
             }
         }
+    }
+
+    private companion object {
+        private const val TAG = "FingerprintIconHook"
     }
 }

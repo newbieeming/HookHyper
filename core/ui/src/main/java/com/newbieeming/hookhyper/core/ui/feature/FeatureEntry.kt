@@ -14,6 +14,8 @@ interface FeatureEntry {
     @Composable
     fun Content(
         onBack: () -> Unit,
+        onOpenCategory: (String) -> Unit,
+        categoryId: String?,
         modifier: Modifier,
     )
 }

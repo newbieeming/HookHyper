@@ -36,15 +36,18 @@ import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.SceneInfo
+import androidx.navigation3.scene.SceneState
 import androidx.navigation3.scene.SinglePaneSceneStrategy
 import androidx.navigation3.scene.rememberSceneState
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.NavigationEventState
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.newbieeming.hookhyper.core.ui.theme.HookHyperTheme
 import com.newbieeming.hookhyper.ui.feature.MissingFeatureScreen
 import com.newbieeming.hookhyper.ui.navigation.FeatureRoute
 import com.newbieeming.hookhyper.ui.navigation.HomeRoute
+import com.newbieeming.hookhyper.ui.navigation.HookCategoryRoute
 
 @Composable
 private fun rememberDeviceCornerRadius(): RoundedCornerShape {
@@ -103,6 +106,23 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
                 entry<FeatureRoute> { route ->
                     viewModel.feature(route.targetPackageName)?.Content(
                         onBack = onBack,
+                        onOpenCategory = { categoryId ->
+                            backStack.add(HookCategoryRoute(route.targetPackageName, categoryId))
+                        },
+                        categoryId = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                shape = cornerRadius
+                                clip = true
+                            },
+                    ) ?: MissingFeatureScreen(onBack = onBack)
+                }
+                entry<HookCategoryRoute> { route ->
+                    viewModel.feature(route.targetPackageName)?.Content(
+                        onBack = onBack,
+                        onOpenCategory = {},
+                        categoryId = route.categoryId,
                         modifier = Modifier
                             .fillMaxSize()
                             .graphicsLayer {
@@ -139,32 +159,51 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
             )
         }
 
-        NavDisplay(
+        HookHyperNavDisplay(
             sceneState = sceneState,
             navigationEventState = navigationEventState,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            transitionSpec = {
-                slideInHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { it } +
-                    fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
-                    slideOutHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / SlideOffsetDivisor } +
-                    fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
-            },
-            popTransitionSpec = {
-                slideInHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { -it / SlideOffsetDivisor } +
-                    fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
-                    slideOutHorizontally(animationSpec = tween(SlideDuration, easing = TransitionEasing)) { it } +
-                    fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
-            },
-            predictivePopTransitionSpec = {
-                fadeIn(
-                    animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
-                    initialAlpha = 0.1f,
-                ) togetherWith slideOutHorizontally(
-                    animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
-                ) { width -> width }
-            },
         )
     }
+}
+
+@Composable
+private fun HookHyperNavDisplay(
+    sceneState: SceneState<NavKey>,
+    navigationEventState: NavigationEventState<SceneInfo<NavKey>>,
+) {
+    NavDisplay(
+        sceneState = sceneState,
+        navigationEventState = navigationEventState,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        transitionSpec = {
+            slideInHorizontally(
+                animationSpec = tween(SlideDuration, easing = TransitionEasing),
+            ) { it } +
+                fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
+                slideOutHorizontally(
+                    animationSpec = tween(SlideDuration, easing = TransitionEasing),
+                ) { -it / SlideOffsetDivisor } +
+                fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
+        },
+        popTransitionSpec = {
+            slideInHorizontally(
+                animationSpec = tween(SlideDuration, easing = TransitionEasing),
+            ) { -it / SlideOffsetDivisor } +
+                fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
+                slideOutHorizontally(
+                    animationSpec = tween(SlideDuration, easing = TransitionEasing),
+                ) { it } +
+                fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
+        },
+        predictivePopTransitionSpec = {
+            fadeIn(
+                animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
+                initialAlpha = 0.1f,
+            ) togetherWith slideOutHorizontally(
+                animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
+            ) { width -> width }
+        },
+    )
 }

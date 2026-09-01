@@ -28,7 +28,12 @@ abstract class FeatureEntryImpl : FeatureEntry {
     abstract override val hooks: List<HookContent>
 
     @Composable
-    override fun Content(onBack: () -> Unit, modifier: Modifier) {
+    override fun Content(
+        onBack: () -> Unit,
+        onOpenCategory: (String) -> Unit,
+        categoryId: String?,
+        modifier: Modifier,
+    ) {
         val context = LocalContext.current
         val title = remember(context, targetPackageName) {
             runCatching {
@@ -41,6 +46,8 @@ abstract class FeatureEntryImpl : FeatureEntry {
             viewModel = provideViewModel(),
             title = title,
             onBack = onBack,
+            onOpenCategory = onOpenCategory,
+            categoryId = categoryId,
             hooks = hooks,
             modifier = modifier,
         )

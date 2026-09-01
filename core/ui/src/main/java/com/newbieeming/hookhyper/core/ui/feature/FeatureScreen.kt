@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.newbieeming.hookhyper.core.ui.component.HookCategoryNavigation
 import com.newbieeming.hookhyper.core.ui.component.HookContent
 import com.newbieeming.hookhyper.core.ui.component.HookFeatureScreen
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
@@ -31,6 +32,8 @@ fun FeatureScreen(
     viewModel: FeatureViewModel,
     title: String,
     onBack: () -> Unit,
+    onOpenCategory: (String) -> Unit,
+    categoryId: String?,
     hooks: List<HookContent>,
     modifier: Modifier = Modifier,
 ) {
@@ -50,6 +53,10 @@ fun FeatureScreen(
         HookFeatureScreen(
             title = title,
             onBack = onBack,
+            categoryNavigation = HookCategoryNavigation(
+                categoryId = categoryId,
+                onOpenCategory = onOpenCategory,
+            ),
             onRestart = viewModel::onRestart,
             isRestarting = isRestarting,
             snackbarHostState = snackbarHostState,

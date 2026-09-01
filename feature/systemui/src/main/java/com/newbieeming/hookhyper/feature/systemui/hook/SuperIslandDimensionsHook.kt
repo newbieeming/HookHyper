@@ -8,10 +8,11 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,7 +37,7 @@ import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 import kotlin.math.roundToInt
 
-/** 覆盖 HyperOS 界面组件中已验证的超级岛 dimen。 */
+/** 覆盖 HyperOS 界面组件中已验证的超级岛 dimen. */
 @HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
 class SuperIslandDimensionsHook :
     SubHooker,
@@ -61,9 +62,13 @@ class SuperIslandDimensionsHook :
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                DIMENSIONS.forEach { dimension ->
-                    DimensionInput(dimension)
+                DimensionGroup.entries.forEach { group ->
+                    Text(text = stringResource(group.titleResId))
+                    DIMENSIONS.filter { it.group == group }.forEach { dimension ->
+                        DimensionInput(dimension)
+                    }
                 }
             }
         }
@@ -151,16 +156,179 @@ class SuperIslandDimensionsHook :
         val resourceName: String,
         @StringRes val descriptionResId: Int,
         val defaultDp: Float,
+        val group: DimensionGroup,
     ) {
         val preferenceKey = "systemui_super_island_$resourceName"
+    }
+
+    private enum class DimensionGroup(@StringRes val titleResId: Int) {
+        COLLAPSED(R.string.super_island_collapsed_dimensions),
+        EXPANDED(R.string.super_island_expanded_dimensions),
+        DRAG_CARD(R.string.super_island_drag_card_dimensions),
+        SHARE(R.string.super_island_share_dimensions),
     }
 
     private companion object {
         private const val PLUGIN_PACKAGE = "miui.systemui.plugin"
 
+        @Suppress("MagicNumber")
         private val DIMENSIONS = listOf(
-            IslandDimension("big_island_min_width", R.string.super_island_big_island_min_width, 108f),
-            IslandDimension("island_height", R.string.super_island_height, 34f),
+            IslandDimension(
+                resourceName = "big_island_min_width",
+                descriptionResId = R.string.super_island_big_island_min_width,
+                defaultDp = 108f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_height",
+                descriptionResId = R.string.super_island_height,
+                defaultDp = 34f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_app_icon_size",
+                descriptionResId = R.string.super_island_app_icon_size,
+                defaultDp = 19f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_area_padding",
+                descriptionResId = R.string.super_island_area_padding,
+                defaultDp = 8f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_area_padding_cutout",
+                descriptionResId = R.string.super_island_area_padding_cutout,
+                defaultDp = 1f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_fix_icon_margin",
+                descriptionResId = R.string.super_island_fix_icon_margin,
+                defaultDp = 1f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_fix_icon_size",
+                descriptionResId = R.string.super_island_fix_icon_size,
+                defaultDp = 20f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_icon_radius",
+                descriptionResId = R.string.super_island_icon_radius,
+                defaultDp = 4.5599976f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_mini_y",
+                descriptionResId = R.string.super_island_mini_y,
+                defaultDp = 3f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_radius",
+                descriptionResId = R.string.super_island_radius,
+                defaultDp = 30f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_swipe_threshold",
+                descriptionResId = R.string.super_island_swipe_threshold,
+                defaultDp = 50f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_title_size",
+                descriptionResId = R.string.super_island_title_size,
+                defaultDp = 14f,
+                group = DimensionGroup.COLLAPSED,
+            ),
+            IslandDimension(
+                resourceName = "island_expanded_padding_top",
+                descriptionResId = R.string.super_island_expanded_padding_top,
+                defaultDp = 4f,
+                group = DimensionGroup.EXPANDED,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_bg_margin",
+                descriptionResId = R.string.super_island_drag_card_bg_margin,
+                defaultDp = 40f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_bg_radius",
+                descriptionResId = R.string.super_island_drag_card_bg_radius,
+                defaultDp = 22f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_hand_margin_right",
+                descriptionResId = R.string.super_island_drag_card_hand_margin_right,
+                defaultDp = 68f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_hand_margin_top",
+                descriptionResId = R.string.super_island_drag_card_hand_margin_top,
+                defaultDp = 10f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_imageview_height_and_width",
+                descriptionResId = R.string.super_island_drag_card_image_size,
+                defaultDp = 46f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_linear_layout_margin_start",
+                descriptionResId = R.string.super_island_drag_card_content_margin_start,
+                defaultDp = 10f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_padding",
+                descriptionResId = R.string.super_island_drag_card_padding,
+                defaultDp = 40f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                "isLand_drag_card_shadow_margin_left_and_right",
+                R.string.super_island_drag_card_shadow_horizontal_margin,
+                -40f,
+                DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_text_view_max_width",
+                descriptionResId = R.string.super_island_drag_card_text_max_width,
+                defaultDp = 144f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "isLand_drag_card_title_margin_start",
+                descriptionResId = R.string.super_island_drag_card_title_margin_start,
+                defaultDp = 15f,
+                group = DimensionGroup.DRAG_CARD,
+            ),
+            IslandDimension(
+                resourceName = "island_share_pic_radius",
+                descriptionResId = R.string.super_island_share_pic_radius,
+                defaultDp = 10f,
+                group = DimensionGroup.SHARE,
+            ),
+            IslandDimension(
+                resourceName = "island_share_view_height",
+                descriptionResId = R.string.super_island_share_view_height,
+                defaultDp = 190f,
+                group = DimensionGroup.SHARE,
+            ),
+            IslandDimension(
+                resourceName = "island_share_view_width",
+                descriptionResId = R.string.super_island_share_view_width,
+                defaultDp = 310f,
+                group = DimensionGroup.SHARE,
+            ),
         )
     }
 }
