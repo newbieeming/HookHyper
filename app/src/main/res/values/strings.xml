@@ -14,10 +14,6 @@
     <string name="about_coolapk_value">Profile</string>
     <string name="about_app_version">HookHyper %1$s</string>
     <string name="action_open_link">Open %1$s</string>
-    <string name="ui_style_title">Interface style</string>
-    <string name="ui_style_summary">Choose the component style used by the app</string>
-    <string name="ui_style_miuix" translatable="false">MIUIX</string>
-    <string name="ui_style_material" translatable="false">Material</string>
     <string name="predictive_back_title">Predictive back gesture</string>
     <string name="predictive_back_summary">Preview the previous page while swiping back</string>
     <string name="action_expand">Expand</string>

@@ -10,10 +10,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +30,8 @@ import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
+import com.newbieeming.hookhyper.core.ui.component.PreferenceTextField
+import com.newbieeming.hookhyper.core.ui.component.PreferenceTextFieldGroup
 import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
@@ -61,13 +61,18 @@ class SuperIslandDimensionsHook :
             exit = shrinkVertically() + fadeOut(),
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                modifier = Modifier.padding(vertical = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 DimensionGroup.entries.forEach { group ->
-                    Text(text = stringResource(group.titleResId))
-                    DIMENSIONS.filter { it.group == group }.forEach { dimension ->
-                        DimensionInput(dimension)
+                    Text(
+                        text = stringResource(group.titleResId),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                    PreferenceTextFieldGroup {
+                        DIMENSIONS.filter { it.group == group }.forEach { dimension ->
+                            DimensionInput(dimension)
+                        }
                     }
                 }
             }
@@ -80,14 +85,14 @@ class SuperIslandDimensionsHook :
         var value by remember(dimension.preferenceKey) {
             mutableStateOf(repository.getString(dimension.preferenceKey))
         }
-        OutlinedTextField(
+        PreferenceTextField(
             value = value,
             onValueChange = {
                 value = it
                 repository.putString(dimension.preferenceKey, it)
             },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(dimension.descriptionResId)) },
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            label = stringResource(dimension.descriptionResId),
             supportingText = {
                 Text(
                     stringResource(

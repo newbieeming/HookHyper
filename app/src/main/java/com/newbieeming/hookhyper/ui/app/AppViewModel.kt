@@ -15,7 +15,6 @@ class AppViewModel @Inject constructor(
     featureSet: Set<@JvmSuppressWildcards FeatureEntry>,
 ) : MviViewModel<AppState, AppIntent, AppEffect>(
     AppState(
-        uiStyle = preferences.getUiStyle(),
         predictiveBackEnabled = preferences.getBoolean(PreferenceKeys.PREDICTIVE_BACK_ENABLED),
         moduleStatus = moduleStatusProvider.current(),
     ),
@@ -27,11 +26,6 @@ class AppViewModel @Inject constructor(
 
     override fun onIntent(intent: AppIntent) {
         when (intent) {
-            is AppIntent.SelectUiStyle -> {
-                preferences.setUiStyle(intent.style)
-                reduce { copy(uiStyle = intent.style) }
-                sendEffect(AppEffect.UiStyleChanged)
-            }
             is AppIntent.SetPredictiveBackEnabled -> {
                 preferences.putBoolean(PreferenceKeys.PREDICTIVE_BACK_ENABLED, intent.enabled)
                 reduce { copy(predictiveBackEnabled = intent.enabled) }

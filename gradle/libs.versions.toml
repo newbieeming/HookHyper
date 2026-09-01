@@ -15,7 +15,6 @@ composeBom      = "2026.02.01"
 composeMaterial3 = "1.5.0-alpha01"
 navigation3     = "1.1.4"
 lifecycleNavigation3 = "2.11.0"
-miuix           = "0.9.1"
 hiddenApiBypass = "6.1"
 
 # ── DI ───────────────────────────────────────────────────────────────────────
@@ -76,8 +75,6 @@ androidx-compose-material-icons  = { group = "androidx.compose.material", name =
 androidx-navigation3-runtime     = { group = "androidx.navigation3",      name = "navigation3-runtime",        version.ref = "navigation3" }
 androidx-navigation3-ui          = { group = "androidx.navigation3",      name = "navigation3-ui",             version.ref = "navigation3" }
 androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleNavigation3" }
-miuix-ui-android                 = { group = "top.yukonga.miuix.kmp",    name = "miuix-ui-android",            version.ref = "miuix" }
-miuix-preference-android         = { group = "top.yukonga.miuix.kmp",    name = "miuix-preference-android",    version.ref = "miuix" }
 
 # ── Hilt ─────────────────────────────────────────────────────────────────────
 hilt-android                    = { group = "com.google.dagger",          name = "hilt-android",               version.ref = "hilt" }

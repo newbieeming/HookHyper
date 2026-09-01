@@ -13,8 +13,6 @@
     <string name="about_coolapk_value">个人主页</string>
     <string name="about_app_version">HookHyper %1$s</string>
     <string name="action_open_link">打开%1$s</string>
-    <string name="ui_style_title">界面风格</string>
-    <string name="ui_style_summary">选择应用界面的组件风格</string>
     <string name="predictive_back_title">可预见性返回手势</string>
     <string name="predictive_back_summary">滑动返回时预览上一级页面</string>
     <string name="action_expand">展开</string>

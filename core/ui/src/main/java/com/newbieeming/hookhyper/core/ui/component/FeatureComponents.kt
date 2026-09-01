@@ -62,16 +62,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.newbieeming.hookhyper.core.common.UiStyle
 import com.newbieeming.hookhyper.core.ui.R
-import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
-import top.yukonga.miuix.kmp.preference.SwitchPreference
-import top.yukonga.miuix.kmp.basic.Card as MiuixCard
-import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
-import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
-import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
-import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,56 +75,29 @@ fun FeatureScaffold(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    if (LocalUiStyle.current == UiStyle.MIUIX) {
-        MiuixScaffold(
-            modifier = modifier,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                SystemSettingsTopBar(
-                    title = title,
-                    navigationIcon = {
-                        MiuixIconButton(onClick = onBack) {
-                            MiuixIcon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.action_back),
-                            )
-                        }
-                    },
-                    actions = {
-                        MiuixIconButton(onClick = onRestart, enabled = !isRestarting) {
-                            RestartActionContent(isRestarting)
-                        }
-                    },
-                )
-            },
-        ) { padding ->
-            FeatureContent(padding, content)
-        }
-    } else {
-        Scaffold(
-            modifier = modifier,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                SystemSettingsTopBar(
-                    title = title,
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.action_back),
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = onRestart, enabled = !isRestarting) {
-                            RestartActionContent(isRestarting)
-                        }
-                    },
-                )
-            },
-        ) { padding ->
-            FeatureContent(padding, content)
-        }
+    Scaffold(
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            SystemSettingsTopBar(
+                title = title,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onRestart, enabled = !isRestarting) {
+                        RestartActionContent(isRestarting)
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        FeatureContent(padding, content)
     }
 }
 
@@ -148,71 +112,36 @@ fun LazyFeatureScaffold(
     modifier: Modifier = Modifier,
     content: LazyListScope.() -> Unit,
 ) {
-    if (LocalUiStyle.current == UiStyle.MIUIX) {
-        MiuixScaffold(
-            modifier = modifier,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                SystemSettingsTopBar(
-                    title = title,
-                    navigationIcon = {
-                        MiuixIconButton(onClick = onBack) {
-                            MiuixIcon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.action_back),
-                            )
-                        }
-                    },
-                    actions = {
-                        MiuixIconButton(onClick = onRestart, enabled = !isRestarting) {
-                            RestartActionContent(isRestarting)
-                        }
-                    },
-                )
-            },
-        ) { padding ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding),
-                contentPadding = PaddingValues(bottom = 24.dp),
-            ) {
-                content()
-            }
-        }
-    } else {
-        Scaffold(
-            modifier = modifier,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                SystemSettingsTopBar(
-                    title = title,
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.action_back),
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = onRestart, enabled = !isRestarting) {
-                            RestartActionContent(isRestarting)
-                        }
-                    },
-                )
-            },
-        ) { padding ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding),
-                contentPadding = PaddingValues(bottom = 24.dp),
-            ) {
-                content()
-            }
+    Scaffold(
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            SystemSettingsTopBar(
+                title = title,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onRestart, enabled = !isRestarting) {
+                        RestartActionContent(isRestarting)
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding),
+            contentPadding = PaddingValues(bottom = 24.dp),
+        ) {
+            content()
         }
     }
 }
@@ -238,25 +167,16 @@ fun SystemSettingsTopBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             navigationIcon?.invoke()
-            if (LocalUiStyle.current == UiStyle.MIUIX) {
-                MiuixText(
-                    text = title,
-                    modifier = Modifier.weight(1f),
-                    fontSize = if (hasNavigation) 22.sp else 28.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            } else {
-                Text(
-                    text = title,
-                    modifier = Modifier.weight(1f),
-                    style = if (hasNavigation) {
-                        MaterialTheme.typography.titleLarge
-                    } else {
-                        MaterialTheme.typography.headlineMedium
-                    },
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                style = if (hasNavigation) {
+                    MaterialTheme.typography.titleLarge
+                } else {
+                    MaterialTheme.typography.headlineMedium
+                },
+                fontWeight = FontWeight.SemiBold,
+            )
             actions()
         }
     }
@@ -268,11 +188,6 @@ private fun RestartActionContent(isRestarting: Boolean) {
         CircularProgressIndicator(
             modifier = Modifier.size(24.dp),
             strokeWidth = 2.dp,
-        )
-    } else if (LocalUiStyle.current == UiStyle.MIUIX) {
-        MiuixIcon(
-            Icons.Default.RestartAlt,
-            contentDescription = stringResource(R.string.action_restart_app),
         )
     } else {
         Icon(
@@ -321,39 +236,22 @@ fun SwitchPreference(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (LocalUiStyle.current == UiStyle.MIUIX) {
-        MiuixCard(
-            modifier = modifier
-                .padding(horizontal = 16.dp, vertical = 6.dp)
-                .fillMaxWidth(),
-            insideMargin = PaddingValues(0.dp),
-        ) {
-            SwitchPreference(
-                modifier = Modifier.fillMaxWidth(),
-                title = title,
-                summary = summary,
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-            )
-        }
-    } else {
-        Surface(
-            modifier = modifier
-                .padding(horizontal = 16.dp, vertical = 6.dp)
-                .fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 1.dp,
-        ) {
-            ListItem(
-                headlineContent = { Text(title) },
-                supportingContent = { Text(summary) },
-                trailingContent = {
-                    Switch(checked = checked, onCheckedChange = onCheckedChange)
-                },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            )
-        }
+    Surface(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = 1.dp,
+    ) {
+        ListItem(
+            headlineContent = { Text(title) },
+            supportingContent = { Text(summary) },
+            trailingContent = {
+                Switch(checked = checked, onCheckedChange = onCheckedChange)
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
     }
 }
 
@@ -366,66 +264,35 @@ fun HookCategoryPreference(
 ) {
     val presentation = category.presentation()
     val title = stringResource(category.titleResId)
-    if (LocalUiStyle.current == UiStyle.MIUIX) {
-        MiuixCard(
-            modifier = modifier
-                .padding(horizontal = 16.dp, vertical = 4.dp)
+    Surface(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onClick),
-            insideMargin = PaddingValues(0.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
+            CategoryIcon(presentation)
+            Text(
+                text = title,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                CategoryIcon(presentation)
-                MiuixText(
-                    text = title,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 10.dp),
-                    fontSize = 17.sp,
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    } else {
-        Surface(
-            modifier = modifier
-                .padding(horizontal = 16.dp, vertical = 4.dp)
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.large)
-                .clickable(onClick = onClick),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 1.dp,
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                CategoryIcon(presentation)
-                Text(
-                    text = title,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 10.dp),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Icon(
-                    Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+                    .weight(1f)
+                    .padding(start = 10.dp),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Icon(
+                Icons.Default.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

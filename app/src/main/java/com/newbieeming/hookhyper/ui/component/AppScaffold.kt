@@ -14,11 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.newbieeming.hookhyper.R
-import com.newbieeming.hookhyper.core.common.UiStyle
-import com.newbieeming.hookhyper.core.ui.theme.LocalUiStyle
-import top.yukonga.miuix.kmp.basic.NavigationBar as MiuixNavigationBar
-import top.yukonga.miuix.kmp.basic.NavigationBarItem as MiuixNavigationBarItem
-import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 
 @Composable
 fun AppScaffold(
@@ -27,42 +22,17 @@ fun AppScaffold(
     onSettings: () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val homeLabel = stringResource(R.string.nav_home)
-    val settingsLabel = stringResource(R.string.nav_settings)
-    if (LocalUiStyle.current == UiStyle.MIUIX) {
-        MiuixScaffold(
-            modifier = Modifier.fillMaxSize(),
-            bottomBar = {
-                MiuixNavigationBar {
-                    MiuixNavigationBarItem(
-                        selected = selectedTab == AppTab.HOME,
-                        onClick = onHome,
-                        icon = Icons.Default.Home,
-                        label = homeLabel,
-                    )
-                    MiuixNavigationBarItem(
-                        selected = selectedTab == AppTab.SETTINGS,
-                        onClick = onSettings,
-                        icon = Icons.Default.Settings,
-                        label = settingsLabel,
-                    )
-                }
-            },
-            content = content,
-        )
-    } else {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            bottomBar = {
-                MaterialNavigationItems(
-                    selectedTab = selectedTab,
-                    onHome = onHome,
-                    onSettings = onSettings,
-                )
-            },
-            content = content,
-        )
-    }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            MaterialNavigationItems(
+                selectedTab = selectedTab,
+                onHome = onHome,
+                onSettings = onSettings,
+            )
+        },
+        content = content,
+    )
 }
 
 @Composable
