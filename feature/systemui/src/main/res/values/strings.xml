@@ -1,16 +1,19 @@
 <resources>
     <string name="systemui_show_carrier_title">Show carrier name on the lock screen</string>
-    <string name="systemui_show_carrier_summary">Restore the SIM carrier text in the lock-screen status bar. Changes take effect after restarting System UI.</string>
+    <string name="systemui_show_carrier_summary">Restore the SIM carrier text in the lock-screen status bar.</string>
     <string name="systemui_soft_light_glass_title">Force-enable soft-light glass</string>
-    <string name="systemui_soft_light_glass_summary">Enable glass materials for the notification shade, control center tiles, and sliders. Changes take effect after restarting System UI.</string>
+    <string name="systemui_soft_light_glass_summary">Enable glass materials for the notification shade, control center tiles, and sliders.</string>
     <string name="systemui_custom_time_format_title">Show AM/PM on the clock</string>
-    <string name="systemui_custom_time_format_summary">Add AM/PM to the status bar clock. Changes take effect after restarting System UI.</string>
+    <string name="systemui_custom_time_format_summary">Add AM/PM to the status bar clock.</string>
     <string name="systemui_aa_prefix_title">AM/PM before time</string>
     <string name="systemui_aa_prefix_summary">Place AM/PM before the time instead of after.</string>
     <string name="systemui_replace_fingerprint_icon_title">Replace fingerprint icon</string>
-    <string name="systemui_replace_fingerprint_icon_summary">Replace the in-display fingerprint icon with Meizu style. Changes take effect after restarting System UI.</string>
+    <string name="systemui_replace_fingerprint_icon_summary">Replace the lock screen fingerprint icon.</string>
+    <string name="systemui_fingerprint_style_title">Icon style</string>
+    <string name="systemui_fingerprint_style_circle">Circle</string>
+    <string name="systemui_fingerprint_style_vanilla">Vanilla</string>
     <string name="systemui_super_island_dimensions_title">Customize Super Island size</string>
-    <string name="systemui_super_island_dimensions_summary">Enter values in dp; leave blank to use the system default. Changes take effect after restarting System UI.</string>
+    <string name="systemui_super_island_dimensions_summary">Enter values in dp; leave blank to use the system default.</string>
     <string name="super_island_collapsed_dimensions">Collapsed state</string>
     <string name="super_island_expanded_dimensions">Expanded state</string>
     <string name="super_island_drag_card_dimensions">Press-and-hold drag card</string>

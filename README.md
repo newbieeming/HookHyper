@@ -11,7 +11,7 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 FeatHyper 重构，
 
 | 目标应用 | 作用域 | 功能 |
 | --- | --- | --- |
-| 系统界面 | `com.android.systemui` | 在锁屏状态栏显示 SIM 运营商名称；为通知栏和控制中心强制启用柔光玻璃效果；自定义状态栏时间格式（含 AM/PM 前缀选项）；替换指纹解锁图标样式 |
+| 系统界面 | `com.android.systemui` | 在锁屏状态栏显示 SIM 运营商名称；为通知栏和控制中心强制启用柔光玻璃效果；自定义状态栏时间格式（含 AM/PM 前缀选项）；替换指纹解锁图标，可选择 Circle 或 Vanilla 样式 |
 | 系统设置 | `com.android.settings` | 自定义”关于手机”中的设备名称、处理器、内存、电池、分辨率、屏幕尺寸、OS 版本、摄像头和基带信息 |
 
 设置会通过 YukiHookPrefsBridge 与被 Hook 进程共享。功能开关或字段修改后，可在对应 feature 页面使用“重启应用”使其生效；该操作需要 Root 权限。
