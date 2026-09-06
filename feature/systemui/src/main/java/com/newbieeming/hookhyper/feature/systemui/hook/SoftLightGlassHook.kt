@@ -18,6 +18,7 @@ import com.newbieeming.hookhyper.core.hook.HookUtils.staticField
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
+import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
@@ -35,11 +36,13 @@ class SoftLightGlassHook :
 
     @Composable
     override fun Content() {
-        HookSwitchPreference(
-            preferenceKey = preferenceKey,
-            title = stringResource(R.string.systemui_soft_light_glass_title),
-            summary = stringResource(R.string.systemui_soft_light_glass_summary),
-        )
+        SettingsPreferenceGroup {
+            HookSwitchPreference(
+                preferenceKey = preferenceKey,
+                title = stringResource(R.string.systemui_soft_light_glass_title),
+                summary = stringResource(R.string.systemui_soft_light_glass_summary),
+            )
+        }
     }
 
     override fun PackageParam.onHook() {

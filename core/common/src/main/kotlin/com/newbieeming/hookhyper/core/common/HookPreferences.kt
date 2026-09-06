@@ -4,4 +4,5 @@ package com.newbieeming.hookhyper.core.common
 object PreferenceKeys {
     const val FILE_NAME = "hookhyper_prefs"
     const val PREDICTIVE_BACK_ENABLED = "predictive_back_enabled"
+    const val THEME_COLOR = "theme_color"
 }

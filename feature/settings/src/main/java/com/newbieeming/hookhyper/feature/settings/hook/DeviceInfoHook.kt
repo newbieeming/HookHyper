@@ -28,6 +28,7 @@ import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
+import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.core.ui.feature.featureViewModel
 import com.newbieeming.hookhyper.feature.settings.R
 import com.newbieeming.hookhyper.feature.settings.SettingsFeatureEntry
@@ -35,6 +36,7 @@ import com.newbieeming.hookhyper.feature.settings.SettingsFeatureIntent
 import com.newbieeming.hookhyper.feature.settings.SettingsFeatureViewModel
 import com.newbieeming.hookhyper.feature.settings.model.DeviceInfoFields
 import com.newbieeming.hookhyper.feature.settings.model.SettingsHookDef
+import com.newbieeming.hookhyper.feature.settings.ui.DeviceInfoSectionTitle
 import com.newbieeming.hookhyper.feature.settings.ui.DeviceInfoTextField
 import com.newbieeming.hookhyper.feature.settings.ui.DeviceInfoTextFieldGroup
 
@@ -52,57 +54,63 @@ class DeviceInfoHook :
         private const val ABOUT_PHONE = "com.android.settings.device.MiuiAboutPhoneUtils"
     }
 
-
     @Composable
     override fun Content() {
-        val viewModel = featureViewModel<SettingsFeatureViewModel>()
-        val state by viewModel.state.collectAsStateWithLifecycle()
-        val repo = LocalPreferencesRepository.current
-        var enabled by remember { mutableStateOf(repo.getBoolean(preferenceKey)) }
+        SettingsPreferenceGroup {
+            val viewModel = featureViewModel<SettingsFeatureViewModel>()
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            val repo = LocalPreferencesRepository.current
+            var enabled by remember { mutableStateOf(repo.getBoolean(preferenceKey)) }
 
-        HookSwitchPreference(
-            preferenceKey = preferenceKey,
-            title = stringResource(R.string.settings_edit_device_info_title),
-            summary = stringResource(R.string.settings_edit_device_info_summary),
-            onCheckedChange = { enabled = it },
-        )
+            HookSwitchPreference(
+                preferenceKey = preferenceKey,
+                title = stringResource(R.string.settings_edit_device_info_title),
+                summary = stringResource(R.string.settings_edit_device_info_summary),
+                onCheckedChange = { enabled = it },
+            )
 
-        AnimatedVisibility(
-            visible = enabled,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut(),
-        ) {
-            val deviceInfoFields = DeviceInfoFields.all
-            val focusRequesters = remember(deviceInfoFields.size) {
-                List(deviceInfoFields.size) { FocusRequester() }
-            }
-            val focusManager = LocalFocusManager.current
-            val keyboardController = LocalSoftwareKeyboardController.current
+            AnimatedVisibility(
+                visible = enabled,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                val deviceInfoFields = DeviceInfoFields.all
+                val focusRequesters = remember(deviceInfoFields.size) {
+                    List(deviceInfoFields.size) { FocusRequester() }
+                }
+                val focusManager = LocalFocusManager.current
+                val keyboardController = LocalSoftwareKeyboardController.current
 
-            DeviceInfoTextFieldGroup {
-                deviceInfoFields.forEachIndexed { index, field ->
-                    val isLastField = index == deviceInfoFields.lastIndex
-                    DeviceInfoTextField(
-                        label = deviceInfoLabel(field.preferenceKey),
-                        value = state.values[field.preferenceKey].orEmpty(),
-                        onValueChange = {
-                            viewModel.accept(
-                                SettingsFeatureIntent.UpdateValue(field.preferenceKey, it),
-                            )
-                        },
-                        modifier = Modifier.focusRequester(focusRequesters[index]),
-                        supportingText = field.originValue.takeIf { it.isNotBlank() }
-                            ?.let { stringResource(R.string.device_info_origin_value, it) },
-                        imeAction = if (isLastField) ImeAction.Done else ImeAction.Next,
-                        onImeAction = {
-                            if (isLastField) {
-                                focusManager.clearFocus()
-                                keyboardController?.hide()
-                            } else {
-                                focusRequesters[index + 1].requestFocus()
-                            }
-                        },
-                    )
+                DeviceInfoTextFieldGroup {
+                    deviceInfoFields.forEachIndexed { index, field ->
+                        when (field) {
+                            DeviceInfoFields.deviceName -> DeviceInfoSectionTitle(stringResource(R.string.device_info_section_hardware))
+                            DeviceInfoFields.osVersion -> DeviceInfoSectionTitle(stringResource(R.string.device_info_section_system))
+                            DeviceInfoFields.certModel -> DeviceInfoSectionTitle(stringResource(R.string.device_info_section_versions))
+                        }
+                        val isLastField = index == deviceInfoFields.lastIndex
+                        DeviceInfoTextField(
+                            label = deviceInfoLabel(field.preferenceKey),
+                            value = state.values[field.preferenceKey].orEmpty(),
+                            onValueChange = {
+                                viewModel.accept(
+                                    SettingsFeatureIntent.UpdateValue(field.preferenceKey, it),
+                                )
+                            },
+                            modifier = Modifier.focusRequester(focusRequesters[index]),
+                            supportingText = field.originValue.takeIf { it.isNotBlank() }
+                                ?.let { stringResource(R.string.device_info_origin_value, it) },
+                            imeAction = if (isLastField) ImeAction.Done else ImeAction.Next,
+                            onImeAction = {
+                                if (isLastField) {
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                } else {
+                                    focusRequesters[index + 1].requestFocus()
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }

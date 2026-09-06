@@ -19,5 +19,4 @@ val LocalFeatureViewModel = staticCompositionLocalOf<FeatureViewModel> {
  */
 @Composable
 @ReadOnlyComposable
-inline fun <reified T : FeatureViewModel> featureViewModel(): T =
-    LocalFeatureViewModel.current as T
+inline fun <reified T : FeatureViewModel> featureViewModel(): T = LocalFeatureViewModel.current as T

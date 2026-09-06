@@ -20,6 +20,7 @@ import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
+import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
@@ -33,24 +34,26 @@ class TimeFormatHook :
 
     @Composable
     override fun Content() {
-        val repo = LocalPreferencesRepository.current
-        var showSub by remember { mutableStateOf(repo.getBoolean(preferenceKey)) }
-        HookSwitchPreference(
-            preferenceKey = preferenceKey,
-            title = stringResource(R.string.systemui_custom_time_format_title),
-            summary = stringResource(R.string.systemui_custom_time_format_summary),
-            onCheckedChange = { showSub = it },
-        )
-        AnimatedVisibility(
-            visible = showSub,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut(),
-        ) {
+        SettingsPreferenceGroup {
+            val repo = LocalPreferencesRepository.current
+            var showSub by remember { mutableStateOf(repo.getBoolean(preferenceKey)) }
             HookSwitchPreference(
-                preferenceKey = SystemUiHookDef.TIME_FORMAT_AA_PREFIX.preferenceKey,
-                title = stringResource(R.string.systemui_aa_prefix_title),
-                summary = stringResource(R.string.systemui_aa_prefix_summary),
+                preferenceKey = preferenceKey,
+                title = stringResource(R.string.systemui_custom_time_format_title),
+                summary = stringResource(R.string.systemui_custom_time_format_summary),
+                onCheckedChange = { showSub = it },
             )
+            AnimatedVisibility(
+                visible = showSub,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                HookSwitchPreference(
+                    preferenceKey = SystemUiHookDef.TIME_FORMAT_AA_PREFIX.preferenceKey,
+                    title = stringResource(R.string.systemui_aa_prefix_title),
+                    summary = stringResource(R.string.systemui_aa_prefix_summary),
+                )
+            }
         }
     }
 

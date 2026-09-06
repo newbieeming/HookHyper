@@ -85,7 +85,7 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
     val backStack = rememberNavBackStack(HomeRoute)
     val cornerRadius = rememberDeviceCornerRadius()
 
-    HookHyperTheme {
+    HookHyperTheme(themeColor = state.themeColor) {
         val onBack: () -> Unit = { backStack.removeLastOrNull() }
         val entryDecorators = listOf<NavEntryDecorator<NavKey>>(
             rememberSaveableStateHolderNavEntryDecorator(),

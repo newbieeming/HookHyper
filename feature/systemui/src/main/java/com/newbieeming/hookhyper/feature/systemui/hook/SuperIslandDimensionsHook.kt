@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +33,7 @@ import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 import com.newbieeming.hookhyper.core.ui.component.PreferenceTextField
 import com.newbieeming.hookhyper.core.ui.component.PreferenceTextFieldGroup
+import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
@@ -47,31 +49,35 @@ class SuperIslandDimensionsHook :
 
     @Composable
     override fun Content() {
-        val repository = LocalPreferencesRepository.current
-        var expanded by remember { mutableStateOf(repository.getBoolean(preferenceKey)) }
-        HookSwitchPreference(
-            preferenceKey = preferenceKey,
-            title = stringResource(R.string.systemui_super_island_dimensions_title),
-            summary = stringResource(R.string.systemui_super_island_dimensions_summary),
-            onCheckedChange = { expanded = it },
-        )
-        AnimatedVisibility(
-            visible = expanded,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut(),
-        ) {
-            Column(
-                modifier = Modifier.padding(vertical = 6.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+        SettingsPreferenceGroup {
+            val repository = LocalPreferencesRepository.current
+            var expanded by remember { mutableStateOf(repository.getBoolean(preferenceKey)) }
+            HookSwitchPreference(
+                preferenceKey = preferenceKey,
+                title = stringResource(R.string.systemui_super_island_dimensions_title),
+                summary = stringResource(R.string.systemui_super_island_dimensions_summary),
+                onCheckedChange = { expanded = it },
+            )
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
             ) {
-                DimensionGroup.entries.forEach { group ->
-                    Text(
-                        text = stringResource(group.titleResId),
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
-                    PreferenceTextFieldGroup {
-                        DIMENSIONS.filter { it.group == group }.forEach { dimension ->
-                            DimensionInput(dimension)
+                Column(
+                    modifier = Modifier.padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    DimensionGroup.entries.forEach { group ->
+                        PreferenceTextFieldGroup {
+                            Text(
+                                text = stringResource(group.titleResId),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            DIMENSIONS.filter { it.group == group }.forEach { dimension ->
+                                DimensionInput(dimension)
+                            }
                         }
                     }
                 }
@@ -91,7 +97,7 @@ class SuperIslandDimensionsHook :
                 value = it
                 repository.putString(dimension.preferenceKey, it)
             },
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             label = stringResource(dimension.descriptionResId),
             supportingText = {
                 Text(

@@ -19,4 +19,23 @@
     <string name="module_connected">已连接 · %1$s · API %2$s</string>
     <string name="module_disconnected">未连接，请在 LSPosed 中启用模块和作用域</string>
     <string name="missing_feature">功能不存在，点击返回</string>
+    <string name="theme_color_title">主题颜色</string>
+    <string name="theme_color_summary">选择应用主题颜色</string>
+    <string name="theme_color_dynamic">动态取色</string>
+    <string name="theme_color_default">默认</string>
+    <string name="theme_color_pink">粉色</string>
+    <string name="theme_color_red">红色</string>
+    <string name="theme_color_orange">橙色</string>
+    <string name="theme_color_amber">琥珀</string>
+    <string name="theme_color_yellow">黄色</string>
+    <string name="theme_color_lime">黄绿</string>
+    <string name="theme_color_blue">蓝色</string>
+    <string name="theme_color_green">绿色</string>
+    <string name="theme_color_cyan">青色</string>
+    <string name="theme_color_light_blue">浅蓝</string>
+    <string name="theme_color_indigo">靛青</string>
+    <string name="theme_color_purple">紫色</string>
+    <string name="theme_color_deep_purple">深紫</string>
+    <string name="theme_color_blue_grey">灰蓝</string>
+    <string name="theme_color_brown">棕色</string>
 </resources>

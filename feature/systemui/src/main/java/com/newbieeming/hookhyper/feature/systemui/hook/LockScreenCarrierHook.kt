@@ -10,6 +10,7 @@ import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
+import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
@@ -23,11 +24,13 @@ class LockScreenCarrierHook :
 
     @Composable
     override fun Content() {
-        HookSwitchPreference(
-            preferenceKey = preferenceKey,
-            title = stringResource(R.string.systemui_show_carrier_title),
-            summary = stringResource(R.string.systemui_show_carrier_summary),
-        )
+        SettingsPreferenceGroup(index = 1, count = 2) {
+            HookSwitchPreference(
+                preferenceKey = preferenceKey,
+                title = stringResource(R.string.systemui_show_carrier_title),
+                summary = stringResource(R.string.systemui_show_carrier_summary),
+            )
+        }
     }
 
     override fun PackageParam.onHook() {

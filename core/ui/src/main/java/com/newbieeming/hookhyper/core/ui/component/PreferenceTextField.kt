@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -69,11 +69,11 @@ fun PreferenceTextField(
             .onFocusChanged { isFocused = it.isFocused },
         shape = MaterialTheme.shapes.medium,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
             focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f),
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
         ),
     )
 }
@@ -83,13 +83,13 @@ fun PreferenceTextFieldGroup(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val grouped = LocalSettingsPreferenceGroup.current
     Surface(
         modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = if (grouped) 0.dp else 16.dp, vertical = if (grouped) 0.dp else 6.dp)
             .fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 1.dp,
+        shape = if (grouped) RoundedCornerShape(4.dp) else settingsItemShape(),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Column(
             modifier = Modifier.padding(vertical = 6.dp),

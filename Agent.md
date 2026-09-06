@@ -46,6 +46,8 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 
 ### Feature 与 UI
 
+- 应用主题颜色由 `AppState.themeColor` 管理，通过 `AppIntent.SetThemeColor` 持久化至 `PreferenceKeys.THEME_COLOR`。各 feature 使用 MaterialTheme 语义色：页面 `surface`、卡片 `surfaceContainerLow`，不独立读取配色偏好。
+
 - 每个 feature 继承 `FeatureEntryImpl`，只需提供 `metadata` 和 `provideViewModel`。`metadata.id` 必须全局唯一，包名应定义为该入口的常量。
 - `FeatureEntryImpl` 自动探测 `HookRegistry.modules`（反射扫描子包），自动实现 `Content()` 调用 `FeatureScreen`。
 - 使用 Hilt `@Binds`、`@IntoSet` 注册 `FeatureEntry`；宿主通过集合注入生成主页列表，不维护重复的 UI 清单，也不扫描 Dex。

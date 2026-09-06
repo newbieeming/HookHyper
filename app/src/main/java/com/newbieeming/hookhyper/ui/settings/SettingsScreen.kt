@@ -48,6 +48,12 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
+                ThemeColorSettings(
+                    selected = state.themeColor,
+                    onSelect = { onIntent(AppIntent.SetThemeColor(it)) },
+                )
+            }
+            item {
                 ModuleStatusCard(
                     status = state.moduleStatus,
                     onRefresh = { onIntent(AppIntent.RefreshModuleStatus) },

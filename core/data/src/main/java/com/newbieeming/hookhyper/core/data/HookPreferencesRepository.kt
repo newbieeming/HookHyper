@@ -24,5 +24,4 @@ class HookPreferencesRepository @Inject constructor(
     fun putString(key: String, value: String) {
         bridge().edit { putString(key, value) }
     }
-
 }

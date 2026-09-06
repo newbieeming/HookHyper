@@ -48,10 +48,12 @@ fun HookFeatureScreen(
         modifier = modifier,
     ) {
         if (categoryId == null) {
-            grouped.keys.forEach { category ->
+            grouped.keys.forEachIndexed { index, category ->
                 item(key = category.id, contentType = "category") {
                     HookCategoryPreference(
                         category = category,
+                        index = index,
+                        count = grouped.size,
                         onClick = { categoryNavigation.onOpenCategory(category.id) },
                     )
                 }

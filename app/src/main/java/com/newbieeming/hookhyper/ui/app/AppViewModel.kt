@@ -5,6 +5,7 @@ import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 import com.newbieeming.hookhyper.core.data.ModuleStatusProvider
 import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.core.ui.mvi.MviViewModel
+import com.newbieeming.hookhyper.core.ui.theme.ThemeColor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -17,6 +18,7 @@ class AppViewModel @Inject constructor(
     AppState(
         predictiveBackEnabled = preferences.getBoolean(PreferenceKeys.PREDICTIVE_BACK_ENABLED),
         moduleStatus = moduleStatusProvider.current(),
+        themeColor = ThemeColor.fromId(preferences.getString(PreferenceKeys.THEME_COLOR)),
     ),
 ) {
     val features: List<FeatureEntry> = featureSet.sortedBy(FeatureEntry::targetPackageName)
@@ -26,6 +28,10 @@ class AppViewModel @Inject constructor(
 
     override fun onIntent(intent: AppIntent) {
         when (intent) {
+            is AppIntent.SetThemeColor -> {
+                preferences.putString(PreferenceKeys.THEME_COLOR, intent.color.id)
+                reduce { copy(themeColor = intent.color) }
+            }
             is AppIntent.SetPredictiveBackEnabled -> {
                 preferences.putBoolean(PreferenceKeys.PREDICTIVE_BACK_ENABLED, intent.enabled)
                 reduce { copy(predictiveBackEnabled = intent.enabled) }

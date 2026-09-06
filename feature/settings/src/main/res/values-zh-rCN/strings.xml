@@ -21,4 +21,7 @@
     <string name="device_kernel_version">内核版本</string>
     <string name="restart_settings_success">系统设置已重启</string>
     <string name="category_device">属性</string>
+    <string name="device_info_section_hardware">设备规格</string>
+    <string name="device_info_section_system">系统信息</string>
+    <string name="device_info_section_versions">型号与版本</string>
 </resources>

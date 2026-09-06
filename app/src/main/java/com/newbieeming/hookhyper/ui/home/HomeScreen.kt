@@ -11,25 +11,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.newbieeming.hookhyper.R
+import com.newbieeming.hookhyper.core.ui.component.settingsItemShape
 import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.ui.component.ScreenScaffold
 
@@ -44,32 +46,34 @@ fun HomeScreen(
             HomeFeature(feature, context.targetAppInfo(feature.targetPackageName))
         }.sortedBy { it.appInfo?.label ?: it.feature.targetPackageName }
     }
-    ScreenScaffold(title = stringResource(R.string.app_name)) { padding ->
+    ScreenScaffold(title = stringResource(R.string.app_name), compactTitle = true) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding).fillMaxSize(),
             contentPadding = PaddingValues(top = 8.dp, bottom = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(items, key = { it.feature.targetPackageName }) { item ->
-                FeatureRow(item, onClick = { onOpenFeature(item.feature.targetPackageName) })
+            itemsIndexed(items, key = { _, item -> item.feature.targetPackageName }) { index, item ->
+                FeatureRow(item, index, items.size, onClick = { onOpenFeature(item.feature.targetPackageName) })
             }
         }
     }
 }
 
 @Composable
-private fun FeatureRow(item: HomeFeature, onClick: () -> Unit) {
+private fun FeatureRow(item: HomeFeature, index: Int, count: Int, onClick: () -> Unit) {
     val feature = item.feature
     val appInfo = item.appInfo
     Surface(
         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 2.dp,
+        shape = settingsItemShape(index, count),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         onClick = onClick,
     ) {
         ListItem(
-            headlineContent = { Text(appInfo?.label ?: feature.targetPackageName, fontWeight = FontWeight.SemiBold) },
-            supportingContent = { Text(feature.targetPackageName, style = MaterialTheme.typography.labelMedium) },
+            modifier = Modifier.padding(vertical = 8.dp),
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            headlineContent = { Text(appInfo?.label ?: feature.targetPackageName, style = MaterialTheme.typography.titleMedium) },
+            supportingContent = { Text(feature.targetPackageName, style = MaterialTheme.typography.bodyMedium) },
             leadingContent = { FeatureIcon(appInfo) },
         )
     }

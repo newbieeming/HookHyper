@@ -21,4 +21,7 @@
     <string name="device_kernel_version">Kernel version</string>
     <string name="restart_settings_success">System settings restarted</string>
     <string name="category_device">Properties</string>
+    <string name="device_info_section_hardware">Device specifications</string>
+    <string name="device_info_section_system">System information</string>
+    <string name="device_info_section_versions">Model and versions</string>
 </resources>
