@@ -121,33 +121,21 @@ class SuperIslandDimensionsHook :
         }.toMap()
         if (overrides.isEmpty()) return
 
-        Resources::class.java.resolve().firstMethod {
-            name = "getDimension"
-            parameterCount = 1
-        }.hook {
-            after {
-                overrideDimension(instance<Resources>(), args(0).int(), overrides)?.let { value ->
-                    result = value
-                }
-            }
-        }
-        Resources::class.java.resolve().firstMethod {
-            name = "getDimensionPixelOffset"
-            parameterCount = 1
-        }.hook {
-            after {
-                overrideDimension(instance<Resources>(), args(0).int(), overrides)?.let { value ->
-                    result = value.toInt()
-                }
-            }
-        }
-        Resources::class.java.resolve().firstMethod {
-            name = "getDimensionPixelSize"
-            parameterCount = 1
-        }.hook {
-            after {
-                overrideDimension(instance<Resources>(), args(0).int(), overrides)?.let { value ->
-                    result = value.roundToInt()
+        val resourcesClass = Resources::class.java.resolve()
+        listOf(
+            Triple("getDimension", 1) { v: Float -> v },
+            Triple("getDimensionPixelOffset", 1) { v: Float -> v.toInt() },
+            Triple("getDimensionPixelSize", 1) { v: Float -> v.roundToInt() },
+        ).forEach { (name, paramCount, transform) ->
+            hookSafely("Resources.$name") {
+                resourcesClass.firstMethod {
+                    this.name = name
+                    parameterCount = paramCount
+                }.hook {
+                    after {
+                        overrideDimension(instance<Resources>(), args(0).int(), overrides)
+                            ?.let { result = transform(it) }
+                    }
                 }
             }
         }

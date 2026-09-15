@@ -1,5 +1,6 @@
 package com.newbieeming.hookhyper.core.hook
 
+import android.util.Log
 import com.highcapable.yukihookapi.hook.param.PackageParam
 
 /**
@@ -15,4 +16,15 @@ interface SubHooker {
 
     /** 在目标应用的 [PackageParam] 上下文中执行 Hook 逻辑。 */
     fun PackageParam.onHook()
+
+    /**
+     * 安全执行单个 Hook 注册，失败时仅记录日志而不中断后续 Hook。
+     *
+     * 用于 [onHook] 内部，避免因软件更新导致某个 Hook 失败后阻断其余 Hook 的执行。
+     */
+    fun PackageParam.hookSafely(name: String, block: PackageParam.() -> Unit) {
+        runCatching { block() }.onFailure {
+            Log.e(this@SubHooker.javaClass.simpleName, "Hook failed: $name", it)
+        }
+    }
 }

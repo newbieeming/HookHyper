@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
+import com.highcapable.yukihookapi.hook.param.HookParam
 import com.highcapable.yukihookapi.hook.param.PackageParam
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.hook.HookModule
@@ -61,43 +62,34 @@ class TimeFormatHook :
         val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
         val aaPrefix = featurePreferences.getBoolean(SystemUiHookDef.TIME_FORMAT_AA_PREFIX.preferenceKey)
         val amPms12h = arrayOf("AM", "AM", "AM", "PM", "PM", "PM", "PM")
+        val resourcesClass = Resources::class.java.resolve()
+        val entryName: Resources.(Int) -> String? = { runCatching { getResourceEntryName(it) }.getOrNull() }
 
-        Resources::class.java.resolve().firstMethod {
-            name = "getString"
-            parameterCount = 1
-        }.hook {
-            after {
-                val res = instance<Resources>()
-                val resId = args(0).int()
-                val resName = runCatching {
-                    res.getResourceEntryName(resId)
-                }.getOrNull() ?: return@after
-                when (resName) {
-                    "fmt_time_12hour_minute",
-                    "fmt_time_24hour_minute",
-                    -> {
-                        val original = result?.toString().orEmpty()
-                        if (!original.contains("aa", ignoreCase = true)) {
-                            result = if (aaPrefix) "aa $original" else "$original aa"
-                        }
+        mapOf(
+            "getString" to fun HookParam.() {
+                val resName = instance<Resources>().entryName(args(0).int()) ?: return
+                if (resName in TIME_RELATED_RESOURCES) {
+                    val original = result?.toString().orEmpty()
+                    if (!original.contains("aa", ignoreCase = true)) {
+                        result = if (aaPrefix) "aa $original" else "$original aa"
                     }
                 }
+            },
+            "getStringArray" to fun HookParam.() {
+                val resName = instance<Resources>().entryName(args(0).int()) ?: return
+                if (resName == "detailed_am_pms") result = amPms12h
+            },
+        ).forEach { (methodName, callback) ->
+            hookSafely("Resources.$methodName") {
+                resourcesClass.firstMethod {
+                    name = methodName
+                    parameterCount = 1
+                }.hook { after(callback) }
             }
         }
+    }
 
-        Resources::class.java.resolve().firstMethod {
-            name = "getStringArray"
-            parameterCount = 1
-        }.hook {
-            after {
-                val resId = args(0).int()
-                val resName = runCatching {
-                    instance<Resources>().getResourceEntryName(resId)
-                }.getOrNull() ?: return@after
-                if (resName == "detailed_am_pms") {
-                    result = amPms12h
-                }
-            }
-        }
+    private companion object {
+        val TIME_RELATED_RESOURCES = setOf("fmt_time_12hour_minute", "fmt_time_24hour_minute")
     }
 }

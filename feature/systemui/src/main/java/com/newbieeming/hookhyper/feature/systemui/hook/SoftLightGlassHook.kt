@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
+import com.highcapable.yukihookapi.hook.param.HookParam
 import com.highcapable.yukihookapi.hook.param.PackageParam
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.HookUtils.call
@@ -50,66 +51,85 @@ class SoftLightGlassHook :
         val blur = materialType.staticField("BLUR")
         val glass = materialType.staticField("GLASS")
 
-        "com.android.systemui.statusbar.notification.style.domain.NotificationMaterialStateInteractor\$materialTypeState\$1"
-            .toClass().resolve()
-            .firstMethod {
-                name = "invokeSuspend"
-                parameterCount = 1
-            }.hook {
-                after {
-                    if (result<Any>() == blur) result = glass
-                }
-            }
+        hookInvokeSuspend("NotificationMaterialStateInteractor",
+            "com.android.systemui.statusbar.notification.style.domain.NotificationMaterialStateInteractor\$materialTypeState\$1"
+        ) {
+            if (result<Any>() == blur) result = glass
+        }
 
-        val bionics = "com.miui.interfaces.controlcenter.data.repository.MaterialMode\$Bionics"
-            .toClass().staticField("INSTANCE")
-        "com.miui.systemui.shade.blur.ShadeBlendBlurController\$isBionicsEnabled\$1"
-            .toClass().resolve()
-            .firstMethod {
-                name = "invokeSuspend"
-                parameterCount = 1
-            }.hook {
-                after {
-                    if (instance.field("L\$0") == bionics) resultTrue()
-                }
+        val bionics = runCatching {
+            "com.miui.interfaces.controlcenter.data.repository.MaterialMode\$Bionics"
+                .toClass().staticField("INSTANCE")
+        }.getOrNull()
+
+        // 260916前 / 260916后
+        listOf(
+            "ShadeBlendBlurController" to "com.miui.systemui.shade.blur.ShadeBlendBlurController\$isBionicsEnabled\$1",
+            "ShadeBlendBlurControllerImpl" to "com.miui.systemui.shade.blur.ShadeBlendBlurControllerImpl\$isBionicsEnabled\$1",
+        ).forEach { (name, className) ->
+            hookInvokeSuspend(name, className) {
+                if (instance.field("L\$0") == bionics) resultTrue()
             }
+        }
 
         var pluginHooked = false
-        "com.miui.systemui.controlcenter.container.ControlCenterContentController".toClass().resolve()
-            .firstMethod {
-                name = "onPluginLoaded"
-                parameterCount = 3
-            }.hook {
-                after {
-                    if (pluginHooked) return@after
-                    val plugin = args[0] ?: return@after
-                    val pluginClassLoader = plugin.javaClass.classLoader ?: return@after
-                    val context = args[1] as? Context ?: return@after
-                    pluginHooked = true
-
-                    runCatching {
-                        pluginClassLoader.loadClass("miui.systemui.util.MiBlurCompat").resolve()
-                            .firstMethod {
-                                name = "getBackgroundMaterialOpenedInDefaultTheme"
-                                parameterCount = 1
-                            }.hook { replaceToTrue() }
-
-                        val pluginBionics = pluginClassLoader
-                            .loadClass("miui.systemui.util.MaterialMode\$Bionics")
-                            .staticField("INSTANCE")
-                        pluginClassLoader.loadClass("miui.systemui.util.MiBackgroundStyle").resolve()
-                            .firstMethod {
-                                name = "getMaterialMode"
-                                emptyParameters()
-                            }.hook { replaceTo(pluginBionics) }
-
-                        val content = instance.field("content")
-                        val root = content?.call("getView") as? View
-                        root?.postDelayed({ refreshControls(root) }, 500)
-                        toggleBackgroundBlur(context)
-                    }.onFailure { Log.e(TAG, "Unable to hook control-center plugin", it) }
+        hookSafely("ControlCenterContentController") {
+            "com.miui.systemui.controlcenter.container.ControlCenterContentController".toClass()
+                .resolve()
+                .firstMethod {
+                    name = "onPluginLoaded"
+                    parameterCount = 3
+                }.hook {
+                    after {
+                        if (pluginHooked) return@after
+                        val plugin = args[0] ?: return@after
+                        val classLoader = plugin.javaClass.classLoader ?: return@after
+                        val context = args[1] as? Context ?: return@after
+                        pluginHooked = true
+                        hookPlugin(classLoader, instance, context)
+                    }
                 }
-            }
+        }
+    }
+
+    private fun PackageParam.hookInvokeSuspend(
+        name: String,
+        className: String,
+        callback: HookParam.() -> Unit,
+    ) {
+        hookSafely(name) {
+            className.toClass().resolve()
+                .firstMethod { this.name = "invokeSuspend"; parameterCount = 1 }
+                .hook { after(callback) }
+        }
+    }
+
+    private fun PackageParam.hookPlugin(
+        classLoader: ClassLoader,
+        controller: Any,
+        context: Context,
+    ) {
+        runCatching {
+            classLoader.loadClass("miui.systemui.util.MiBlurCompat").resolve()
+                .firstMethod {
+                    name = "getBackgroundMaterialOpenedInDefaultTheme"
+                    parameterCount = 1
+                }.hook { replaceToTrue() }
+
+            val pluginBionics = classLoader
+                .loadClass("miui.systemui.util.MaterialMode\$Bionics")
+                .staticField("INSTANCE")
+            classLoader.loadClass("miui.systemui.util.MiBackgroundStyle")
+                .resolve()
+                .firstMethod {
+                    name = "getMaterialMode"
+                    emptyParameters()
+                }.hook { replaceTo(pluginBionics) }
+
+            val root = controller.field("content")?.call("getView") as? View
+            root?.postDelayed({ refreshControls(root) }, 500)
+            toggleBackgroundBlur(context)
+        }.onFailure { Log.e(TAG, "Unable to hook control-center plugin", it) }
     }
 
     private fun toggleBackgroundBlur(context: Context) {
@@ -119,7 +139,7 @@ class SoftLightGlassHook :
                 runCatching {
                     Settings.Secure.putInt(context.contentResolver, "background_blur_enable", 1)
                 }
-            }, 800)
+            }, 1000)
         }.onFailure { Log.w(TAG, "Unable to refresh background blur setting", it) }
     }
 
@@ -132,9 +152,15 @@ class SoftLightGlassHook :
                     view.call("updateState", state, connected, true)
                 }
             }
+
             view.javaClass.name.contains("ToggleSlider") -> {
                 runCatching { view.call("updateBlendBlur", true) }
-                    .recoverCatching { view.call("onConfigurationChanged", view.resources.configuration) }
+                    .recoverCatching {
+                        view.call(
+                            "onConfigurationChanged",
+                            view.resources.configuration
+                        )
+                    }
             }
         }
         if (view is ViewGroup) {

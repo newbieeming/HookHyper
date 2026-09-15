@@ -1,6 +1,5 @@
 package com.newbieeming.hookhyper.feature.settings.hook
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -48,7 +47,6 @@ class DeviceInfoHook :
     override val def = SettingsHookDef.EDIT_DEVICE_INFO
 
     private companion object {
-        private const val TAG = "DeviceInfoHook"
         private const val CARD_INFO = "com.android.settings.device.DeviceCardInfo"
         private const val BASE_CARD = "com.android.settings.device.BaseDeviceCardItem"
         private const val ABOUT_PHONE = "com.android.settings.device.MiuiAboutPhoneUtils"
@@ -56,62 +54,60 @@ class DeviceInfoHook :
 
     @Composable
     override fun Content() {
-        SettingsPreferenceGroup {
-            val viewModel = featureViewModel<SettingsFeatureViewModel>()
-            val state by viewModel.state.collectAsStateWithLifecycle()
-            val repo = LocalPreferencesRepository.current
-            var enabled by remember { mutableStateOf(repo.getBoolean(preferenceKey)) }
+        val repo = LocalPreferencesRepository.current
+        var enabled by remember { mutableStateOf(repo.getBoolean(preferenceKey)) }
 
+        SettingsPreferenceGroup {
             HookSwitchPreference(
                 preferenceKey = preferenceKey,
                 title = stringResource(R.string.settings_edit_device_info_title),
                 summary = stringResource(R.string.settings_edit_device_info_summary),
                 onCheckedChange = { enabled = it },
             )
-
             AnimatedVisibility(
                 visible = enabled,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut(),
             ) {
-                val deviceInfoFields = DeviceInfoFields.all
-                val focusRequesters = remember(deviceInfoFields.size) {
-                    List(deviceInfoFields.size) { FocusRequester() }
-                }
-                val focusManager = LocalFocusManager.current
-                val keyboardController = LocalSoftwareKeyboardController.current
+                DeviceInfoFieldList()
+            }
+        }
+    }
 
-                DeviceInfoTextFieldGroup {
-                    deviceInfoFields.forEachIndexed { index, field ->
-                        when (field) {
-                            DeviceInfoFields.deviceName -> DeviceInfoSectionTitle(stringResource(R.string.device_info_section_hardware))
-                            DeviceInfoFields.osVersion -> DeviceInfoSectionTitle(stringResource(R.string.device_info_section_system))
-                            DeviceInfoFields.certModel -> DeviceInfoSectionTitle(stringResource(R.string.device_info_section_versions))
+    @Composable
+    private fun DeviceInfoFieldList() {
+        val viewModel = featureViewModel<SettingsFeatureViewModel>()
+        val state by viewModel.state.collectAsStateWithLifecycle()
+        val fields = DeviceInfoFields.all
+        val focusRequesters = remember(fields.size) { List(fields.size) { FocusRequester() } }
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val sectionTitles = mapOf(
+            DeviceInfoFields.deviceName to R.string.device_info_section_hardware,
+            DeviceInfoFields.osVersion to R.string.device_info_section_system,
+            DeviceInfoFields.certModel to R.string.device_info_section_versions,
+        )
+
+        DeviceInfoTextFieldGroup {
+            fields.forEachIndexed { index, field ->
+                sectionTitles[field]?.let { DeviceInfoSectionTitle(stringResource(it)) }
+                DeviceInfoTextField(
+                    label = deviceInfoLabel(field.preferenceKey),
+                    value = state.values[field.preferenceKey].orEmpty(),
+                    onValueChange = { viewModel.accept(SettingsFeatureIntent.UpdateValue(field.preferenceKey, it)) },
+                    modifier = Modifier.focusRequester(focusRequesters[index]),
+                    supportingText = field.originValue.takeIf { it.isNotBlank() }
+                        ?.let { stringResource(R.string.device_info_origin_value, it) },
+                    imeAction = if (index == fields.lastIndex) ImeAction.Done else ImeAction.Next,
+                    onImeAction = {
+                        if (index == fields.lastIndex) {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        } else {
+                            focusRequesters[index + 1].requestFocus()
                         }
-                        val isLastField = index == deviceInfoFields.lastIndex
-                        DeviceInfoTextField(
-                            label = deviceInfoLabel(field.preferenceKey),
-                            value = state.values[field.preferenceKey].orEmpty(),
-                            onValueChange = {
-                                viewModel.accept(
-                                    SettingsFeatureIntent.UpdateValue(field.preferenceKey, it),
-                                )
-                            },
-                            modifier = Modifier.focusRequester(focusRequesters[index]),
-                            supportingText = field.originValue.takeIf { it.isNotBlank() }
-                                ?.let { stringResource(R.string.device_info_origin_value, it) },
-                            imeAction = if (isLastField) ImeAction.Done else ImeAction.Next,
-                            onImeAction = {
-                                if (isLastField) {
-                                    focusManager.clearFocus()
-                                    keyboardController?.hide()
-                                } else {
-                                    focusRequesters[index + 1].requestFocus()
-                                }
-                            },
-                        )
-                    }
-                }
+                    },
+                )
             }
         }
     }
@@ -159,7 +155,7 @@ class DeviceInfoHook :
             }.getOrNull()
         }
 
-        runCatching {
+        hookSafely("BaseDeviceCardItem.setValue") {
             // 特殊处理摄像头FirstValue、SecondValue
             BASE_CARD.toClass().resolve().optional(silent = true).method {
                 name = "setValue"
@@ -178,9 +174,9 @@ class DeviceInfoHook :
                     }
                 }
             }
-        }.onFailure { Log.e(TAG, "Unable to hook structured device cards", it) }
+        }
 
-        runCatching {
+        hookSafely("DeviceCardInfo.setValue") {
             CARD_INFO.toClass().resolve().firstMethod {
                 name = "setValue"
                 parameters(String::class)
@@ -196,42 +192,29 @@ class DeviceInfoHook :
                     }
                 }
             }
-        }.onFailure { Log.e(TAG, "Unable to hook DeviceCardInfo.setValue", it) }
+        }
     }
 
     private fun PackageParam.hookVersionInfo() {
         val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
+        val aboutPhone = ABOUT_PHONE.toClass().resolve()
 
-        runCatching {
-            ABOUT_PHONE.toClass().resolve().firstMethod {
-                name = "getOsVersionCode"
-                emptyParameters()
-            }.hook {
-                after {
-                    featurePreferences.getString(DeviceInfoFields.osVersion.preferenceKey)
-                        .takeIf(String::isNotBlank)?.let { result = it }
+        listOf(
+            "getOsVersionCode" to DeviceInfoFields.osVersion.preferenceKey,
+            "getRoXmsVersion" to DeviceInfoFields.roXmsVersion.preferenceKey,
+            "getXmsVersion" to DeviceInfoFields.xmsVersion.preferenceKey,
+        ).forEach { (methodName, prefKey) ->
+            hookSafely("MiuiAboutPhoneUtils.$methodName") {
+                aboutPhone.firstMethod {
+                    name = methodName
+                    emptyParameters()
+                }.hook {
+                    after {
+                        featurePreferences.getString(prefKey)
+                            .takeIf(String::isNotBlank)?.let { result = it }
+                    }
                 }
             }
-            ABOUT_PHONE.toClass().resolve().firstMethod {
-                name = "getRoXmsVersion"
-                emptyParameters()
-            }.hook {
-                after {
-                    featurePreferences.getString(DeviceInfoFields.roXmsVersion.preferenceKey)
-                        .takeIf(String::isNotBlank)?.let { result = it }
-                }
-            }
-            ABOUT_PHONE.toClass().resolve().firstMethod {
-                name = "getXmsVersion"
-                emptyParameters()
-            }.hook {
-                after {
-                    featurePreferences.getString(DeviceInfoFields.xmsVersion.preferenceKey)
-                        .takeIf(String::isNotBlank)?.let { result = it }
-                }
-            }
-        }.onFailure { Log.e(TAG, "Unable to hook OS version", it) }
+        }
     }
-
-    // endregion
 }
