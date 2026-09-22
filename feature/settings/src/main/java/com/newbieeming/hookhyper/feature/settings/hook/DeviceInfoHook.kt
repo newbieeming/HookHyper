@@ -1,5 +1,8 @@
 package com.newbieeming.hookhyper.feature.settings.hook
 
+import android.app.Application
+import android.content.Context
+import android.content.res.Resources
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -19,7 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.highcapable.yukihookapi.hook.param.PackageParam
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.HookUtils.call
@@ -136,16 +139,23 @@ class DeviceInfoHook :
         return stringResource(resourceId)
     }
 
-    override fun PackageParam.onHook() {
-        hookDeviceCard()
+    override fun HookContext.onHook() {
+        var resources: Resources? = null
+        val attach = Application::class.java.getDeclaredMethod("attach", Context::class.java)
+        xposed.hook(attach).intercept { chain ->
+            val context = chain.args[0] as Context
+            if (context.packageName == packageName) resources = context.resources
+            chain.proceed()
+        }
+        hookDeviceCard { resources }
         hookVersionInfo()
     }
 
-    private fun PackageParam.hookDeviceCard() {
+    private fun HookContext.hookDeviceCard(resources: () -> Resources?) {
         val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
         val resolveString: (String) -> String? = { name ->
             runCatching {
-                val appRes = appResources
+                val appRes = resources()
                 val resId = appRes?.getIdentifier(
                     name,
                     "string",
@@ -160,42 +170,44 @@ class DeviceInfoHook :
             BASE_CARD.toClass().resolve().optional(silent = true).method {
                 name = "setValue"
                 parameterCount = 2
-            }.hookAll {
-                before {
-                    val info = args[0]
+            }.forEach { method ->
+                xposed.hook(method.self).intercept { chain ->
+                    val info = chain.args[0]
                     val title = info?.call("getTitle")?.toString().orEmpty()
                     val str = resolveString(DeviceInfoFields.camera.stringsName)
-                    if (title != str) return@before
+                    if (title != str) return@intercept chain.proceed()
                     val value = info?.call("getValue")?.toString().orEmpty()
                     info?.call("setValue", value)
                     if (info?.call("getFirstValue") != null) {
                         info.call("setFirstValue", value)
                         info.call("setSecondValue", "")
                     }
+                    chain.proceed()
                 }
             }
         }
 
         hookSafely("DeviceCardInfo.setValue") {
-            CARD_INFO.toClass().resolve().firstMethod {
+            val method = CARD_INFO.toClass().resolve().firstMethod {
                 name = "setValue"
                 parameters(String::class)
-            }.hook {
-                before {
-                    val cardInfo = instance
+            }.self
+            xposed.hook(method).intercept { chain ->
+                    val cardInfo = requireNotNull(chain.thisObject)
                     val title = cardInfo.call("getTitle")?.toString()?.trim().orEmpty()
-                    val value = args[0]?.toString().orEmpty()
+                    val value = chain.args[0]?.toString().orEmpty()
                     val key = DeviceInfoFields.resolveKey(title, value, resolveString)
-                        ?: return@before
-                    featurePreferences.getString(key).takeIf(String::isNotBlank)?.let {
-                        args(index = 0).set(it)
-                    }
-                }
+                        ?: return@intercept chain.proceed()
+                    val replacement = featurePreferences.getString(key).takeIf(String::isNotBlank)
+                        ?: return@intercept chain.proceed()
+                    val arguments = chain.args.toTypedArray()
+                    arguments[0] = replacement
+                    chain.proceed(arguments)
             }
         }
     }
 
-    private fun PackageParam.hookVersionInfo() {
+    private fun HookContext.hookVersionInfo() {
         val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
         val aboutPhone = ABOUT_PHONE.toClass().resolve()
 
@@ -205,14 +217,13 @@ class DeviceInfoHook :
             "getXmsVersion" to DeviceInfoFields.xmsVersion.preferenceKey,
         ).forEach { (methodName, prefKey) ->
             hookSafely("MiuiAboutPhoneUtils.$methodName") {
-                aboutPhone.firstMethod {
+                val method = aboutPhone.firstMethod {
                     name = methodName
                     emptyParameters()
-                }.hook {
-                    after {
-                        featurePreferences.getString(prefKey)
-                            .takeIf(String::isNotBlank)?.let { result = it }
-                    }
+                }.self
+                xposed.hook(method).intercept { chain ->
+                    val original = chain.proceed()
+                    featurePreferences.getString(prefKey).takeIf(String::isNotBlank) ?: original
                 }
             }
         }

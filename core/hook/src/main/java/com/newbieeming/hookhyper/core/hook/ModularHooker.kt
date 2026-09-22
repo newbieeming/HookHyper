@@ -1,7 +1,6 @@
 package com.newbieeming.hookhyper.core.hook
 
 import android.util.Log
-import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 
 /**
@@ -16,15 +15,16 @@ import com.newbieeming.hookhyper.core.common.PreferenceKeys
 abstract class ModularHooker(
     private val tag: String,
     private val targetPackage: String,
-) : YukiBaseHooker() {
+) {
 
-    override fun onHook() {
-        loadApp(name = targetPackage) {
+    fun onHook(context: HookContext) {
+        if (context.packageName != targetPackage) return
+        with(context) {
             val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
-            for (hooker in modules()) {
+            for (hooker in this@ModularHooker.modules()) {
                 if (!featurePreferences.getBoolean(hooker.preferenceKey)) continue
                 with(hooker) {
-                    runCatching { this@loadApp.onHook() }
+                    runCatching { context.onHook() }
                         .onFailure { Log.e(tag, "Hook failed: ${hooker.preferenceKey}", it) }
                 }
             }

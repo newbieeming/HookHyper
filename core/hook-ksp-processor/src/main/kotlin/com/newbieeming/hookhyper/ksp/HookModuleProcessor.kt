@@ -32,12 +32,17 @@ private val AGGREGATING_DEPENDENCIES = Dependencies(aggregating = true)
 
 class HookModuleProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
-        HookModuleProcessor(environment.codeGenerator, environment.logger)
+        HookModuleProcessor(
+            environment.codeGenerator,
+            environment.logger,
+            environment.options["hookhyper.aggregate"] == "true",
+        )
 }
 
 private class HookModuleProcessor(
     private val codeGenerator: com.google.devtools.ksp.processing.CodeGenerator,
     private val logger: com.google.devtools.ksp.processing.KSPLogger,
+    private val aggregate: Boolean,
 ) : SymbolProcessor {
 
     private var processed = false
@@ -70,11 +75,13 @@ private class HookModuleProcessor(
             entries += HookEntry(targetPkg, classPkg, ClassName.bestGuess(fqName))
         }
 
+        if (deferred.isNotEmpty()) return deferred
+
         if (entries.isNotEmpty()) {
             // Feature 模块：生成 HookRegistry + FeatureHooker + FeatureRegistrar
             processed = true
             generateFeatureModule(entries)
-        } else {
+        } else if (aggregate) {
             // App 模块：读取聚合文件，生成 GeneratedHookEntry
             processed = true
             generateAppEntry()
@@ -132,7 +139,7 @@ private class HookModuleProcessor(
 
     private fun generateRegistrar(genPkg: String) {
         val registrarIface = ClassName("com.newbieeming.hookhyper.core.hook", "Registrar")
-        val yukiBaseHooker = ClassName("com.highcapable.yukihookapi.hook.entity", "YukiBaseHooker")
+        val modularHooker = ClassName("com.newbieeming.hookhyper.core.hook", "ModularHooker")
         val hookerClass = ClassName(genPkg, "FeatureHooker")
 
         val obj = TypeSpec.objectBuilder("FeatureRegistrar")
@@ -140,7 +147,7 @@ private class HookModuleProcessor(
             .addFunction(
                 FunSpec.builder("hooker")
                     .addModifiers(com.squareup.kotlinpoet.KModifier.OVERRIDE)
-                    .returns(yukiBaseHooker)
+                    .returns(modularHooker)
                     .addStatement("return %T", hookerClass)
                     .build()
             )
@@ -178,8 +185,9 @@ private class HookModuleProcessor(
         )
 
         val registerFun = FunSpec.builder("register")
+            .addParameter("context", ClassName("com.newbieeming.hookhyper.core.hook", "HookContext"))
             .addStatement(
-                "com.highcapable.yukihookapi.YukiHookAPI.encase(*registrars.map { it.getDeclaredConstructor().newInstance().hooker() }.toTypedArray())"
+                "registrars.forEach { it.getDeclaredConstructor().newInstance().hooker().onHook(context) }"
             )
             .build()
 

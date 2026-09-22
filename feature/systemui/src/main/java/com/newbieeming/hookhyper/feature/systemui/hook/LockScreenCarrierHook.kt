@@ -5,7 +5,7 @@ import android.widget.TextView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.highcapable.yukihookapi.hook.param.PackageParam
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
@@ -33,14 +33,15 @@ class LockScreenCarrierHook :
         }
     }
 
-    override fun PackageParam.onHook() {
-        "com.android.systemui.statusbar.phone.KeyguardStatusBarView".toClass().resolve()
+    override fun HookContext.onHook() {
+        val method = "com.android.systemui.statusbar.phone.KeyguardStatusBarView".toClass().resolve()
             .firstMethod {
                 name = "onFinishInflate"
                 emptyParameters()
-            }.hook {
-                after {
-                    val root = instance<View>()
+            }.self
+        xposed.hook(method).intercept { chain ->
+                    val result = chain.proceed()
+                    val root = chain.thisObject as View
                     val carrierId = root.resources.getIdentifier(
                         "keyguard_carrier_text",
                         "id",
@@ -50,7 +51,7 @@ class LockScreenCarrierHook :
                         carrier.text = carrier.text.toString().substringBefore("|").trim()
                         carrier.visibility = View.VISIBLE
                     }
-                }
+                    result
             }
     }
 }

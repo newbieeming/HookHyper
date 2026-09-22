@@ -8,6 +8,10 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+ksp {
+    arg("hookhyper.aggregate", "true")
+}
+
 android {
     namespace = "com.newbieeming.hookhyper"
 
@@ -107,9 +111,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.kotlin.serialization.json)
-    implementation(libs.yukihookapi.api)
-    compileOnly(libs.xposed.api)
-    ksp(libs.yukihookapi.ksp.xposed)
+    compileOnly(libs.libxposed.api)
     ksp(project(":core:hook-ksp-processor"))
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

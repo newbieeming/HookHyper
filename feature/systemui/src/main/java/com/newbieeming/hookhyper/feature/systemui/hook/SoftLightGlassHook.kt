@@ -10,8 +10,7 @@ import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.highcapable.yukihookapi.hook.param.HookParam
-import com.highcapable.yukihookapi.hook.param.PackageParam
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.HookUtils.call
 import com.newbieeming.hookhyper.core.hook.HookUtils.field
@@ -46,7 +45,7 @@ class SoftLightGlassHook :
         }
     }
 
-    override fun PackageParam.onHook() {
+    override fun HookContext.onHook() {
         val materialType = "com.miui.systemui.material.MaterialType".toClass()
         val blur = materialType.staticField("BLUR")
         val glass = materialType.staticField("GLASS")
@@ -54,7 +53,8 @@ class SoftLightGlassHook :
         hookInvokeSuspend("NotificationMaterialStateInteractor",
             "com.android.systemui.statusbar.notification.style.domain.NotificationMaterialStateInteractor\$materialTypeState\$1"
         ) {
-            if (result<Any>() == blur) result = glass
+            _, original ->
+            if (original == blur) glass else original
         }
 
         val bionics = runCatching {
@@ -68,63 +68,72 @@ class SoftLightGlassHook :
             "ShadeBlendBlurControllerImpl" to "com.miui.systemui.shade.blur.ShadeBlendBlurControllerImpl\$isBionicsEnabled\$1",
         ).forEach { (name, className) ->
             hookInvokeSuspend(name, className) {
-                if (instance.field("L\$0") == bionics) resultTrue()
+                instance, original ->
+                if (bionics != null && instance.field("L\$0") == bionics) true else original
             }
         }
 
         var pluginHooked = false
         hookSafely("ControlCenterContentController") {
-            "com.miui.systemui.controlcenter.container.ControlCenterContentController".toClass()
+            val method = "com.miui.systemui.controlcenter.container.ControlCenterContentController".toClass()
                 .resolve()
                 .firstMethod {
                     name = "onPluginLoaded"
                     parameterCount = 3
-                }.hook {
-                    after {
-                        if (pluginHooked) return@after
-                        val plugin = args[0] ?: return@after
-                        val classLoader = plugin.javaClass.classLoader ?: return@after
-                        val context = args[1] as? Context ?: return@after
+                }.self
+            xposed.hook(method).intercept { chain ->
+                val original = chain.proceed()
+                if (!pluginHooked) {
+                    val pluginLoader = chain.args[0]?.javaClass?.classLoader
+                    val context = chain.args[1] as? Context
+                    if (pluginLoader != null && context != null) {
                         pluginHooked = true
-                        hookPlugin(classLoader, instance, context)
+                        hookPlugin(pluginLoader, requireNotNull(chain.thisObject), context)
                     }
                 }
+                original
+            }
         }
     }
 
-    private fun PackageParam.hookInvokeSuspend(
+    private fun HookContext.hookInvokeSuspend(
         name: String,
         className: String,
-        callback: HookParam.() -> Unit,
+        callback: (Any, Any?) -> Any?,
     ) {
         hookSafely(name) {
-            className.toClass().resolve()
-                .firstMethod { this.name = "invokeSuspend"; parameterCount = 1 }
-                .hook { after(callback) }
+            val method = className.toClass().resolve()
+                .firstMethod { this.name = "invokeSuspend"; parameterCount = 1 }.self
+            xposed.hook(method).intercept { chain ->
+                val original = chain.proceed()
+                callback(requireNotNull(chain.thisObject), original)
+            }
         }
     }
 
-    private fun PackageParam.hookPlugin(
+    private fun HookContext.hookPlugin(
         classLoader: ClassLoader,
         controller: Any,
         context: Context,
     ) {
         runCatching {
-            classLoader.loadClass("miui.systemui.util.MiBlurCompat").resolve()
+            val blurMethod = classLoader.loadClass("miui.systemui.util.MiBlurCompat").resolve()
                 .firstMethod {
                     name = "getBackgroundMaterialOpenedInDefaultTheme"
                     parameterCount = 1
-                }.hook { replaceToTrue() }
+                }.self
+            xposed.hook(blurMethod).intercept { true }
 
             val pluginBionics = classLoader
                 .loadClass("miui.systemui.util.MaterialMode\$Bionics")
                 .staticField("INSTANCE")
-            classLoader.loadClass("miui.systemui.util.MiBackgroundStyle")
+            val materialMethod = classLoader.loadClass("miui.systemui.util.MiBackgroundStyle")
                 .resolve()
                 .firstMethod {
                     name = "getMaterialMode"
                     emptyParameters()
-                }.hook { replaceTo(pluginBionics) }
+                }.self
+            xposed.hook(materialMethod).intercept { pluginBionics }
 
             val root = controller.field("content")?.call("getView") as? View
             root?.postDelayed({ refreshControls(root) }, 500)

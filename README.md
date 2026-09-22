@@ -1,6 +1,6 @@
 # HookHyper
 
-HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 FeatHyper 重构，用于补全系统功能并改善界面体验。项目以 YukiHookAPI 实现 Hook，以 Hilt、MVI、Jetpack Compose 和 Navigation 3 组织应用，并支持 MIUIX 与 Material 3 两种界面风格。
+HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 FeatHyper 重构，用于补全系统功能并改善界面体验。项目以 libxposed API 102.0.0 实现 Hook，以 Hilt、MVI、Jetpack Compose 和 Navigation 3 组织应用，并支持 MIUIX 与 Material 3 两种界面风格。
 
 > [!WARNING]
 > Xposed Hook 依赖具体的 HyperOS 系统实现。系统升级可能导致部分功能失效；使用前请确保具备恢复环境的能力，并自行承担修改系统应用行为的风险。
@@ -11,17 +11,17 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 FeatHyper 重构，
 
 | 目标应用 | 作用域 | 功能 |
 | --- | --- | --- |
-| 系统界面 | `com.android.systemui` | 在锁屏状态栏显示 SIM 运营商名称；为通知栏和控制中心强制启用柔光玻璃效果；自定义状态栏时间格式（含 AM/PM 前缀选项）；替换指纹解锁图标，可选择 Circle 或 Vanilla 样式 |
+| 系统界面 | `com.android.systemui` | 在锁屏状态栏显示 SIM 运营商名称；为通知栏和控制中心强制启用柔光玻璃效果；自定义状态栏时间格式（含 AM/PM 前缀选项）；自定义超级岛尺寸 |
 | 系统设置 | `com.android.settings` | 自定义”关于手机”中的设备名称、处理器、内存、电池、分辨率、屏幕尺寸、OS 版本、摄像头和基带信息 |
 
-设置会通过 YukiHookPrefsBridge 与被 Hook 进程共享。功能开关或字段修改后，可在对应 feature 页面使用“重启应用”使其生效；该操作需要 Root 权限。
+设置会通过 libxposed 远程偏好 与被 Hook 进程共享。功能开关或字段修改后，可在对应 feature 页面使用“重启应用”使其生效；该操作需要 Root 权限。
 
 ## 使用要求
 
 - 小米 / Redmi / POCO 的 HyperOS 设备
 - 已获取 Root 权限
 - 已安装并正常运行兼容的 Xposed 框架（例如 LSPosed）
-- Xposed API 版本不低于 93
+- 支持现代 libxposed API 102 的框架（不兼容旧版 Xposed API 82/93）
 
 不同机型、地区版本和 HyperOS 版本的内部实现可能不同，以上条件不代表所有功能都一定兼容。
 
@@ -71,10 +71,10 @@ HookHyper/
 
 ### Hook 模块化架构
 
-每个 feature 的 Hook 逻辑通过 `@HookModule` 注解 + KSP 自动生成，`HookEntry` 通过 `ServiceLoader` 自动发现所有模块：
+每个 feature 的 Hook 逻辑通过 `@HookModule` 注解 + KSP 自动生成，`HookEntry` 通过 KSP 生成的 `GeneratedHookEntry` 自动发现所有模块：
 
 ```text
-HookEntry (app)  ── ServiceLoader.load(Registrar) ── 自动发现所有 feature 模块
+HookEntry (app)  ── GeneratedHookEntry.register(context) ── 自动发现所有 feature 模块
   ├─ SystemuiHooker (KSP 自动生成)  ─── 遍历 HookRegistry
   │   ├─ LockScreenCarrierHook    @HookModule(packageName = "com.android.systemui")
   │   ├─ SoftLightGlassHook
@@ -86,7 +86,7 @@ HookEntry (app)  ── ServiceLoader.load(Registrar) ── 自动发现所有 
 
 - `@HookModule` 注解仅声明目标包名，KSP 据此生成 `HookRegistry`、主 Hooker 和 `Registrar`。
 - Hook 类实现 `SubHooker`（运行时 Hook 逻辑）和 `FeatureHook<T>`（UI 元数据），`preferenceKey` 从实例读取。
-- `HookEntry` 通过 `ServiceLoader` 扫描所有 `Registrar` 实现，无需手动注册。
+- `HookEntry` 通过 KSP 生成的 `GeneratedHookEntry` 扫描所有 `Registrar` 实现，无需手动注册。
 - 新增功能只需实现 `SubHooker` + `@HookModule` + `FeatureHook<T>`，新增 feature 模块只需应用 `hook.module` 插件。
 
 ## 应用 UI 架构
@@ -134,7 +134,7 @@ FeatureEntryImpl (core:ui)
 
 - Kotlin 2.2.10、KSP 2.2.10-2.0.2
 - Android Gradle Plugin 9.2.1、Gradle 9.5
-- YukiHookAPI 1.3.2、KavaRef 1.0.2
+- libxposed API / service 102.0.0、KavaRef 1.0.2
 - Hilt 2.60、MVI、Kotlin Coroutines
 - Jetpack Compose、Material 3、Navigation 3
 - MIUIX 0.9.1
@@ -152,7 +152,7 @@ MIUIX 仍处于快速迭代阶段。升级时需要同时验证 Kotlin、Compose
   - **detekt**：Kotlin 静态分析，检查代码复杂度、命名规范、潜在 Bug 等，提供 IDE 内联告警
   - **Spotless Gradle**：代码格式检查，基于 ktlint 统一代码风格，提交前自动格式化
 
-项目的 compile SDK 为 37、target SDK 为 36、min SDK 为 24，Java/Kotlin JVM 字节码目标为 17。依赖版本集中维护在 `gradle/libs.versions.toml`，SDK 与 Java 版本集中维护在 `build-logic/convention/src/main/kotlin/DevKitBuildConfig.kt`。
+项目的 compile SDK 为 37、target SDK 为 36、min SDK 为 26，Java/Kotlin JVM 字节码目标为 17。依赖版本集中维护在 `gradle/libs.versions.toml`，SDK 与 Java 版本集中维护在 `build-logic/convention/src/main/kotlin/DevKitBuildConfig.kt`。
 
 ### 命令
 
@@ -185,10 +185,10 @@ app/build/outputs/apk/debug/app-debug.apk
 5. 定义 `HookCategory` 枚举（分类）和 `HookDef` 枚举（hook 元数据）。
 6. 为每个 Hook 功能创建类，实现 `SubHooker` + `FeatureHook<T>`，加上 `@HookModule(packageName)` 注解。KSP 会自动生成 `HookRegistry`、主 Hooker 和 `Registrar`。
 7. 在 `HookContent.Content()` 中实现该 hook 的设置 UI，可通过 `featureViewModel<T>()` 获取 ViewModel。
-8. 将目标包加入 `xposed_scope`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
+8. 将目标包加入 `app/src/main/resources/META-INF/xposed/scope.list`；如果宿主需要读取应用信息，同时更新 Manifest 的 `<queries>`。
 9. 添加必要测试，运行单元测试和 Debug 构建。
 
-`HookEntry` 通过 `ServiceLoader` 自动发现所有 `Registrar`，无需手动注册新模块的 Hooker。`FeatureEntryImpl` 自动探测 `HookRegistry` 并实现 `Content()`，无需手动编写 Screen。
+`HookEntry` 通过 KSP 生成的 `GeneratedHookEntry` 装配所有 `Registrar`，无需手动注册新模块的 Hooker。`FeatureEntryImpl` 自动探测 `HookRegistry` 并实现 `Content()`，无需手动编写 Screen。
 
 更完整的开发约束与检查清单见 [Agent.md](Agent.md)。
 

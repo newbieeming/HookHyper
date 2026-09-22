@@ -1,6 +1,5 @@
 package com.newbieeming.hookhyper.feature.systemui.hook
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -8,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -33,23 +31,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.highcapable.yukihookapi.hook.factory.injectModuleAppResources
-import com.highcapable.yukihookapi.hook.param.PackageParam
-import com.newbieeming.hookhyper.core.common.PreferenceKeys
-import com.newbieeming.hookhyper.core.hook.HookModule
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.feature.systemui.R
-import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.FingerprintIconStyle
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 
 @Suppress("LabeledExpression")
-@HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
+// API 102 does not provide Yuki resource injection. Keep unregistered until reimplemented.
+// @HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
 class FingerprintIconHook :
     SubHooker,
     FeatureHook<SystemUiHookDef> {
@@ -86,41 +80,42 @@ class FingerprintIconHook :
         }
     }
 
-    override fun PackageParam.onHook() {
-        val preferences = prefs(PreferenceKeys.FILE_NAME)
-        // 注入模块资源，使模块 R.drawable.xxx 在宿主中可用
-        onAppLifecycle {
-            onCreate {
-                injectModuleAppResources()
-            }
-        }
-        // hook getFingerIconResource 直接替换返回的资源 ID
-        "com.miui.keyguard.biometrics.fod.MiuiGxzwAnimManager".toClass().resolve().firstMethod {
-            name = "getFingerIconResource"
-            parameterCount = 1
-        }.hook {
-            after {
-                val original = result as? Int ?: return@after
-                val res = appResources ?: return@after
-                val resName = runCatching {
-                    res.getResourceEntryName(original)
-                }.getOrNull() ?: return@after
-                val style =
-                    FingerprintIconStyle.fromId(preferences.getString(FingerprintIconStyle.PREFERENCE_KEY))
-                style.replacementFor(resName)?.let { moduleResId ->
-                    result = moduleResId
-                    Log.d(
-                        TAG,
-                        "Replaced $resName with ${style.id}: 0x${Integer.toHexString(moduleResId)}"
-                    )
-                }
-            }
-        }
+    override fun HookContext.onHook() {
+        // TODO API 102: no host resource injection API; keep this implementation disabled.
+        // val preferences = prefs(PreferenceKeys.FILE_NAME)
+        // // 注入模块资源，使模块 R.drawable.xxx 在宿主中可用
+        // onAppLifecycle {
+        //     onCreate {
+        //         injectModuleAppResources()
+        //     }
+        // }
+        // // hook getFingerIconResource 直接替换返回的资源 ID
+        // "com.miui.keyguard.biometrics.fod.MiuiGxzwAnimManager".toClass().resolve().firstMethod {
+        //     name = "getFingerIconResource"
+        //     parameterCount = 1
+        // }.hook {
+        //     after {
+        //         val original = result as? Int ?: return@after
+        //         val res = appResources ?: return@after
+        //         val resName = runCatching {
+        //             res.getResourceEntryName(original)
+        //         }.getOrNull() ?: return@after
+        //         val style =
+        //             FingerprintIconStyle.fromId(preferences.getString(FingerprintIconStyle.PREFERENCE_KEY))
+        //         style.replacementFor(resName)?.let { moduleResId ->
+        //             result = moduleResId
+        //             Log.d(
+        //                 TAG,
+        //                 "Replaced $resName with ${style.id}: 0x${Integer.toHexString(moduleResId)}"
+        //             )
+        //         }
+        //     }
+        // }
     }
 
-    private companion object {
-        private const val TAG = "FingerprintIconHook"
-    }
+    // private companion object {
+    //     private const val TAG = "FingerprintIconHook"
+    // }
 }
 
 @Composable

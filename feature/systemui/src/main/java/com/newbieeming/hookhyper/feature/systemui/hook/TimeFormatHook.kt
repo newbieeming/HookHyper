@@ -13,8 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.highcapable.yukihookapi.hook.param.HookParam
-import com.highcapable.yukihookapi.hook.param.PackageParam
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
@@ -58,33 +57,32 @@ class TimeFormatHook :
         }
     }
 
-    override fun PackageParam.onHook() {
+    override fun HookContext.onHook() {
         val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
         val aaPrefix = featurePreferences.getBoolean(SystemUiHookDef.TIME_FORMAT_AA_PREFIX.preferenceKey)
         val amPms12h = arrayOf("AM", "AM", "AM", "PM", "PM", "PM", "PM")
         val resourcesClass = Resources::class.java.resolve()
         val entryName: Resources.(Int) -> String? = { runCatching { getResourceEntryName(it) }.getOrNull() }
 
-        mapOf(
-            "getString" to fun HookParam.() {
-                val resName = instance<Resources>().entryName(args(0).int()) ?: return
-                if (resName in TIME_RELATED_RESOURCES) {
-                    val original = result?.toString().orEmpty()
-                    if (!original.contains("aa", ignoreCase = true)) {
-                        result = if (aaPrefix) "aa $original" else "$original aa"
+        listOf("getString", "getStringArray").forEach { methodName ->
+            hookSafely("Resources.$methodName") {
+                val method = resourcesClass.firstMethod {
+                    name = methodName
+                    parameters(Int::class)
+                }.self
+                xposed.hook(method).intercept { chain ->
+                    val original = chain.proceed()
+                    val resName = (chain.thisObject as Resources).entryName(chain.args[0] as Int)
+                    when {
+                        methodName == "getString" && resName in TIME_RELATED_RESOURCES -> {
+                            val format = original?.toString().orEmpty()
+                            if (format.contains("aa", ignoreCase = true)) original
+                            else if (aaPrefix) "aa $format" else "$format aa"
+                        }
+                        methodName == "getStringArray" && resName == "detailed_am_pms" -> amPms12h
+                        else -> original
                     }
                 }
-            },
-            "getStringArray" to fun HookParam.() {
-                val resName = instance<Resources>().entryName(args(0).int()) ?: return
-                if (resName == "detailed_am_pms") result = amPms12h
-            },
-        ).forEach { (methodName, callback) ->
-            hookSafely("Resources.$methodName") {
-                resourcesClass.firstMethod {
-                    name = methodName
-                    parameterCount = 1
-                }.hook { after(callback) }
             }
         }
     }

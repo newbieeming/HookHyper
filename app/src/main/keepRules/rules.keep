@@ -16,3 +16,7 @@
 # optional reference instead of disabling missing-class checks globally.
 -dontwarn java.lang.reflect.AnnotatedType
 -keep class com.newbieeming.hookhyper.feature.**.hook.** { *; }
+-keep class com.newbieeming.hookhyper.hook.HookEntry { public <init>(); }
+-keep class **.HookRegistry { *; }
+-keep class **.FeatureHooker { *; }
+-keep class **.FeatureRegistrar { public <init>(); }

@@ -4,7 +4,7 @@
 
 ## 项目定位
 
-HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发。项目采用 Kotlin、Hilt、MVI、Jetpack Compose、Navigation 3，并同时支持 MIUIX 与 Material 3 界面。
+HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 libxposed API 102.0.0 开发。项目采用 Kotlin、Hilt、MVI、Jetpack Compose、Navigation 3，并同时支持 MIUIX 与 Material 3 界面。
 
 核心约定：一个 `feature` 模块对应一个目标应用，例如：
 
@@ -19,7 +19,7 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 | --- | --- |
 | `app` | Application、Activity 入口、Navigation 3、应用级 MVI、独立 Screen、唯一 Hook 入口及 feature 装配 |
 | `core:common` | 跨 feature 的纯 Kotlin 契约、共享偏好文件与应用级设置键、可复用规则；不得依赖 Android UI，也不得包含单目标应用的字段、Hook 规则或 feature 设置键 |
-| `core:data` | YukiHookPrefsBridge 设置读写、模块连接状态、需要 Root 的通用操作 |
+| `core:data` | libxposed 远程偏好 设置读写、模块连接状态、需要 Root 的通用操作 |
 | `core:ui` | MVI 基类、主题、跨 feature 通用 Compose 组件、`FeatureEntry` 契约、`HookFeatureScreen`、`HookCategory`/`HookDef`/`FeatureHook` 接口、`HookSwitchPreference`、`LocalPreferencesRepository`；不放 feature 专用表单或页面组合 |
 | `feature:<name>` | 单个目标应用的页面、State/Intent/Effect、ViewModel、专用设置键/模型/匹配规则、资源、测试、Hilt 注册和 Hooker |
 | `build-logic` | SDK、Java 版本与 Android/Kotlin/Compose/Hilt 约定插件 |
@@ -70,10 +70,10 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 ### 设置与 Hook
 
 - `PreferenceKeys` 只保存跨 feature 的共享偏好文件和应用级键。目标应用的设置键、字段模型和匹配规则放在对应 `feature:<name>/model`；键值仍需带 feature 前缀，避免跨模块冲突。
-- App 进程通过 `HookPreferencesRepository` 读写设置；Hook 进程使用相同的 `PreferenceKeys.FILE_NAME` 和设置键读取 YukiHookPrefsBridge。
+- App 进程通过 `HookPreferencesRepository` 读写设置；Hook 进程使用相同的 `PreferenceKeys.FILE_NAME` 和设置键读取 `XposedInterface.getRemotePreferences`。指纹资源注入暂不支持，保留注释实现且不注册。
 - Hook 类实现 `SubHooker`（运行时 Hook 逻辑）和 `FeatureHook<T>`（UI 元数据委托）。`@HookModule` 注解仅声明目标包名，`preferenceKey` 从实例读取，KSP 生成 `List<SubHooker>` 注册表。
 - 每个 hook 通过 `HookContent.Content()` 提供自己的设置 UI，由 `HookFeatureScreen` 统一渲染（按 `HookCategory` 分组、折叠、磁吸头部）。
-- Hooker 继承 `YukiBaseHooker`，必须通过 `loadApp(name = ...)` 限定目标包。新增 Hook 默认应由设置项控制，未启用时尽早返回。
+- 入口继承 `XposedModule`，在 `onPackageReady` 中传递 `HookContext`；`ModularHooker` 必须限定目标包，具体功能使用 `xposed.hook(method).intercept { chain -> ... }`。新增 Hook 默认应由设置项控制，未启用时尽早返回。
 - HyperOS 内部类和方法可能随版本变化。反射或 Hook 失败应限制在单个功能内，使用 `runCatching` 与带 feature 名称的日志标签记录，不能导致目标进程因非关键功能崩溃。
 - 不在 Hook 热路径执行阻塞 I/O、长耗时遍历或无界重试；不要持有目标进程中 Activity/View 的长期引用。
 - 设置变化若需重启目标应用才生效，UI 文案必须明确提示；调用通用重启能力时要保留 Root 缺失和执行失败的反馈。
@@ -89,7 +89,7 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 5. 创建 Hilt Module，通过 `@IntoSet` 绑定 `FeatureEntry`。
 6. 定义 `HookCategory` 枚举和 `HookDef` 枚举，声明分类与 hook 元数据。
 7. 为每个 Hook 功能创建类，实现 `SubHooker` + `FeatureHook<T>`，加上 `@HookModule(packageName)` 注解。在 `HookContent.Content()` 中实现设置 UI，通过 `featureViewModel<T>()` 获取 ViewModel。
-8. 将目标包加入 `app/src/main/res/values/arrays.xml` 的 `xposed_scope`；如 App 需要查询目标应用信息，同时更新 `AndroidManifest.xml` 的 `<queries>`。
+8. 将目标包加入 `app/src/main/resources/META-INF/xposed/scope.list`；如 App 需要查询目标应用信息，同时更新 `AndroidManifest.xml` 的 `<queries>`。
 9. 在 `feature:<name>/model` 添加目标应用专用的设置键、模型和匹配规则；只有稳定的跨 feature 契约才放入 `core:common`。
 10. 将 feature 专用组件、英文与简体中文资源、纯逻辑和测试放在 feature 模块内；为匹配规则和状态转换补充测试。
 11. 检查根 `.gitignore` 是否已覆盖新模块产物；只有出现新的模块专属生成物时才添加更具体的忽略规则，不提交 `build/`、本地缓存、机器配置或密钥。
@@ -99,7 +99,7 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 YukiHookAPI 开发�
 
 ## 构建与验证
 
-构建基线由仓库配置决定：Gradle 9.5、JDK 21、compile SDK 37、target SDK 36、min SDK 24，Java/Kotlin JVM 字节码目标为 17。
+构建基线由仓库配置决定：Gradle 9.5、JDK 21、compile SDK 37、target SDK 36、min SDK 26，Java/Kotlin JVM 字节码目标为 17。
 
 Windows：
 

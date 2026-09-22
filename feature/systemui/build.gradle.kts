@@ -19,7 +19,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-    implementation(libs.yukihookapi.api)
+    compileOnly(libs.libxposed.api)
     implementation(libs.kavaref.core)
     implementation(libs.kavaref.extension)
     testImplementation(libs.junit)

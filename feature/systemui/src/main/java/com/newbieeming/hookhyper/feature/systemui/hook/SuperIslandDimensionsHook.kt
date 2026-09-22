@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.highcapable.yukihookapi.hook.param.PackageParam
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
@@ -112,7 +112,7 @@ class SuperIslandDimensionsHook :
         )
     }
 
-    override fun PackageParam.onHook() {
+    override fun HookContext.onHook() {
         val preferences = prefs(PreferenceKeys.FILE_NAME)
         val overrides = DIMENSIONS.mapNotNull { dimension ->
             preferences.getString(dimension.preferenceKey).toFloatOrNull()?.let {
@@ -128,14 +128,14 @@ class SuperIslandDimensionsHook :
             Triple("getDimensionPixelSize", 1) { v: Float -> v.roundToInt() },
         ).forEach { (name, paramCount, transform) ->
             hookSafely("Resources.$name") {
-                resourcesClass.firstMethod {
+                val method = resourcesClass.firstMethod {
                     this.name = name
                     parameterCount = paramCount
-                }.hook {
-                    after {
-                        overrideDimension(instance<Resources>(), args(0).int(), overrides)
-                            ?.let { result = transform(it) }
-                    }
+                }.self
+                xposed.hook(method).intercept { chain ->
+                    val original = chain.proceed()
+                    overrideDimension(chain.thisObject as Resources, chain.args[0] as Int, overrides)
+                        ?.let(transform) ?: original
                 }
             }
         }

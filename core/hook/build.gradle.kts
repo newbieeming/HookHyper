@@ -8,5 +8,7 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-    implementation(libs.yukihookapi.api)
+    compileOnly(libs.libxposed.api)
+    testImplementation(libs.libxposed.api)
+    testImplementation(libs.junit)
 }

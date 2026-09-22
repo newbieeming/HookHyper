@@ -1,5 +1,8 @@
 package com.newbieeming.hookhyper.ui.app
 
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 import com.newbieeming.hookhyper.core.data.ModuleStatusProvider
@@ -23,6 +26,14 @@ class AppViewModel @Inject constructor(
 ) {
     val features: List<FeatureEntry> = featureSet.sortedBy(FeatureEntry::targetPackageName)
     private val featureEntries = featureSet.associateBy(FeatureEntry::targetPackageName)
+
+    init {
+        viewModelScope.launch {
+            moduleStatusProvider.status.collect { status ->
+                reduce { copy(moduleStatus = status) }
+            }
+        }
+    }
 
     fun feature(targetPackageName: String): FeatureEntry? = featureEntries[targetPackageName]
 
