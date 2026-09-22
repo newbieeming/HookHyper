@@ -1,5 +1,13 @@
 package com.newbieeming.hookhyper.feature.systemui.hook
 
+import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
+import android.content.res.AssetManager
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -31,24 +39,39 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.highcapable.kavaref.KavaRef.Companion.resolve
+import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.hook.HookContext
+import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.feature.systemui.R
+import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.model.FingerprintIconStyle
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
+import dalvik.system.BaseDexClassLoader
+import java.io.File
 
-@Suppress("LabeledExpression")
-// API 102 does not provide Yuki resource injection. Keep unregistered until reimplemented.
-// @HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
+/**
+ * 替换屏下指纹图标。
+ *
+ * LSPosed / libxposed API 102 不再支持宿主资源注入，因此不再改写资源 ID，
+ * 而是在 [MiuiGxzwFrameAnimation.decodeBitmap] 解码位图时直接换成模块内图标。
+ */
+@HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
+@SuppressLint("DiscouragedPrivateApi")
 class FingerprintIconHook :
     SubHooker,
     FeatureHook<SystemUiHookDef> {
 
     override val def = SystemUiHookDef.REPLACE_FINGERPRINT_ICON
+
+    private var appContext: Context? = null
+    private var moduleResources: Resources? = null
+    private val bitmapCache = HashMap<Int, Bitmap?>()
 
     @Composable
     override fun Content() {
@@ -81,41 +104,122 @@ class FingerprintIconHook :
     }
 
     override fun HookContext.onHook() {
-        // TODO API 102: no host resource injection API; keep this implementation disabled.
-        // val preferences = prefs(PreferenceKeys.FILE_NAME)
-        // // 注入模块资源，使模块 R.drawable.xxx 在宿主中可用
-        // onAppLifecycle {
-        //     onCreate {
-        //         injectModuleAppResources()
-        //     }
-        // }
-        // // hook getFingerIconResource 直接替换返回的资源 ID
-        // "com.miui.keyguard.biometrics.fod.MiuiGxzwAnimManager".toClass().resolve().firstMethod {
-        //     name = "getFingerIconResource"
-        //     parameterCount = 1
-        // }.hook {
-        //     after {
-        //         val original = result as? Int ?: return@after
-        //         val res = appResources ?: return@after
-        //         val resName = runCatching {
-        //             res.getResourceEntryName(original)
-        //         }.getOrNull() ?: return@after
-        //         val style =
-        //             FingerprintIconStyle.fromId(preferences.getString(FingerprintIconStyle.PREFERENCE_KEY))
-        //         style.replacementFor(resName)?.let { moduleResId ->
-        //             result = moduleResId
-        //             Log.d(
-        //                 TAG,
-        //                 "Replaced $resName with ${style.id}: 0x${Integer.toHexString(moduleResId)}"
-        //             )
-        //         }
-        //     }
-        // }
+        val preferences = prefs(PreferenceKeys.FILE_NAME)
+        val style =
+            FingerprintIconStyle.fromId(preferences.getString(FingerprintIconStyle.PREFERENCE_KEY))
+
+        hookSafely("Application.attach") {
+            val attach = Application::class.java.getDeclaredMethod("attach", Context::class.java)
+            xposed.hook(attach).intercept { chain ->
+                val context = chain.args[0] as Context
+                if (context.packageName == packageName) bindContext(context)
+                chain.proceed()
+            }
+        }
+
+        hookSafely("MiuiGxzwFrameAnimation.decodeBitmap") {
+            val method = FRAME_ANIMATION_CLASS.toClass().resolve()
+                .firstMethod {
+                    name = DECODE_BITMAP_METHOD
+                    parameterCount = 2
+                }.self
+            xposed.hook(method).intercept { chain ->
+                val original = chain.proceed() as? Bitmap
+                val resId = (chain.args[0] as? Number)?.toInt()
+                if (resId == null) {
+                    original
+                } else {
+                    decodeReplacement(style, resId) ?: original
+                }
+            }
+        }
     }
 
-    // private companion object {
-    //     private const val TAG = "FingerprintIconHook"
-    // }
+    private fun bindContext(context: Context) {
+        appContext = context.applicationContext ?: context
+        moduleResources = resolveModuleResources(appContext ?: context)
+    }
+
+    private fun decodeReplacement(style: FingerprintIconStyle, hostResId: Int): Bitmap? {
+        ensureBound()
+        bitmapCache[hostResId]?.let { return it }
+        val hostRes = appContext?.resources ?: return null
+        val resName =
+            runCatching { hostRes.getResourceEntryName(hostResId) }.getOrNull() ?: return null
+        val moduleResId = style.replacementFor(resName) ?: return null
+        val moduleRes = moduleResources ?: return null
+        val bitmap = runCatching {
+            BitmapFactory.decodeResource(moduleRes, moduleResId)
+        }.getOrNull()
+        if (bitmap != null) {
+            Log.d(TAG, "Replaced $resName with ${style.id}")
+        }
+        bitmapCache[hostResId] = bitmap
+        return bitmap
+    }
+
+    private fun ensureBound() {
+        if (appContext != null && moduleResources != null) return
+        val context = currentApplication() ?: return
+        bindContext(context)
+    }
+
+    private fun resolveModuleResources(context: Context): Resources? = runCatching {
+        context.createPackageContext(MODULE_PACKAGE, Context.CONTEXT_IGNORE_SECURITY).resources
+    }.recoverCatching {
+        context.packageManager.getResourcesForApplication(MODULE_PACKAGE)
+    }.recoverCatching {
+        // LSPosed 加载的模块 ClassLoader 可能没有 APK 路径，仅作兜底。
+        val apkPath = moduleApkPath() ?: return@recoverCatching null
+        resourcesFromApkPath(context, apkPath)
+    }.getOrNull()
+
+    private fun resourcesFromApkPath(context: Context, apkPath: String): Resources? = runCatching {
+        val assets = AssetManager::class.java.getDeclaredConstructor().newInstance()
+        val addAssetPath = AssetManager::class.java
+            .getDeclaredMethod("addAssetPath", String::class.java)
+        val cookie = addAssetPath.invoke(assets, apkPath) as? Int ?: 0
+        if (cookie == 0) return null
+        Resources(assets, context.resources.displayMetrics, context.resources.configuration)
+    }.getOrNull()
+
+    private fun moduleApkPath(): String? = runCatching {
+        val classLoader = FingerprintIconHook::class.java.classLoader as? BaseDexClassLoader
+            ?: return null
+        val pathList = BaseDexClassLoader::class.java
+            .getDeclaredField("pathList")
+            .apply { isAccessible = true }
+            .get(classLoader)
+        val elements = pathList.javaClass
+            .getDeclaredField("dexElements")
+            .apply { isAccessible = true }
+            .get(pathList) as? Array<*> ?: return null
+        elements.firstNotNullOfOrNull { element ->
+            if (element == null) return@firstNotNullOfOrNull null
+            runCatching {
+                val path = element.javaClass
+                    .getDeclaredField("path")
+                    .apply { isAccessible = true }
+                    .get(element) as? File
+                path?.absolutePath?.takeIf { it.endsWith(".apk") }
+            }.getOrNull()
+        }
+    }.getOrNull()
+
+    @SuppressLint("PrivateApi")
+    private fun currentApplication(): Context? = runCatching {
+        Class.forName("android.app.ActivityThread")
+            .getMethod("currentApplication")
+            .invoke(null) as? Context
+    }.getOrNull()
+
+    private companion object {
+        private const val TAG = "FingerprintIconHook"
+        private const val MODULE_PACKAGE = "com.newbieeming.hookhyper"
+        private const val FRAME_ANIMATION_CLASS =
+            "com.miui.keyguard.biometrics.fod.MiuiGxzwFrameAnimation"
+        private const val DECODE_BITMAP_METHOD = "decodeBitmap"
+    }
 }
 
 @Composable

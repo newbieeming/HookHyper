@@ -23,7 +23,7 @@ class LockScreenColonHook :
 
     @Composable
     override fun Content() {
-        SettingsPreferenceGroup(0,2) {
+        SettingsPreferenceGroup(1, 2) {
             HookSwitchPreference(
                 preferenceKey = preferenceKey,
                 title = stringResource(R.string.systemui_force_clock_colon_title),
