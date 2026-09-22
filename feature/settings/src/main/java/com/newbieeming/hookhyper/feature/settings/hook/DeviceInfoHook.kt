@@ -22,8 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.HookUtils.call
 import com.newbieeming.hookhyper.core.hook.SubHooker
@@ -97,7 +97,14 @@ class DeviceInfoHook :
                 DeviceInfoTextField(
                     label = deviceInfoLabel(field.preferenceKey),
                     value = state.values[field.preferenceKey].orEmpty(),
-                    onValueChange = { viewModel.accept(SettingsFeatureIntent.UpdateValue(field.preferenceKey, it)) },
+                    onValueChange = {
+                        viewModel.accept(
+                            SettingsFeatureIntent.UpdateValue(
+                                field.preferenceKey,
+                                it
+                            )
+                        )
+                    },
                     modifier = Modifier.focusRequester(focusRequesters[index]),
                     supportingText = field.originValue.takeIf { it.isNotBlank() }
                         ?.let { stringResource(R.string.device_info_origin_value, it) },
@@ -193,22 +200,21 @@ class DeviceInfoHook :
                 parameters(String::class)
             }.self
             xposed.hook(method).intercept { chain ->
-                    val cardInfo = requireNotNull(chain.thisObject)
-                    val title = cardInfo.call("getTitle")?.toString()?.trim().orEmpty()
-                    val value = chain.args[0]?.toString().orEmpty()
-                    val key = DeviceInfoFields.resolveKey(title, value, resolveString)
-                        ?: return@intercept chain.proceed()
-                    val replacement = featurePreferences.getString(key).takeIf(String::isNotBlank)
-                        ?: return@intercept chain.proceed()
-                    val arguments = chain.args.toTypedArray()
-                    arguments[0] = replacement
-                    chain.proceed(arguments)
+                val cardInfo = requireNotNull(chain.thisObject)
+                val title = cardInfo.call("getTitle")?.toString()?.trim().orEmpty()
+                val value = chain.args[0]?.toString().orEmpty()
+                val key = DeviceInfoFields.resolveKey(title, value, resolveString)
+                    ?: return@intercept chain.proceed()
+                val replacement = featurePreferences.getString(key).takeIf(String::isNotBlank)
+                    ?: return@intercept chain.proceed()
+                val arguments = chain.args.toTypedArray()
+                arguments[0] = replacement
+                chain.proceed(arguments)
             }
         }
     }
 
     private fun HookContext.hookVersionInfo() {
-        val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
         val aboutPhone = ABOUT_PHONE.toClass().resolve()
 
         listOf(
@@ -221,10 +227,7 @@ class DeviceInfoHook :
                     name = methodName
                     emptyParameters()
                 }.self
-                xposed.hook(method).intercept { chain ->
-                    val original = chain.proceed()
-                    featurePreferences.getString(prefKey).takeIf(String::isNotBlank) ?: original
-                }
+                xposed.hook(method).intercept { true }
             }
         }
     }

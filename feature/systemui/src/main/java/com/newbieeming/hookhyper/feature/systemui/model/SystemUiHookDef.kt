@@ -22,10 +22,10 @@ enum class SystemUiHookDef(
         category = LOCK_SCREEN,
         order = 0,
     ),
-    LOCK_SHOW_SIM_NAME(
-        preferenceKey = "systemui_lock_show_sim_name",
+    FORCE_CLOCK_COLON(
+        preferenceKey = "systemui_force_clock_colon",
         category = LOCK_SCREEN,
-        order = 1,
+        order = 0,
     ),
     CUSTOM_TIME_FORMAT(
         preferenceKey = "systemui_custom_time_format",
