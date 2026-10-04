@@ -32,6 +32,11 @@ enum class SystemUiHookDef(
         category = STATUS_BAR,
         order = 0,
     ),
+    NETWORK_SPEED(
+        preferenceKey = "systemui_network_speed",
+        category = STATUS_BAR,
+        order = 1,
+    ),
     FORCE_SOFT_LIGHT_GLASS(
         preferenceKey = "systemui_force_soft_light_glass",
         category = NOTIFICATION_BAR,

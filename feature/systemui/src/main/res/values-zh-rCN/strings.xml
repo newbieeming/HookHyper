@@ -1,4 +1,16 @@
 <resources>
+    <string name="systemui_network_speed_title">网速</string>
+    <string name="systemui_network_speed_summary">自定义状态栏网速显示，修改后请重启系统界面</string>
+    <string name="systemui_network_speed_font_size_title">自定义字体大小</string>
+    <string name="systemui_network_speed_font_size_summary">同时控制网速数字与单位的字号</string>
+    <string name="systemui_network_speed_font_size_label">字体大小（dp）</string>
+    <string name="systemui_network_speed_font_size_hint">参考值：13.5 dp。请输入正数；留空或无效值使用系统默认字号。</string>
+    <string name="systemui_network_speed_single_line_title">单行显示</string>
+    <string name="systemui_network_speed_single_line_summary">数字与单位横向排列，并使用常规字重</string>
+    <string name="systemui_network_speed_unit_gap_label">数字与单位间距（dp）</string>
+    <string name="systemui_network_speed_unit_gap_hint">默认 0 dp，可填写 0 或正数；留空或无效值使用默认间距。修改后请重启系统界面。</string>
+    <string name="systemui_network_speed_hide_unit_title">隐藏 B/s 单位</string>
+    <string name="systemui_network_speed_hide_unit_summary">将 KB/s 显示为 K，MB/s 显示为 M</string>
     <string name="systemui_force_clock_colon_title">强制启用时间冒号</string>
     <string name="systemui_force_clock_colon_summary">强制显示锁屏时钟中的冒号，修改后请重启系统界面</string>
     <string name="systemui_soft_light_glass_title">强制启用柔光玻璃</string>

@@ -1,4 +1,16 @@
 <resources>
+    <string name="systemui_network_speed_title">Network speed</string>
+    <string name="systemui_network_speed_summary">Customize status bar network speed; restart System UI after changing settings</string>
+    <string name="systemui_network_speed_font_size_title">Custom font size</string>
+    <string name="systemui_network_speed_font_size_summary">Use the same size for the number and unit</string>
+    <string name="systemui_network_speed_font_size_label">Font size (dp)</string>
+    <string name="systemui_network_speed_font_size_hint">Suggested: 13.5 dp. Enter a positive number; blank or invalid values use the system default.</string>
+    <string name="systemui_network_speed_single_line_title">Single line</string>
+    <string name="systemui_network_speed_single_line_summary">Place the number and unit side by side with regular font weight</string>
+    <string name="systemui_network_speed_unit_gap_label">Number-to-unit spacing (dp)</string>
+    <string name="systemui_network_speed_unit_gap_hint">Default: 0 dp. Enter zero or a positive number; blank or invalid values use the default. Restart System UI to apply.</string>
+    <string name="systemui_network_speed_hide_unit_title">Hide B/s suffix</string>
+    <string name="systemui_network_speed_hide_unit_summary">Show KB/s as K and MB/s as M</string>
     <string name="systemui_force_clock_colon_title">Force-enable clock colon</string>
     <string name="systemui_force_clock_colon_summary">Always show the colon in the lock screen clock. Restart System UI after changing this setting.</string>
     <string name="systemui_soft_light_glass_title">Force-enable soft-light glass</string>
