@@ -76,6 +76,7 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 libxposed API 102.0
 - 入口继承 `XposedModule`，在 `onPackageReady` 中传递 `HookContext`；`ModularHooker` 必须限定目标包，具体功能使用 `xposed.hook(method).intercept { chain -> ... }`。新增 Hook 默认应由设置项控制，未启用时尽早返回。
 - HyperOS 内部类和方法可能随版本变化。反射或 Hook 失败应限制在单个功能内，使用 `runCatching` 与带 feature 名称的日志标签记录，不能导致目标进程因非关键功能崩溃。
 - “仅显示上网卡运营商”位于状态栏分类。主开关控制锁屏，子开关控制通知栏和控制中心，子开关默认关闭且依赖主开关。`DataSimCarrierViews` 按视图所属区域过滤文字与 HD/HD+，共享控制器保留完整运营商数据；默认数据订阅切换时使文字缓存失效并刷新，飞行模式和紧急呼叫状态保留系统逻辑。
+- 网速位置设置使用 0.5 dp 步进，上下偏移默认 0、右侧间距默认 0。偏移应用于内部容器，保留外层图标动画；文字格式和字号仅在网速 View 内处理，不 Hook 全局 Resources。单行布局仍按实际文字宽度测量。
 - 不在 Hook 热路径执行阻塞 I/O、长耗时遍历或无界重试；不要持有目标进程中 Activity/View 的长期引用。
 - 设置变化若需重启目标应用才生效，UI 文案必须明确提示；调用通用重启能力时要保留 Root 缺失和执行失败的反馈。
 

@@ -1,6 +1,5 @@
 package com.newbieeming.hookhyper.feature.systemui.hook
 
-import android.content.res.Resources
 import android.graphics.Typeface
 import android.util.Log
 import android.util.TypedValue
@@ -10,10 +9,10 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.compose.runtime.Composable
-import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.hook.HookModule
+import com.newbieeming.hookhyper.core.hook.HookUtils.field
 import com.newbieeming.hookhyper.core.hook.HookUtils.findField
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
@@ -49,9 +48,14 @@ class NetworkSpeedHook :
         val unitGap = NetworkSpeedSettings.parseUnitGap(
             preferences.getString(NetworkSpeedSettings.UNIT_GAP, NetworkSpeedSettings.DEFAULT_UNIT_GAP),
         )
-        if (fontSize == null && !singleLine && !hideUnit) return
-
-        hookResources(fontSize, hideUnit)
+        val verticalOffset = NetworkSpeedSettings.parsePosition(
+            preferences.getString(NetworkSpeedSettings.VERTICAL_OFFSET, NetworkSpeedSettings.DEFAULT_POSITION),
+            allowNegative = true,
+        )
+        val endPadding = NetworkSpeedSettings.parsePosition(
+            preferences.getString(NetworkSpeedSettings.END_PADDING, NetworkSpeedSettings.DEFAULT_POSITION),
+            allowNegative = false,
+        )
         hookSafely("NetworkSpeedView") {
             val viewClass = NETWORK_SPEED_VIEW.toClass()
             val refreshMethods = viewClass.declaredMethods.filter {
@@ -62,63 +66,16 @@ class NetworkSpeedHook :
                 hookSafely(method.name) {
                     xposed.hook(method).intercept { chain ->
                         val result = chain.proceed()
-                        updateSafely { applyAppearance(chain.thisObject as ViewGroup, fontSize, singleLine, unitGap) }
+                        updateSafely {
+                            applyAppearance(chain.thisObject as ViewGroup, fontSize, singleLine, unitGap)
+                            applyPosition(chain.thisObject as ViewGroup, verticalOffset, endPadding)
+                        }
                         result
                     }
                 }
             }
-            if (hideUnit) hookSpeedSetter(viewClass)
             if (singleLine || hideUnit) hookSpeedUpdates(viewClass, singleLine, hideUnit)
             if (singleLine) hookSpeedWidth(viewClass, hideUnit)
-        }
-    }
-
-    private fun HookContext.hookResources(fontSize: Float?, hideUnit: Boolean) {
-        val resourcesClass = Resources::class.java.resolve()
-        val entryName: Resources.(Int) -> String? = { systemUiResourceName(this, it) }
-        val methods = buildList {
-            if (fontSize != null) addAll(listOf("getDimension", "getDimensionPixelOffset", "getDimensionPixelSize"))
-            if (hideUnit) addAll(listOf("getText", "getString"))
-        }
-        methods.forEach { methodName ->
-            hookSafely("Resources.$methodName") {
-                val method = resourcesClass.firstMethod {
-                    name = methodName
-                    parameters(Int::class)
-                }.self
-                xposed.hook(method).intercept { chain ->
-                    val original = chain.proceed()
-                    val resources = chain.thisObject as Resources
-                    val resName = resources.entryName(chain.args[0] as Int)
-                    when (methodName) {
-                        "getText", "getString" -> resName?.let(NetworkSpeedSettings::resourceUnit) ?: original
-                        else -> resName?.let { name ->
-                            fontSize?.let { NetworkSpeedSettings.dimensionSize(name, it) }
-                        }?.let { dimensionValue(resources, it, methodName) } ?: original
-                    }
-                }
-            }
-        }
-    }
-
-    private fun dimensionValue(resources: Resources, dp: Float, methodName: String): Number {
-        val pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
-        return when (methodName) {
-            "getDimensionPixelSize" -> pixels.roundToInt().coerceAtLeast(1)
-            "getDimensionPixelOffset" -> pixels.toInt()
-            else -> pixels
-        }
-    }
-
-    private fun HookContext.hookSpeedSetter(viewClass: Class<*>) {
-        hookSafely("NetworkSpeedView.setNetworkSpeed") {
-            val method = viewClass.getDeclaredMethod("setNetworkSpeed", String::class.java, String::class.java)
-            xposed.hook(method).intercept { chain ->
-                val arguments = chain.args.toTypedArray()
-                val unit = arguments[1] as? String
-                if (unit != null) arguments[1] = NetworkSpeedSettings.compactUnit(unit)
-                chain.proceed(arguments)
-            }
         }
     }
 
@@ -128,30 +85,37 @@ class NetworkSpeedHook :
         }.forEach { method ->
             hookSafely(method.name) {
                 xposed.hook(method).intercept { chain ->
-                    val result = chain.proceed()
-                    updateSafely {
-                        updateSpeedText(chain.thisObject as ViewGroup, singleLine, hideUnit)
-                    }
-                    result
+                    // The stock method appends spaces before each comparison. Write the final text once.
+                    runCatching { updateSpeedText(chain.thisObject as ViewGroup, singleLine, hideUnit) }
+                        .onFailure { Log.e(TAG, "Unable to update network speed text", it) }
+                        .fold(onSuccess = { null }, onFailure = { chain.proceed() })
                 }
             }
         }
     }
 
     private fun updateSpeedText(view: ViewGroup, singleLine: Boolean, hideUnit: Boolean) {
-        if (singleLine) {
-            val number = view.namedView<TextView>(NUMBER_VIEW_ID)
-            number?.setTextIfChanged(number.text.toString().trimEnd())
-        }
-        val unit = view.namedView<TextView>(UNIT_VIEW_ID) ?: return
-        val text = if (hideUnit) NetworkSpeedSettings.compactUnit(unit.text.toString()) else unit.text.toString()
-        unit.setTextIfChanged(if (singleLine) text.trimEnd() else text)
+        val number = checkNotNull(view.namedView<TextView>(NUMBER_VIEW_ID))
+        val unit = checkNotNull(view.namedView<TextView>(UNIT_VIEW_ID))
+        val numberText = view.field("mNetworkSpeedNumber").toString()
+        val rawUnit = view.field("mNetworkSpeedUnit").toString()
+        val unitText = if (hideUnit) NetworkSpeedSettings.compactUnit(rawUnit) else rawUnit
+        number.setTextIfChanged(NetworkSpeedSettings.displayText(numberText, singleLine))
+        unit.setTextIfChanged(NetworkSpeedSettings.displayText(unitText, singleLine))
+        val description = numberText + unitText
+        if (view.contentDescription?.toString() != description) view.contentDescription = description
+    }
+
+    private fun applyPosition(view: ViewGroup, verticalOffset: Float, endPadding: Float) {
+        // Leave the outer view's translation to StatusBarIconAnimHelper.
+        view.namedView<View>(CONTAINER_VIEW_ID)?.translationY = verticalOffset * view.resources.displayMetrics.density
+        view.setPaddingRelative(view.paddingStart, view.paddingTop, view.dpToPixels(endPadding), view.paddingBottom)
     }
 
     private fun applyAppearance(view: ViewGroup, fontSize: Float?, singleLine: Boolean, unitGap: Float) {
         val number = view.namedView<TextView>(NUMBER_VIEW_ID) ?: return
         val unit = view.namedView<TextView>(UNIT_VIEW_ID) ?: return
-        // TextAppearance reads dimensions through TypedArray, bypassing Resources.getDimension.
+        // Apply locally after the system TextAppearance; avoid intercepting process-wide Resources.
         if (fontSize != null) {
             number.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize)
             unit.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize)
@@ -196,7 +160,6 @@ class NetworkSpeedHook :
         number.layoutParams = horizontalTextParams()
         unit.layoutParams = horizontalTextParams().apply { marginStart = view.dpToPixels(unitGap) }
         (view as? LinearLayout)?.orientation = LinearLayout.HORIZONTAL
-        view.setPaddingRelative(view.paddingStart, view.paddingTop, view.dpToPixels(END_PADDING_DP), view.paddingBottom)
     }
 
     private fun HookContext.hookSpeedWidth(viewClass: Class<*>, hideUnit: Boolean) {
@@ -218,19 +181,17 @@ class NetworkSpeedHook :
     private fun horizontalWidth(view: ViewGroup, hideUnit: Boolean): Int {
         val number = checkNotNull(view.namedView<TextView>(NUMBER_VIEW_ID))
         val unit = checkNotNull(view.namedView<TextView>(UNIT_VIEW_ID))
-        val numberWidth = number.paint.measureText(number.text.toString().ifEmpty { "0.00" })
-        val unitWidth = unit.paint.measureText(unit.text.toString().ifEmpty { if (hideUnit) "M" else "MB/s" })
+        val numberWidth = number.paint.measureText(number.text.toString().ifEmpty { "0.00" }) +
+            number.compoundPaddingLeft + number.compoundPaddingRight
+        val unitWidth = unit.paint.measureText(unit.text.toString().ifEmpty { if (hideUnit) "M" else "MB/s" }) +
+            unit.compoundPaddingLeft + unit.compoundPaddingRight
+        val container = checkNotNull(view.namedView<View>(CONTAINER_VIEW_ID))
         val margin = (unit.layoutParams as? ViewGroup.MarginLayoutParams)?.marginStart ?: 0
-        return (ceil(numberWidth + unitWidth).toInt() + margin + view.paddingStart + view.paddingEnd).coerceAtLeast(0)
+        return (
+            ceil(numberWidth + unitWidth).toInt() + margin + container.paddingStart + container.paddingEnd +
+                view.paddingStart + view.paddingEnd
+            ).coerceAtLeast(0)
     }
-
-    private fun systemUiResourceName(resources: Resources, id: Int): String? = runCatching {
-        if (resources.getResourcePackageName(id) == SystemUiFeatureEntry.PACKAGE_NAME) {
-            resources.getResourceEntryName(id)
-        } else {
-            null
-        }
-    }.getOrNull()
 
     private inline fun <reified T : View> View.namedView(name: String): T? {
         val id = resources.getIdentifier(name, "id", SystemUiFeatureEntry.PACKAGE_NAME)
@@ -258,6 +219,5 @@ class NetworkSpeedHook :
         const val NUMBER_VIEW_ID = "network_speed_number"
         const val UNIT_VIEW_ID = "network_speed_unit"
         const val CONTAINER_VIEW_ID = "network_speed_container"
-        const val END_PADDING_DP = -1f
     }
 }

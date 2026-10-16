@@ -45,6 +45,18 @@ internal fun NetworkSpeedPreferences(preferenceKey: String) {
             Column {
                 NetworkSpeedFontSizePreference()
                 SingleLinePreference()
+                NetworkSpeedPositionPreference(
+                    preferenceKey = NetworkSpeedSettings.VERTICAL_OFFSET,
+                    labelRes = R.string.systemui_network_speed_vertical_offset_label,
+                    hintRes = R.string.systemui_network_speed_vertical_offset_hint,
+                    allowNegative = true,
+                )
+                NetworkSpeedPositionPreference(
+                    preferenceKey = NetworkSpeedSettings.END_PADDING,
+                    labelRes = R.string.systemui_network_speed_end_padding_label,
+                    hintRes = R.string.systemui_network_speed_end_padding_hint,
+                    allowNegative = false,
+                )
                 HookSwitchPreference(
                     preferenceKey = NetworkSpeedSettings.HIDE_UNIT,
                     title = stringResource(R.string.systemui_network_speed_hide_unit_title),
