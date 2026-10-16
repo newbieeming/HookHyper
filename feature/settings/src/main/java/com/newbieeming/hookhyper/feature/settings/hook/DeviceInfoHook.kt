@@ -216,6 +216,7 @@ class DeviceInfoHook :
 
     private fun HookContext.hookVersionInfo() {
         val aboutPhone = ABOUT_PHONE.toClass().resolve()
+        val featurePreferences = prefs(PreferenceKeys.FILE_NAME)
 
         listOf(
             "getOsVersionCode" to DeviceInfoFields.osVersion.preferenceKey,
@@ -227,7 +228,10 @@ class DeviceInfoHook :
                     name = methodName
                     emptyParameters()
                 }.self
-                xposed.hook(method).intercept { true }
+                xposed.hook(method).intercept {chain ->
+                    val original = chain.proceed()
+                    featurePreferences.getString(prefKey).takeIf(String::isNotBlank) ?: original
+                }
             }
         }
     }
