@@ -27,6 +27,11 @@ enum class SystemUiHookDef(
         category = LOCK_SCREEN,
         order = 0,
     ),
+    DATA_SIM_CARRIER_ONLY(
+        preferenceKey = "systemui_data_sim_carrier_only",
+        category = STATUS_BAR,
+        order = 2,
+    ),
     CUSTOM_TIME_FORMAT(
         preferenceKey = "systemui_custom_time_format",
         category = STATUS_BAR,

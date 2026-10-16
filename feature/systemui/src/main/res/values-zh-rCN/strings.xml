@@ -62,4 +62,8 @@
     <string name="category_status_bar">状态栏</string>
     <string name="category_notification_bar">通知栏</string>
     <string name="category_super_island">超级岛</string>
+    <string name="systemui_data_sim_carrier_only_title">仅显示上网卡运营商</string>
+    <string name="systemui_data_sim_carrier_only_summary">锁屏仅显示默认上网卡的运营商名称及其 HD 图标，修改后请重启系统界面</string>
+    <string name="systemui_data_sim_carrier_notification_bar_title">同时应用于通知栏和控制中心</string>
+    <string name="systemui_data_sim_carrier_notification_bar_summary">通知栏和控制中心也仅显示上网卡运营商及其 HD 图标，需开启主开关，修改后请重启系统界面</string>
 </resources>

@@ -62,4 +62,8 @@
     <string name="category_status_bar">Status bar</string>
     <string name="category_notification_bar">Notification bar</string>
     <string name="category_super_island">Super Island</string>
+    <string name="systemui_data_sim_carrier_only_title">Only show data SIM carrier</string>
+    <string name="systemui_data_sim_carrier_only_summary">Show only the default data SIM carrier and its HD icon on the lock screen. Restart System UI after changing this setting.</string>
+    <string name="systemui_data_sim_carrier_notification_bar_title">Apply to notification shade and Control Center</string>
+    <string name="systemui_data_sim_carrier_notification_bar_summary">Also show only the data SIM carrier and its HD icon here. Requires the main switch; restart System UI to apply.</string>
 </resources>
