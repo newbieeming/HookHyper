@@ -3,10 +3,9 @@ package com.newbieeming.hookhyper.ui.app
 import android.os.Build
 import android.view.RoundedCorner
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -24,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.view.doOnLayout
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -72,11 +72,12 @@ private fun rememberDeviceCornerRadius(): RoundedCornerShape {
     return remember(radius) { RoundedCornerShape(radius) }
 }
 
-private val TransitionEasing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
-private const val SlideDuration = 500
-private const val FadeDuration = 300
-private const val FadeDelay = 100
-private const val PredictiveDuration = 400
+// Keep velocity when a second back action retargets an unfinished transition.
+private val NavigationSpring = spring<IntOffset>(
+    dampingRatio = Spring.DampingRatioNoBouncy,
+    stiffness = Spring.StiffnessMediumLow,
+    visibilityThreshold = IntOffset.VisibilityThreshold,
+)
 private const val SlideOffsetDivisor = 4
 
 @Composable
@@ -86,7 +87,7 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
     val cornerRadius = rememberDeviceCornerRadius()
 
     HookHyperTheme(themeColor = state.themeColor) {
-        val onBack: () -> Unit = { backStack.removeLastOrNull() }
+        val onBack: () -> Unit = { backStack.popToPrevious() }
         val entryDecorators = listOf<NavEntryDecorator<NavKey>>(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
@@ -167,7 +168,7 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
 }
 
 @Composable
-private fun HookHyperNavDisplay(
+internal fun HookHyperNavDisplay(
     sceneState: SceneState<NavKey>,
     navigationEventState: NavigationEventState<SceneInfo<NavKey>>,
 ) {
@@ -178,32 +179,34 @@ private fun HookHyperNavDisplay(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         transitionSpec = {
+            // Opaque pages avoid full-screen alpha buffers during the parallax transition.
             slideInHorizontally(
-                animationSpec = tween(SlideDuration, easing = TransitionEasing),
-            ) { it } +
-                fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
+                animationSpec = NavigationSpring,
+            ) { it } togetherWith
                 slideOutHorizontally(
-                    animationSpec = tween(SlideDuration, easing = TransitionEasing),
-                ) { -it / SlideOffsetDivisor } +
-                fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
+                    animationSpec = NavigationSpring,
+                ) { -it / SlideOffsetDivisor }
         },
         popTransitionSpec = {
             slideInHorizontally(
-                animationSpec = tween(SlideDuration, easing = TransitionEasing),
-            ) { -it / SlideOffsetDivisor } +
-                fadeIn(animationSpec = tween(FadeDuration, FadeDelay, easing = TransitionEasing)) togetherWith
+                animationSpec = NavigationSpring,
+            ) { -it / SlideOffsetDivisor } togetherWith
                 slideOutHorizontally(
-                    animationSpec = tween(SlideDuration, easing = TransitionEasing),
-                ) { it } +
-                fadeOut(animationSpec = tween(FadeDuration, easing = TransitionEasing))
+                    animationSpec = NavigationSpring,
+                ) { it }
         },
         predictivePopTransitionSpec = {
-            fadeIn(
-                animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
-                initialAlpha = 0.1f,
-            ) togetherWith slideOutHorizontally(
-                animationSpec = tween(PredictiveDuration, easing = TransitionEasing),
-            ) { width -> width }
+            // Match regular pop geometry and timing when a gesture completes or is interrupted.
+            slideInHorizontally(
+                animationSpec = NavigationSpring,
+            ) { -it / SlideOffsetDivisor } togetherWith
+                slideOutHorizontally(
+                    animationSpec = NavigationSpring,
+                ) { it }
         },
     )
+}
+
+internal fun MutableList<NavKey>.popToPrevious() {
+    if (size > 1) removeAt(lastIndex)
 }

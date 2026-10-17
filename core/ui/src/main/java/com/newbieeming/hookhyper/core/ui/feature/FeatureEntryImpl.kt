@@ -1,10 +1,13 @@
 package com.newbieeming.hookhyper.core.ui.feature
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.newbieeming.hookhyper.core.ui.component.HookContent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * [FeatureEntry] 的样板实现。
@@ -35,12 +38,14 @@ abstract class FeatureEntryImpl : FeatureEntry {
         modifier: Modifier,
     ) {
         val context = LocalContext.current
-        val title = remember(context, targetPackageName) {
-            runCatching {
-                context.packageManager.getApplicationInfo(targetPackageName, 0)
-                    .let(context.packageManager::getApplicationLabel)
-                    .toString()
-            }.getOrDefault(targetPackageName)
+        val title by produceState(targetPackageName, context, targetPackageName) {
+            value = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.packageManager.getApplicationInfo(targetPackageName, 0)
+                        .let(context.packageManager::getApplicationLabel)
+                        .toString()
+                }.getOrDefault(targetPackageName)
+            }
         }
         FeatureScreen(
             viewModel = provideViewModel(),

@@ -11,13 +11,18 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.ui.component.AppScaffold
 import com.newbieeming.hookhyper.ui.component.AppTab
 import com.newbieeming.hookhyper.ui.home.HomeScreen
 import com.newbieeming.hookhyper.ui.settings.SettingsScreen
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private val PagerNavigationSpringSpec: SpringSpec<Float> = spring(
@@ -36,10 +41,12 @@ internal fun MainTabs(
 ) {
     val pagerState = rememberPagerState(pageCount = { AppTab.entries.size })
     val scope = rememberCoroutineScope()
+    var tabNavigationJob by remember { mutableStateOf<Job?>(null) }
     val selectedTab = AppTab.entries[pagerState.settledPage]
     val selectTab: (AppTab) -> Unit = { tab ->
-        if (pagerState.currentPage != tab.ordinal) {
-            scope.launch { pagerState.animateToTab(tab.ordinal) }
+        if (pagerState.targetPage != tab.ordinal) {
+            tabNavigationJob?.cancel()
+            tabNavigationJob = scope.launch { pagerState.animateToTab(tab.ordinal) }
         }
     }
     val isPagerBackEnabled = pagerState.settledPage != AppTab.HOME.ordinal

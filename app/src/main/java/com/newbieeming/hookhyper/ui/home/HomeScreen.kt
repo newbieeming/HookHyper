@@ -21,6 +21,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +36,8 @@ import com.newbieeming.hookhyper.R
 import com.newbieeming.hookhyper.core.ui.component.settingsItemShape
 import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.ui.component.ScreenScaffold
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen(
@@ -41,10 +45,13 @@ fun HomeScreen(
     onOpenFeature: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    val items = remember(context, features) {
-        features.map { feature ->
-            HomeFeature(feature, context.targetAppInfo(feature.targetPackageName))
-        }.sortedBy { it.appInfo?.label ?: it.feature.targetPackageName }
+    val placeholders = remember(features) { features.map { HomeFeature(it, null) } }
+    val items by produceState(placeholders, context, features) {
+        value = withContext(Dispatchers.IO) {
+            features.map { feature ->
+                HomeFeature(feature, context.targetAppInfo(feature.targetPackageName))
+            }.sortedBy { it.appInfo?.label ?: it.feature.targetPackageName }
+        }
     }
     ScreenScaffold(title = stringResource(R.string.app_name), compactTitle = true) { padding ->
         LazyColumn(
