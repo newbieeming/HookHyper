@@ -1,6 +1,6 @@
 <resources>
     <string name="settings_edit_device_info_title">Edit device information</string>
-    <string name="settings_edit_device_info_summary">Override information in About phone. Empty fields keep the original system values. Changes take effect after restarting System settings.</string>
+    <string name="settings_edit_device_info_summary">Edit About phone information; blank fields keep original values</string>
     <string name="device_info_text_field_placeholder">Enter %1$s</string>
     <string name="device_info_origin_value">Original: %1$s</string>
     <string name="device_name">Device name</string>
@@ -20,7 +20,6 @@
     <string name="device_android_version">Android version</string>
     <string name="device_kernel_version">Kernel version</string>
     <string name="restart_settings_success">System settings restarted</string>
-    <string name="category_device">Properties</string>
     <string name="device_info_section_hardware">Device specifications</string>
     <string name="device_info_section_system">System information</string>
     <string name="device_info_section_versions">Model and versions</string>

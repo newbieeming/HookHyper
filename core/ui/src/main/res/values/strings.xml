@@ -1,4 +1,5 @@
 <resources>
+    <string name="hook_settings_unavailable">This settings page is unavailable.</string>
     <string name="action_back">Back</string>
     <string name="action_restart_app">Restart app</string>
     <string name="restart_root_required">Root access is required to restart the app</string>

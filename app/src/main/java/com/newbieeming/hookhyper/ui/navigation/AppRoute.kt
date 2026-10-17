@@ -17,3 +17,10 @@ data class HookCategoryRoute(
     val targetPackageName: String,
     val categoryId: String,
 ) : NavKey
+
+@Serializable
+data class HookSettingsRoute(
+    val targetPackageName: String,
+    val categoryId: String,
+    val preferenceKey: String,
+) : NavKey

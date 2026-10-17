@@ -43,11 +43,13 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.NavigationEventState
 import androidx.navigationevent.compose.rememberNavigationEventState
+import com.newbieeming.hookhyper.core.ui.component.HookFeatureNavigation
 import com.newbieeming.hookhyper.core.ui.theme.HookHyperTheme
 import com.newbieeming.hookhyper.ui.feature.MissingFeatureScreen
 import com.newbieeming.hookhyper.ui.navigation.FeatureRoute
 import com.newbieeming.hookhyper.ui.navigation.HomeRoute
 import com.newbieeming.hookhyper.ui.navigation.HookCategoryRoute
+import com.newbieeming.hookhyper.ui.navigation.HookSettingsRoute
 
 @Composable
 private fun rememberDeviceCornerRadius(): RoundedCornerShape {
@@ -85,6 +87,10 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val backStack = rememberNavBackStack(HomeRoute)
     val cornerRadius = rememberDeviceCornerRadius()
+    val featurePageModifier = Modifier.fillMaxSize().graphicsLayer {
+        shape = cornerRadius
+        clip = true
+    }
 
     HookHyperTheme(themeColor = state.themeColor) {
         val onBack: () -> Unit = { backStack.popToPrevious() }
@@ -107,29 +113,34 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
                 entry<FeatureRoute> { route ->
                     viewModel.feature(route.targetPackageName)?.Content(
                         onBack = onBack,
-                        onOpenCategory = { categoryId ->
-                            backStack.add(HookCategoryRoute(route.targetPackageName, categoryId))
-                        },
-                        categoryId = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer {
-                                shape = cornerRadius
-                                clip = true
+                        navigation = HookFeatureNavigation(
+                            onOpenCategory = { categoryId ->
+                                backStack.add(HookCategoryRoute(route.targetPackageName, categoryId))
                             },
+                        ),
+                        modifier = featurePageModifier,
                     ) ?: MissingFeatureScreen(onBack = onBack)
                 }
                 entry<HookCategoryRoute> { route ->
                     viewModel.feature(route.targetPackageName)?.Content(
                         onBack = onBack,
-                        onOpenCategory = {},
-                        categoryId = route.categoryId,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer {
-                                shape = cornerRadius
-                                clip = true
+                        navigation = HookFeatureNavigation(
+                            categoryId = route.categoryId,
+                            onOpenHook = { preferenceKey ->
+                                backStack.add(HookSettingsRoute(route.targetPackageName, route.categoryId, preferenceKey))
                             },
+                        ),
+                        modifier = featurePageModifier,
+                    ) ?: MissingFeatureScreen(onBack = onBack)
+                }
+                entry<HookSettingsRoute> { route ->
+                    viewModel.feature(route.targetPackageName)?.Content(
+                        onBack = onBack,
+                        navigation = HookFeatureNavigation(
+                            categoryId = route.categoryId,
+                            hookPreferenceKey = route.preferenceKey,
+                        ),
+                        modifier = featurePageModifier,
                     ) ?: MissingFeatureScreen(onBack = onBack)
                 }
             },
@@ -145,25 +156,31 @@ fun HookHyperApp(viewModel: AppViewModel = hiltViewModel()) {
             backInfo = sceneState.previousScenes.map(::SceneInfo),
         )
 
-        if (state.predictiveBackEnabled) {
-            NavigationBackHandler(
-                state = navigationEventState,
-                isBackEnabled = scene.previousEntries.isNotEmpty(),
-                onBackCompleted = {
-                    repeat(entries.size - scene.previousEntries.size) { onBack() }
-                },
-            )
-        } else {
-            BackHandler(
-                enabled = scene.previousEntries.isNotEmpty(),
-                onBack = onBack,
-            )
-        }
+        val entriesToPop = if (scene.previousEntries.isEmpty()) 0 else entries.size - scene.previousEntries.size
+        HookHyperBackHandler(state.predictiveBackEnabled, navigationEventState, entriesToPop, onBack)
 
         HookHyperNavDisplay(
             sceneState = sceneState,
             navigationEventState = navigationEventState,
         )
+    }
+}
+
+@Composable
+private fun HookHyperBackHandler(
+    predictiveBackEnabled: Boolean,
+    navigationEventState: NavigationEventState<SceneInfo<NavKey>>,
+    entriesToPop: Int,
+    onBack: () -> Unit,
+) {
+    if (predictiveBackEnabled) {
+        NavigationBackHandler(
+            state = navigationEventState,
+            isBackEnabled = entriesToPop > 0,
+            onBackCompleted = { repeat(entriesToPop) { onBack() } },
+        )
+    } else {
+        BackHandler(enabled = entriesToPop > 0, onBack = onBack)
     }
 }
 

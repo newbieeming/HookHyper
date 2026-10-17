@@ -28,6 +28,7 @@ import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.HookUtils.call
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSettingsPage
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
@@ -48,6 +49,10 @@ class DeviceInfoHook :
     FeatureHook<SettingsHookDef> {
 
     override val def = SettingsHookDef.EDIT_DEVICE_INFO
+    override val settingsPage = HookSettingsPage(
+        titleResId = R.string.settings_edit_device_info_title,
+        summaryResId = R.string.settings_edit_device_info_summary,
+    )
 
     private companion object {
         private const val CARD_INFO = "com.android.settings.device.DeviceCardInfo"
@@ -101,8 +106,8 @@ class DeviceInfoHook :
                         viewModel.accept(
                             SettingsFeatureIntent.UpdateValue(
                                 field.preferenceKey,
-                                it
-                            )
+                                it,
+                            ),
                         )
                     },
                     modifier = Modifier.focusRequester(focusRequesters[index]),
@@ -228,7 +233,7 @@ class DeviceInfoHook :
                     name = methodName
                     emptyParameters()
                 }.self
-                xposed.hook(method).intercept {chain ->
+                xposed.hook(method).intercept { chain ->
                     val original = chain.proceed()
                     featurePreferences.getString(prefKey).takeIf(String::isNotBlank) ?: original
                 }

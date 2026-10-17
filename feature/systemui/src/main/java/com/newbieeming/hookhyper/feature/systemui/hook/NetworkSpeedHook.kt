@@ -16,6 +16,8 @@ import com.newbieeming.hookhyper.core.hook.HookUtils.field
 import com.newbieeming.hookhyper.core.hook.HookUtils.findField
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSettingsPage
+import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.SystemUiFeatureEntry
 import com.newbieeming.hookhyper.feature.systemui.component.NetworkSpeedPreferences
 import com.newbieeming.hookhyper.feature.systemui.model.NetworkSpeedSettings
@@ -28,6 +30,10 @@ class NetworkSpeedHook :
     SubHooker,
     FeatureHook<SystemUiHookDef> {
     override val def = SystemUiHookDef.NETWORK_SPEED
+    override val settingsPage = HookSettingsPage(
+        titleResId = R.string.systemui_network_speed_title,
+        summaryResId = R.string.systemui_network_speed_summary,
+    )
 
     @Composable
     override fun Content() {

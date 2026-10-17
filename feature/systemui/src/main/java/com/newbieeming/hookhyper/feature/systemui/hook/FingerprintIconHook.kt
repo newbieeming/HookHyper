@@ -45,6 +45,7 @@ import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSettingsPage
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
@@ -68,6 +69,10 @@ class FingerprintIconHook :
     FeatureHook<SystemUiHookDef> {
 
     override val def = SystemUiHookDef.REPLACE_FINGERPRINT_ICON
+    override val settingsPage = HookSettingsPage(
+        titleResId = R.string.systemui_replace_fingerprint_icon_title,
+        summaryResId = R.string.systemui_replace_fingerprint_icon_summary,
+    )
 
     private var appContext: Context? = null
     private var moduleResources: Resources? = null
@@ -80,7 +85,7 @@ class FingerprintIconHook :
         var style by remember {
             mutableStateOf(FingerprintIconStyle.fromId(repository.getString(FingerprintIconStyle.PREFERENCE_KEY)))
         }
-        SettingsPreferenceGroup(index = 0, count = 2) {
+        SettingsPreferenceGroup {
             HookSwitchPreference(
                 preferenceKey = preferenceKey,
                 title = stringResource(R.string.systemui_replace_fingerprint_icon_title),

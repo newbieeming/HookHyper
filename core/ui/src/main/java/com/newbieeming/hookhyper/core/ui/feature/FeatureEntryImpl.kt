@@ -6,19 +6,22 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.newbieeming.hookhyper.core.ui.component.HookContent
+import com.newbieeming.hookhyper.core.ui.component.HookFeatureNavigation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * [FeatureEntry] 的样板实现。
+ * [FeatureEntry] 的样板实现.
  *
  * 子类只需提供 Feature 信息和 [provideViewModel]，其余自动完成：
  * - [Content]：自动调用 [FeatureScreen]
  */
 abstract class FeatureEntryImpl : FeatureEntry {
 
+    abstract override val hooks: List<HookContent>
+
     /**
-     * 通过 Hilt 创建当前 Feature 的 ViewModel。
+     * 通过 Hilt 创建当前 Feature 的 ViewModel.
      *
      * ```kotlin
      * @Composable
@@ -28,13 +31,10 @@ abstract class FeatureEntryImpl : FeatureEntry {
     @Composable
     protected abstract fun provideViewModel(): FeatureViewModel
 
-    abstract override val hooks: List<HookContent>
-
     @Composable
     override fun Content(
         onBack: () -> Unit,
-        onOpenCategory: (String) -> Unit,
-        categoryId: String?,
+        navigation: HookFeatureNavigation,
         modifier: Modifier,
     ) {
         val context = LocalContext.current
@@ -51,8 +51,7 @@ abstract class FeatureEntryImpl : FeatureEntry {
             viewModel = provideViewModel(),
             title = title,
             onBack = onBack,
-            onOpenCategory = onOpenCategory,
-            categoryId = categoryId,
+            navigation = navigation,
             hooks = hooks,
             modifier = modifier,
         )

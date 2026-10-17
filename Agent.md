@@ -72,14 +72,14 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 libxposed API 102.0
 - `PreferenceKeys` 只保存跨 feature 的共享偏好文件和应用级键。目标应用的设置键、字段模型和匹配规则放在对应 `feature:<name>/model`；键值仍需带 feature 前缀，避免跨模块冲突。
 - App 进程通过 `HookPreferencesRepository` 读写设置；Hook 进程使用相同的 `PreferenceKeys.FILE_NAME` 和设置键读取 `XposedInterface.getRemotePreferences`。指纹资源注入暂不支持，保留注释实现且不注册。
 - Hook 类实现 `SubHooker`（运行时 Hook 逻辑）和 `FeatureHook<T>`（UI 元数据委托）。`@HookModule` 注解仅声明目标包名，`preferenceKey` 从实例读取，KSP 生成 `List<SubHooker>` 注册表。
-- 每个 hook 通过 `HookContent.Content()` 提供自己的设置 UI，由 `HookFeatureScreen` 统一渲染（按 `HookCategory` 分组、折叠、磁吸头部）。
+- 每个 hook 通过 `HookContent.Content()` 提供自己的设置 UI，由 `HookFeatureScreen` 按分类渲染，分类内配置页入口优先于直接展示的开关；两组内分别按 `order` 排序。仅含开关的功能内联展示；含输入、样式或多项参数的功能声明 `HookContent.settingsPage`（标题与摘要资源），在分类页显示与分类入口共用的文字加箭头列表项，内容进入独立配置页。应用宿主持有 `HookSettingsRoute`，携带应用、分类和偏好键；通过 `HookFeatureNavigation` 传递导航状态与回调，保持逐级返回和状态恢复，feature 不直接管理导航栈。设置模块首页显示“修改设备信息”分类入口，点击后直接显示该功能配置，不增加“属性”或重复的功能入口。
 - 入口继承 `XposedModule`，在 `onPackageReady` 中传递 `HookContext`；`ModularHooker` 必须限定目标包，具体功能使用 `xposed.hook(method).intercept { chain -> ... }`。新增 Hook 默认应由设置项控制，未启用时尽早返回。
 - HyperOS 内部类和方法可能随版本变化。反射或 Hook 失败应限制在单个功能内，使用 `runCatching` 与带 feature 名称的日志标签记录，不能导致目标进程因非关键功能崩溃。
 - “仅显示上网卡运营商”位于状态栏分类。主开关控制锁屏，子开关控制通知栏和控制中心，子开关默认关闭且依赖主开关。`DataSimCarrierViews` 按视图所属区域过滤文字与 HD/HD+，共享控制器保留完整运营商数据；默认数据订阅切换时使文字缓存失效并刷新，飞行模式和紧急呼叫状态保留系统逻辑。
 - 网速位置设置使用 0.5 dp 步进，上下偏移默认 0、右侧间距默认 0。偏移应用于内部容器，保留外层图标动画；文字格式和字号仅在网速 View 内处理，不 Hook 全局 Resources。单行布局仍按实际文字宽度测量。
 - 自定义时间处理状态栏 Clock/MiuiClock 视图，并通过默认关闭的子开关将格式应用于通知栏和控制中心时间；自定义字号仅作用于状态栏，通知栏和控制中心保留系统字号，不修改全局时间资源。date_time 及 MiuiClock 的日期模式（1/3/4）保留系统日期；horizontal_time 为横屏时间。支持常用日期格式，扩展 `e` 为周一至周日的 1–7、`i` 为时辰，`a` 由开关选择中文上午/下午或大写 AM/PM，`aa` 固定显示凌晨（0–6）、早上（6–9）、上午（9–12）、中午（12–13）、下午（13–17）、傍晚（17–19）、晚上（19–24），区间含起点不含终点；包含秒时在视图附着期间刷新，分离时清理回调。格式错误回退为 `HH:mm a`，字号留空保留系统值；修改后需重启系统界面。
 - 不在 Hook 热路径执行阻塞 I/O、长耗时遍历或无界重试；不要持有目标进程中 Activity/View 的长期引用。
-- 设置变化若需重启目标应用才生效，UI 文案必须明确提示；调用通用重启能力时要保留 Root 缺失和执行失败的反馈。
+- 设置标题与描述保持简短，不在各项描述中重复提示重启后生效；保留工具栏重启入口，以及 Root 缺失和执行失败的反馈。
 
 ## 新增 feature 检查清单
 

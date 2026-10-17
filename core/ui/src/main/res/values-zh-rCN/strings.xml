@@ -1,4 +1,5 @@
 <resources>
+    <string name="hook_settings_unavailable">该配置页面暂不可用。</string>
     <string name="action_back">返回</string>
     <string name="action_restart_app">重启应用</string>
     <string name="restart_root_required">需要 Root 权限才能重启应用</string>

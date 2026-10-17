@@ -8,5 +8,5 @@ enum class SettingsCategory(
     override val order: Int,
     override val titleResId: Int,
 ) : HookCategory {
-    DEVICE(id = "device", order = 0, titleResId = R.string.category_device),
+    DEVICE(id = "device", order = 0, titleResId = R.string.settings_edit_device_info_title),
 }

@@ -2,7 +2,6 @@ package com.newbieeming.hookhyper.core.ui.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +31,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhoneAndroid
@@ -305,37 +303,14 @@ fun HookCategoryPreference(
     count: Int = 1,
 ) {
     val presentation = category.presentation()
-    val title = stringResource(category.titleResId)
-    Surface(
-        modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 2.dp)
-            .fillMaxWidth()
-            .clip(settingsItemShape(index, count))
-            .clickable(onClick = onClick),
-        shape = settingsItemShape(index, count),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            CategoryIcon(presentation)
-            Text(
-                text = title,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Icon(
-                Icons.Default.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    SettingsNavigationPreference(
+        title = stringResource(category.titleResId),
+        onClick = onClick,
+        modifier = modifier,
+        index = index,
+        count = count,
+        leadingContent = { CategoryIcon(presentation) },
+    )
 }
 
 @Suppress("MagicNumber")

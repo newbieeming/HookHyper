@@ -8,22 +8,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.newbieeming.hookhyper.core.ui.component.HookCategoryNavigation
 import com.newbieeming.hookhyper.core.ui.component.HookContent
+import com.newbieeming.hookhyper.core.ui.component.HookFeatureNavigation
 import com.newbieeming.hookhyper.core.ui.component.HookFeatureScreen
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 
 /**
- * 各 Feature 模块的公共页面。
+ * 各 Feature 模块的公共页面.
  *
  * 封装 ViewModel 状态收集、Snackbar effect 监听、
- * [LocalPreferencesRepository] 注入及 [HookFeatureScreen] 调用。
+ * [LocalPreferencesRepository] 注入及 [HookFeatureScreen] 调用.
  * 各模块只需在 [com.newbieeming.hookhyper.core.ui.feature.FeatureEntry.Content]
- * 中创建 ViewModel 并调用此函数即可。
+ * 中创建 ViewModel 并调用此函数即可.
  *
  * @param viewModel 该功能模块的 [FeatureViewModel] 实例
  * @param title 页面标题
  * @param onBack 返回回调
+ * @param navigation 分类与功能详情导航
  * @param hooks 该模块的 [HookContent] 列表
  * @param modifier Modifier
  */
@@ -32,8 +33,7 @@ fun FeatureScreen(
     viewModel: FeatureViewModel,
     title: String,
     onBack: () -> Unit,
-    onOpenCategory: (String) -> Unit,
-    categoryId: String?,
+    navigation: HookFeatureNavigation,
     hooks: List<HookContent>,
     modifier: Modifier = Modifier,
 ) {
@@ -53,10 +53,7 @@ fun FeatureScreen(
         HookFeatureScreen(
             title = title,
             onBack = onBack,
-            categoryNavigation = HookCategoryNavigation(
-                categoryId = categoryId,
-                onOpenCategory = onOpenCategory,
-            ),
+            navigation = navigation,
             onRestart = viewModel::onRestart,
             isRestarting = isRestarting,
             snackbarHostState = snackbarHostState,

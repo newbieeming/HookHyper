@@ -24,11 +24,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.highcapable.kavaref.KavaRef.Companion.resolve
-import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
+import com.newbieeming.hookhyper.core.hook.HookContext
 import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSettingsPage
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 import com.newbieeming.hookhyper.core.ui.component.PreferenceTextField
@@ -46,6 +47,10 @@ class SuperIslandDimensionsHook :
     FeatureHook<SystemUiHookDef> {
 
     override val def = SystemUiHookDef.SUPER_ISLAND_DIMENSIONS
+    override val settingsPage = HookSettingsPage(
+        titleResId = R.string.systemui_super_island_dimensions_title,
+        summaryResId = R.string.systemui_super_island_dimensions_summary,
+    )
 
     @Composable
     override fun Content() {

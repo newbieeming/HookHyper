@@ -24,6 +24,7 @@ import com.newbieeming.hookhyper.core.hook.HookModule
 import com.newbieeming.hookhyper.core.hook.HookUtils.field
 import com.newbieeming.hookhyper.core.hook.SubHooker
 import com.newbieeming.hookhyper.core.ui.component.FeatureHook
+import com.newbieeming.hookhyper.core.ui.component.HookSettingsPage
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
 import com.newbieeming.hookhyper.core.ui.component.PreferenceTextField
@@ -39,8 +40,14 @@ import java.util.Collections
 import java.util.WeakHashMap
 
 @HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
-class LockScreenShortcutGlassHook : SubHooker, FeatureHook<SystemUiHookDef> {
+class LockScreenShortcutGlassHook :
+    SubHooker,
+    FeatureHook<SystemUiHookDef> {
     override val def = SystemUiHookDef.LOCK_SCREEN_SHORTCUT_GLASS
+    override val settingsPage = HookSettingsPage(
+        titleResId = R.string.systemui_shortcut_glass_title,
+        summaryResId = R.string.systemui_shortcut_glass_summary,
+    )
 
     @Composable
     override fun Content() {
@@ -101,7 +108,10 @@ class LockScreenShortcutGlassHook : SubHooker, FeatureHook<SystemUiHookDef> {
 
         hookSafely("MiuiShortcutController.onPluginLoaded") {
             val loaded = "com.android.keyguard.shortcut.MiuiShortcutController".toClass().resolve()
-                .firstMethod { name = "onPluginLoaded"; parameterCount = 3 }.self
+                .firstMethod {
+                    name = "onPluginLoaded"
+                    parameterCount = 3
+                }.self
             xposed.hook(loaded).intercept { chain ->
                 val plugin = chain.args[0]
                 val loader = plugin?.javaClass?.classLoader
