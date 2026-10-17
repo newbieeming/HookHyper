@@ -74,4 +74,11 @@
     <string name="systemui_data_sim_carrier_notification_bar_title">Apply to notification shade and Control Center</string>
     <string name="systemui_data_sim_carrier_notification_bar_summary">Also show only the data SIM carrier and its HD icon here. Requires the main switch; restart System UI to apply.</string>
     <string name="systemui_network_speed_reset_position">Reset</string>
+    <string name="systemui_shortcut_glass_title">Lock screen shortcut glass background</string>
+    <string name="systemui_shortcut_glass_summary">Add native soft-light glass behind the flashlight, camera and other corner shortcuts. Both sides share dimensions and corners. Restart System UI after changes.</string>
+    <string name="systemui_shortcut_glass_width">Background width (dp)</string>
+    <string name="systemui_shortcut_glass_height">Background height (dp)</string>
+    <string name="systemui_shortcut_glass_radius">Corner radius (dp)</string>
+    <string name="systemui_shortcut_glass_size_hint">Leave blank for 56 dp. Range: 32–96 dp. Only the background changes size.</string>
+    <string name="systemui_shortcut_glass_radius_hint">Leave blank for 28 dp. Range: 0 to half the shorter background edge.</string>
 </resources>

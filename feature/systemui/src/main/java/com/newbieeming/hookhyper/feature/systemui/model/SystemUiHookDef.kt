@@ -27,6 +27,11 @@ enum class SystemUiHookDef(
         category = LOCK_SCREEN,
         order = 0,
     ),
+    LOCK_SCREEN_SHORTCUT_GLASS(
+        preferenceKey = "systemui_lock_screen_shortcut_glass",
+        category = LOCK_SCREEN,
+        order = 1,
+    ),
     DATA_SIM_CARRIER_ONLY(
         preferenceKey = "systemui_data_sim_carrier_only",
         category = STATUS_BAR,

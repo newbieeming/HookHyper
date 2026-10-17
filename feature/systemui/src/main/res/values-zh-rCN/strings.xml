@@ -74,4 +74,11 @@
     <string name="systemui_data_sim_carrier_notification_bar_title">同时应用于通知栏和控制中心</string>
     <string name="systemui_data_sim_carrier_notification_bar_summary">通知栏和控制中心也仅显示上网卡运营商及其 HD 图标，需开启主开关，修改后请重启系统界面</string>
     <string name="systemui_network_speed_reset_position">重置</string>
+    <string name="systemui_shortcut_glass_title">锁屏快捷按钮柔光玻璃背景</string>
+    <string name="systemui_shortcut_glass_summary">为锁屏左右下角的手电筒、相机等快捷按钮添加系统柔光玻璃背景。两侧共用尺寸与圆角，修改后请重启系统界面。</string>
+    <string name="systemui_shortcut_glass_width">背景宽度（dp）</string>
+    <string name="systemui_shortcut_glass_height">背景高度（dp）</string>
+    <string name="systemui_shortcut_glass_radius">背景圆角（dp）</string>
+    <string name="systemui_shortcut_glass_size_hint">留空使用 56 dp，范围 32–96 dp；仅调整背景，不改变图标大小。</string>
+    <string name="systemui_shortcut_glass_radius_hint">留空使用 28 dp，最小为 0，最大为背景短边的一半。</string>
 </resources>
