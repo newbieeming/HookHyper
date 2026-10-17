@@ -2,6 +2,7 @@ package com.newbieeming.hookhyper.feature.systemui.component
 
 import android.content.Context
 import android.graphics.Outline
+import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.View
 import android.view.ViewOutlineProvider
@@ -21,6 +22,7 @@ internal class ShortcutGlassBackground private constructor(
     private val radiusPx = settings.cornerRadiusDp * resources.displayMetrics.density
     private var observer: ViewTreeObserver? = null
     private var materialReady = false
+    private val selectedBackground = GradientDrawable().apply { cornerRadius = radiusPx }
     private val shortcutOutlineProvider = object : ViewOutlineProvider() {
         override fun getOutline(view: View, outline: Outline) {
             outline.setRoundRect(0, 0, view.width, view.height, radiusPx)
@@ -46,6 +48,7 @@ internal class ShortcutGlassBackground private constructor(
         runCatching {
             material.apply(this, context)
             material.configureClipping(this)
+            if (isActivated) background = selectedBackground
             if (width > 0 && height > 0) material.updateSize(this)
             materialReady = true
         }.onFailure { Log.e(TAG, "Unable to initialize native glass material", it) }
@@ -92,6 +95,14 @@ internal class ShortcutGlassBackground private constructor(
 
     companion object {
         private const val TAG = "HookHyperShortcutGlass"
+
+        fun setSelectedState(icon: ImageView, selected: Boolean, color: Int) {
+            val surface = (icon.parent as? FrameLayout)?.findViewWithTag<ShortcutGlassBackground>(TAG) ?: return
+            if (surface.isActivated == selected) return
+            surface.isActivated = selected
+            surface.selectedBackground.setColor(color)
+            surface.background = if (selected) surface.selectedBackground else null
+        }
 
         fun install(
             icon: ImageView,

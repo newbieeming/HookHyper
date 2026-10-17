@@ -32,6 +32,11 @@ enum class SystemUiHookDef(
         category = LOCK_SCREEN,
         order = 1,
     ),
+    LOCK_SCREEN_FLASHLIGHT_LONG_PRESS(
+        preferenceKey = "systemui_lock_screen_flashlight_long_press",
+        category = LOCK_SCREEN,
+        order = 2,
+    ),
     DATA_SIM_CARRIER_ONLY(
         preferenceKey = "systemui_data_sim_carrier_only",
         category = STATUS_BAR,

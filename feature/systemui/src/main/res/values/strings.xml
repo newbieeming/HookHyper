@@ -81,4 +81,6 @@
     <string name="systemui_shortcut_glass_radius">Corner radius (dp)</string>
     <string name="systemui_shortcut_glass_size_hint">Leave blank for 56 dp. Range: 32–96 dp. Only the background changes size.</string>
     <string name="systemui_shortcut_glass_radius_hint">Leave blank for 28 dp. Range: 0 to half the shorter background edge.</string>
+    <string name="systemui_flashlight_long_press_title">Hold lock screen flashlight to toggle</string>
+    <string name="systemui_flashlight_long_press_summary">Long press the lock screen flashlight to turn it on or off.</string>
 </resources>
