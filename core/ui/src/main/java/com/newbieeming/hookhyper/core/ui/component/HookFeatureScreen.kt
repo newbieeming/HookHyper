@@ -1,11 +1,16 @@
 package com.newbieeming.hookhyper.core.ui.component
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.newbieeming.hookhyper.core.ui.R
 
 /**
@@ -38,7 +43,7 @@ fun HookFeatureScreen(
         hooks.groupBy { it.category }
             .toSortedMap(compareBy { it.order })
             .mapValues { (_, list) ->
-                list.sortedWith(compareBy<HookContent> { it.settingsPage == null }.thenBy { it.order })
+                list.sortedBy { it.order }
             }
     }
     val selectedCategory = grouped.keys.firstOrNull { it.id == categoryId }
@@ -73,21 +78,34 @@ fun HookFeatureScreen(
                 }
             }
         } else {
-            categoryHooks.forEachIndexed { index, hook ->
-                item(key = hook.preferenceKey, contentType = "hook") {
-                    val page = hook.settingsPage
-                    if (page == null) {
-                        hook.Content()
-                    } else {
-                        SettingsNavigationPreference(
-                            title = stringResource(page.titleResId),
-                            summary = stringResource(page.summaryResId),
-                            onClick = { navigation.onOpenHook(hook.preferenceKey) },
-                            index = index,
-                            count = categoryHooks.size,
-                        )
-                    }
+            val (pageHooks, inlineHooks) = categoryHooks.partition { it.settingsPage != null }
+            hookItems(pageHooks, navigation)
+            if (pageHooks.isNotEmpty() && inlineHooks.isNotEmpty()) {
+                item(contentType = "group_spacing") {
+                    Spacer(Modifier.height(12.dp))
                 }
+            }
+            hookItems(inlineHooks, navigation)
+        }
+    }
+}
+
+private fun LazyListScope.hookItems(hooks: List<HookContent>, navigation: HookFeatureNavigation) {
+    hooks.forEachIndexed { index, hook ->
+        val page = hook.settingsPage
+        item(key = hook.preferenceKey, contentType = if (page == null) "hook_switch" else "hook_navigation") {
+            if (page == null) {
+                CompositionLocalProvider(LocalSettingsPreferenceGroupShape provides settingsItemShape(index, hooks.size)) {
+                    hook.Content()
+                }
+            } else {
+                SettingsNavigationPreference(
+                    title = stringResource(page.titleResId),
+                    summary = stringResource(page.summaryResId),
+                    onClick = { navigation.onOpenHook(hook.preferenceKey) },
+                    index = index,
+                    count = hooks.size,
+                )
             }
         }
     }

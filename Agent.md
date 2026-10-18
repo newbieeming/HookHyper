@@ -72,7 +72,7 @@ HookHyper 是面向小米 HyperOS 的 Xposed 模块，基于 libxposed API 102.0
 - `PreferenceKeys` 只保存跨 feature 的共享偏好文件和应用级键。目标应用的设置键、字段模型和匹配规则放在对应 `feature:<name>/model`；键值仍需带 feature 前缀，避免跨模块冲突。
 - App 进程通过 `HookPreferencesRepository` 读写设置；Hook 进程使用相同的 `PreferenceKeys.FILE_NAME` 和设置键读取 `XposedInterface.getRemotePreferences`。指纹资源注入暂不支持，保留注释实现且不注册。
 - Hook 类实现 `SubHooker`（运行时 Hook 逻辑）和 `FeatureHook<T>`（UI 元数据委托）。`@HookModule` 注解仅声明目标包名，`preferenceKey` 从实例读取，KSP 生成 `List<SubHooker>` 注册表。
-- 每个 hook 通过 `HookContent.Content()` 提供自己的设置 UI，由 `HookFeatureScreen` 按分类渲染，分类内配置页入口优先于直接展示的开关；两组内分别按 `order` 排序。仅含开关的功能内联展示；含输入、样式或多项参数的功能声明 `HookContent.settingsPage`（标题与摘要资源），在分类页显示与分类入口共用的文字加箭头列表项，内容进入独立配置页。应用宿主持有 `HookSettingsRoute`，携带应用、分类和偏好键；通过 `HookFeatureNavigation` 传递导航状态与回调，保持逐级返回和状态恢复，feature 不直接管理导航栈。设置模块首页显示“修改设备信息”分类入口，点击后直接显示该功能配置，不增加“属性”或重复的功能入口。
+- 每个 hook 通过 `HookContent.Content()` 提供自己的设置 UI，由 `HookFeatureScreen` 按分类渲染，分类内配置页入口优先于直接展示的开关；两组内分别按 `order` 排序；各组独立计算首尾圆角，配置入口与开关统一组内间距，组间留白。仅含开关的功能内联展示；含输入、样式或多项参数的功能声明 `HookContent.settingsPage`（标题与摘要资源），在分类页显示与分类入口共用的文字加箭头列表项，内容进入独立配置页。应用宿主持有 `HookSettingsRoute`，携带应用、分类和偏好键；通过 `HookFeatureNavigation` 传递导航状态与回调，保持逐级返回和状态恢复，feature 不直接管理导航栈。设置模块首页显示“修改设备信息”分类入口，点击后直接显示该功能配置，不增加“属性”或重复的功能入口。
 - 入口继承 `XposedModule`，在 `onPackageReady` 中传递 `HookContext`；`ModularHooker` 必须限定目标包，具体功能使用 `xposed.hook(method).intercept { chain -> ... }`。新增 Hook 默认应由设置项控制，未启用时尽早返回。
 - HyperOS 内部类和方法可能随版本变化。反射或 Hook 失败应限制在单个功能内，使用 `runCatching` 与带 feature 名称的日志标签记录，不能导致目标进程因非关键功能崩溃。
 - “仅显示上网卡运营商”位于状态栏分类。主开关控制锁屏，子开关控制通知栏和控制中心，子开关默认关闭且依赖主开关。`DataSimCarrierViews` 按视图所属区域过滤文字与 HD/HD+，共享控制器保留完整运营商数据；默认数据订阅切换时使文字缓存失效并刷新，飞行模式和紧急呼叫状态保留系统逻辑。

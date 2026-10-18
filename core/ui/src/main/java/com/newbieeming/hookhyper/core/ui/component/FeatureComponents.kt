@@ -192,6 +192,7 @@ fun settingsItemShape(index: Int = 0, count: Int = 1): RoundedCornerShape = Roun
 )
 
 internal val LocalSettingsPreferenceGroup = staticCompositionLocalOf { false }
+internal val LocalSettingsPreferenceGroupShape = staticCompositionLocalOf<RoundedCornerShape?> { null }
 
 /** Keeps a feature switch and its expanding options in one connected group. */
 @Composable
@@ -200,12 +201,16 @@ fun SettingsPreferenceGroup(
     count: Int = 1,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    CompositionLocalProvider(LocalSettingsPreferenceGroup provides true) {
+    val listShape = LocalSettingsPreferenceGroupShape.current
+    CompositionLocalProvider(
+        LocalSettingsPreferenceGroup provides true,
+        LocalSettingsPreferenceGroupShape provides null,
+    ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = if (count > 1) 2.dp else 6.dp)
+                .padding(horizontal = 16.dp, vertical = if (listShape != null || count > 1) 2.dp else 6.dp)
                 .fillMaxWidth()
-                .clip(settingsItemShape(index, count)),
+                .clip(listShape ?: settingsItemShape(index, count)),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             content = content,
         )
