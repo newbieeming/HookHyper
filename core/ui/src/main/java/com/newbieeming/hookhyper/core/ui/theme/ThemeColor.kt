@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 
+// ARGB literals define the palette itself; separate numeric constants would duplicate the entries.
+@Suppress("MagicNumber")
 enum class ThemeColor(val id: String, private val seedValue: Long) {
     DYNAMIC("dynamic", 0xFF6750A4),
     DEFAULT("default", 0xFF6750A4),

@@ -15,11 +15,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /**
- * 各 Feature 模块的 ViewModel 基类。
+ * 各 Feature 模块的 ViewModel 基类.
  *
- * 封装公共的重启逻辑与一次性 Effect 通道。
+ * 封装公共的重启逻辑与一次性 Effect 通道.
  * 子类通过 `@HiltViewModel` + `@Inject` 构造注入后，
- * 只需 override [packageName] 和 [restartSuccessMessage] 即可。
+ * 只需 override [packageName] 和 [restartSuccessMessage] 即可.
  */
 open class FeatureViewModel(
     private val context: Context,
@@ -33,13 +33,13 @@ open class FeatureViewModel(
     private val _effects = Channel<String>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
-    /** 子类 override 以提供目标应用包名 */
+    /** 子类 override 以提供目标应用包名. */
     protected open val packageName: String = ""
 
-    /** 子类 override 以提供重启成功提示文案 */
+    /** 子类 override 以提供重启成功提示文案. */
     protected open val restartSuccessMessage: String = ""
 
-    /** 执行重启，由 Screen 层调用 */
+    /** 执行重启，由 Screen 层调用. */
     fun onRestart() {
         if (_isRestarting.value) return
         _isRestarting.value = true

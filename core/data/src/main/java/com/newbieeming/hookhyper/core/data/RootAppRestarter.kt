@@ -19,32 +19,38 @@ class RootAppRestarter @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) {
     suspend fun restart(packageName: String): RestartAppResult = withContext(Dispatchers.IO) {
+        restartWithRoot(packageName)
+    }
+
+    private fun restartWithRoot(packageName: String): RestartAppResult {
         if (!PACKAGE_NAME.matches(packageName)) {
-            return@withContext RestartAppResult.Failure(context.getString(R.string.restart_invalid_package))
+            return RestartAppResult.Failure(context.getString(R.string.restart_invalid_package))
         }
 
         if (!checkRootWithRetry()) {
-            return@withContext RestartAppResult.RootRequired
+            return RestartAppResult.RootRequired
         }
 
         val command = if (packageName == SYSTEM_UI_PACKAGE) {
             "killall $packageName"
         } else {
             val component = context.packageManager
-                .getLaunchIntentForPackage(packageName)?.component?.flattenToString()
-                ?: return@withContext RestartAppResult.Failure(
+                .getLaunchIntentForPackage(packageName)
+                ?.component
+                ?.flattenToString()
+                ?: return RestartAppResult.Failure(
                     context.getString(R.string.restart_invalid_package),
                 )
             "am force-stop $packageName; sleep 1; am start -n $component"
         }
 
-        when (val result = runAsRoot(command)) {
+        return when (val result = runAsRoot(command)) {
             is RootCommandResult.Success -> RestartAppResult.Success
             is RootCommandResult.Error -> RestartAppResult.Failure(result.reason)
         }
     }
 
-    /**
+    /*
      * 检测 root 权限，支持重试。
      * 首次调用 su 时如果 Magisk 弹出授权弹窗，su 会阻塞等待用户操作；
      * 用户授权后 su 可能已超时退出，此时重试即可成功。

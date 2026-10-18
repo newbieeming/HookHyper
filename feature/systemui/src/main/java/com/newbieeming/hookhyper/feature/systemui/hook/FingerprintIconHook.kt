@@ -57,10 +57,10 @@ import dalvik.system.BaseDexClassLoader
 import java.io.File
 
 /**
- * 替换屏下指纹图标。
+ * 替换屏下指纹图标.
  *
  * LSPosed / libxposed API 102 不再支持宿主资源注入，因此不再改写资源 ID，
- * 而是在 [MiuiGxzwFrameAnimation.decodeBitmap] 解码位图时直接换成模块内图标。
+ * 而是在 [MiuiGxzwFrameAnimation.decodeBitmap] 解码位图时直接换成模块内图标.
  */
 @HookModule(packageName = SystemUiFeatureEntry.PACKAGE_NAME)
 @SuppressLint("DiscouragedPrivateApi")
@@ -127,7 +127,8 @@ class FingerprintIconHook :
                 .firstMethod {
                     name = DECODE_BITMAP_METHOD
                     parameterCount = 2
-                }.self
+                }
+                .self
             xposed.hook(method).intercept { chain ->
                 val original = chain.proceed() as? Bitmap
                 val resId = (chain.args[0] as? Number)?.toInt()
@@ -175,8 +176,7 @@ class FingerprintIconHook :
         context.packageManager.getResourcesForApplication(MODULE_PACKAGE)
     }.recoverCatching {
         // LSPosed 加载的模块 ClassLoader 可能没有 APK 路径，仅作兜底。
-        val apkPath = moduleApkPath() ?: return@recoverCatching null
-        resourcesFromApkPath(context, apkPath)
+        moduleApkPath()?.let { resourcesFromApkPath(context, it) }
     }.getOrNull()
 
     private fun resourcesFromApkPath(context: Context, apkPath: String): Resources? = runCatching {
@@ -200,14 +200,15 @@ class FingerprintIconHook :
             .apply { isAccessible = true }
             .get(pathList) as? Array<*> ?: return null
         elements.firstNotNullOfOrNull { element ->
-            if (element == null) return@firstNotNullOfOrNull null
-            runCatching {
-                val path = element.javaClass
-                    .getDeclaredField("path")
-                    .apply { isAccessible = true }
-                    .get(element) as? File
-                path?.absolutePath?.takeIf { it.endsWith(".apk") }
-            }.getOrNull()
+            element?.let { dexElement ->
+                runCatching {
+                    val path = dexElement.javaClass
+                        .getDeclaredField("path")
+                        .apply { isAccessible = true }
+                        .get(element) as? File
+                    path?.absolutePath?.takeIf { it.endsWith(".apk") }
+                }.getOrNull()
+            }
         }
     }.getOrNull()
 

@@ -136,11 +136,13 @@ class SuperIslandDimensionsHook :
                 val method = resourcesClass.firstMethod {
                     this.name = name
                     parameterCount = paramCount
-                }.self
+                }
+                    .self
                 xposed.hook(method).intercept { chain ->
                     val original = chain.proceed()
-                    overrideDimension(chain.thisObject as Resources, chain.args[0] as Int, overrides)
-                        ?.let(transform) ?: original
+                    val replacement = overrideDimension(chain.thisObject as Resources, chain.args[0] as Int, overrides)
+                        ?.let(transform)
+                    replacement ?: original
                 }
             }
         }

@@ -9,7 +9,8 @@ import javax.inject.Inject
 class HookHyperApplication : Application() {
     // Hilt injects Application fields before onCreate.
     @Suppress("LateinitUsage")
-    @Inject lateinit var preferences: HookPreferencesRepository
+    @Inject
+    lateinit var preferences: HookPreferencesRepository
 
     override fun onCreate() {
         super.onCreate()

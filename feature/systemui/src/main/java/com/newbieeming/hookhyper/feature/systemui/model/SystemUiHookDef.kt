@@ -7,10 +7,10 @@ import com.newbieeming.hookhyper.feature.systemui.model.SystemUiCategory.STATUS_
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiCategory.SUPER_ISLAND
 
 /**
- * SystemUI 模块所有 Hook 的元数据定义。
+ * SystemUI 模块所有 Hook 的元数据定义.
  *
  * 每个条目集中声明偏好键名、所属分类和排列顺序，
- * 各 Hook 实现类通过引用对应条目获取这些属性。
+ * 各 Hook 实现类通过引用对应条目获取这些属性.
  */
 enum class SystemUiHookDef(
     override val preferenceKey: String,
@@ -63,7 +63,7 @@ enum class SystemUiHookDef(
         order = 0,
     ),
 
-    /** 子选项，不属于 UI 列表，仅用于偏好读写 */
+    /** 子选项，不属于 UI 列表，仅用于偏好读写. */
     TIME_FORMAT_AA_PREFIX(
         preferenceKey = "systemui_time_format_aa_prefix",
         category = STATUS_BAR,

@@ -111,7 +111,8 @@ class LockScreenShortcutGlassHook :
                 .firstMethod {
                     name = "onPluginLoaded"
                     parameterCount = 3
-                }.self
+                }
+                .self
             xposed.hook(loaded).intercept { chain ->
                 val plugin = chain.args[0]
                 val loader = plugin?.javaClass?.classLoader
@@ -150,13 +151,14 @@ class LockScreenShortcutGlassHook :
         runCatching {
             val context = controller.field("sysuiContext") as Context
             listOf("shortcutViewLeft", "shortcutViewRight").forEach { name ->
-                val icon = controller.field(name) as? ImageView ?: return@forEach
-                ShortcutGlassBackground.install(
-                    icon = icon,
-                    context = context,
-                    settings = settings,
-                    material = material,
-                )
+                (controller.field(name) as? ImageView)?.let { icon ->
+                    ShortcutGlassBackground.install(
+                        icon = icon,
+                        context = context,
+                        settings = settings,
+                        material = material,
+                    )
+                }
             }
         }.onFailure { Log.e(TAG, "Unable to apply lock-screen shortcut glass", it) }
     }

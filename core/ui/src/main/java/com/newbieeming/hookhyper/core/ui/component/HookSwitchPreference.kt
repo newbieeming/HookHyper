@@ -9,15 +9,15 @@ import androidx.compose.ui.Modifier
 import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 
 /**
- * 自动读写 [HookPreferencesRepository] 的开关行。
+ * 自动读写 [HookPreferencesRepository] 的开关行.
  *
- * 内部管理 checked 状态，无需外部持有 State。
+ * 内部管理 checked 状态，无需外部持有 State.
  *
  * @param preferenceKey 偏好键名
  * @param title 标题
  * @param summary 摘要
- * @param onCheckedChange 可选回调，开关变化时通知外部（用于子选项联动等场景）
  * @param modifier Modifier
+ * @param onCheckedChange 可选回调，开关变化时通知外部（用于子选项联动等场景）
  */
 @Composable
 fun HookSwitchPreference(

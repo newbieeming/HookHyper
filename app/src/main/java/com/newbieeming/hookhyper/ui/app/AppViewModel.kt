@@ -1,8 +1,6 @@
 package com.newbieeming.hookhyper.ui.app
 
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
-
 import com.newbieeming.hookhyper.core.common.PreferenceKeys
 import com.newbieeming.hookhyper.core.data.HookPreferencesRepository
 import com.newbieeming.hookhyper.core.data.ModuleStatusProvider
@@ -10,6 +8,7 @@ import com.newbieeming.hookhyper.core.ui.feature.FeatureEntry
 import com.newbieeming.hookhyper.core.ui.mvi.MviViewModel
 import com.newbieeming.hookhyper.core.ui.theme.ThemeColor
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel

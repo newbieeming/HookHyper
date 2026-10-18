@@ -21,7 +21,6 @@ internal data class LockScreenShortcutGlassSettings(
             return LockScreenShortcutGlassSettings(widthDp, heightDp, radiusDp)
         }
 
-        private fun dimension(text: String, default: Float, min: Float, max: Float): Float =
-            (text.trim().toFloatOrNull()?.takeIf { it.isFinite() } ?: default).coerceIn(min, max)
+        private fun dimension(text: String, default: Float, min: Float, max: Float): Float = (text.trim().toFloatOrNull()?.takeIf { it.isFinite() } ?: default).coerceIn(min, max)
     }
 }

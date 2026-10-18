@@ -30,10 +30,6 @@ class SoftLightGlassHook :
 
     override val def = SystemUiHookDef.FORCE_SOFT_LIGHT_GLASS
 
-    private companion object {
-        private const val TAG = "SoftLightGlassHook"
-    }
-
     @Composable
     override fun Content() {
         SettingsPreferenceGroup {
@@ -50,16 +46,17 @@ class SoftLightGlassHook :
         val blur = materialType.staticField("BLUR")
         val glass = materialType.staticField("GLASS")
 
-        hookInvokeSuspend("NotificationMaterialStateInteractor",
-            "com.android.systemui.statusbar.notification.style.domain.NotificationMaterialStateInteractor\$materialTypeState\$1"
-        ) {
-            _, original ->
+        hookInvokeSuspend(
+            "NotificationMaterialStateInteractor",
+            "com.android.systemui.statusbar.notification.style.domain.NotificationMaterialStateInteractor\$materialTypeState\$1",
+        ) { _, original ->
             if (original == blur) glass else original
         }
 
         val bionics = runCatching {
             "com.miui.interfaces.controlcenter.data.repository.MaterialMode\$Bionics"
-                .toClass().staticField("INSTANCE")
+                .toClass()
+                .staticField("INSTANCE")
         }.getOrNull()
 
         // 260916前 / 260916后
@@ -67,12 +64,15 @@ class SoftLightGlassHook :
             "ShadeBlendBlurController" to "com.miui.systemui.shade.blur.ShadeBlendBlurController\$isBionicsEnabled\$1",
             "ShadeBlendBlurControllerImpl" to "com.miui.systemui.shade.blur.ShadeBlendBlurControllerImpl\$isBionicsEnabled\$1",
         ).forEach { (name, className) ->
-            hookInvokeSuspend(name, className) {
-                instance, original ->
+            hookInvokeSuspend(name, className) { instance, original ->
                 if (bionics != null && instance.field("L\$0") == bionics) true else original
             }
         }
 
+        hookControlCenterPlugin()
+    }
+
+    private fun HookContext.hookControlCenterPlugin() {
         var pluginHooked = false
         hookSafely("ControlCenterContentController") {
             val method = "com.miui.systemui.controlcenter.container.ControlCenterContentController".toClass()
@@ -80,7 +80,8 @@ class SoftLightGlassHook :
                 .firstMethod {
                     name = "onPluginLoaded"
                     parameterCount = 3
-                }.self
+                }
+                .self
             xposed.hook(method).intercept { chain ->
                 val original = chain.proceed()
                 if (!pluginHooked) {
@@ -103,7 +104,11 @@ class SoftLightGlassHook :
     ) {
         hookSafely(name) {
             val method = className.toClass().resolve()
-                .firstMethod { this.name = "invokeSuspend"; parameterCount = 1 }.self
+                .firstMethod {
+                    this.name = "invokeSuspend"
+                    parameterCount = 1
+                }
+                .self
             xposed.hook(method).intercept { chain ->
                 val original = chain.proceed()
                 callback(requireNotNull(chain.thisObject), original)
@@ -121,7 +126,8 @@ class SoftLightGlassHook :
                 .firstMethod {
                     name = "getBackgroundMaterialOpenedInDefaultTheme"
                     parameterCount = 1
-                }.self
+                }
+                .self
             xposed.hook(blurMethod).intercept { true }
 
             val pluginBionics = classLoader
@@ -132,11 +138,12 @@ class SoftLightGlassHook :
                 .firstMethod {
                     name = "getMaterialMode"
                     emptyParameters()
-                }.self
+                }
+                .self
             xposed.hook(materialMethod).intercept { pluginBionics }
 
             val root = controller.field("content")?.call("getView") as? View
-            root?.postDelayed({ refreshControls(root) }, 500)
+            root?.postDelayed({ refreshControls(root) }, GLASS_REFRESH_DELAY_MS)
             toggleBackgroundBlur(context)
         }.onFailure { Log.e(TAG, "Unable to hook control-center plugin", it) }
     }
@@ -148,7 +155,7 @@ class SoftLightGlassHook :
                 runCatching {
                     Settings.Secure.putInt(context.contentResolver, "background_blur_enable", 1)
                 }
-            }, 1000)
+            }, BLUR_RESTORE_DELAY_MS)
         }.onFailure { Log.w(TAG, "Unable to refresh background blur setting", it) }
     }
 
@@ -156,9 +163,10 @@ class SoftLightGlassHook :
         when {
             view.javaClass.name == "miui.systemui.controlcenter.qs.tileview.QSCardItemView" -> {
                 runCatching {
-                    val state = view.field("state") ?: return@runCatching
-                    val connected = view.field("connected") as? Boolean ?: false
-                    view.call("updateState", state, connected, true)
+                    view.field("state")?.let { state ->
+                        val connected = view.field("connected") as? Boolean ?: false
+                        view.call("updateState", state, connected, true)
+                    }
                 }
             }
 
@@ -167,7 +175,7 @@ class SoftLightGlassHook :
                     .recoverCatching {
                         view.call(
                             "onConfigurationChanged",
-                            view.resources.configuration
+                            view.resources.configuration,
                         )
                     }
             }
@@ -175,5 +183,10 @@ class SoftLightGlassHook :
         if (view is ViewGroup) {
             repeat(view.childCount) { refreshControls(view.getChildAt(it)) }
         }
+    }
+    private companion object {
+        const val TAG = "SoftLightGlassHook"
+        const val GLASS_REFRESH_DELAY_MS = 500L
+        const val BLUR_RESTORE_DELAY_MS = 1000L
     }
 }

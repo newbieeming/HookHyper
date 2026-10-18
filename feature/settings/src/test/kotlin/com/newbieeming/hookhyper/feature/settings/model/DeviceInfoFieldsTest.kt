@@ -22,7 +22,7 @@ class DeviceInfoFieldsTest {
     }
 
     @Test
-    fun `unique title match uses resolved resource string`() {
+    fun `unique title uses resource`() {
         assertEquals("settings_device_name", DeviceInfoFields.resolveKey("设备型号", "", mockResolve))
         assertEquals("settings_device_memory", DeviceInfoFields.resolveKey("运行内存", "", mockResolve))
         assertEquals("settings_device_battery", DeviceInfoFields.resolveKey("电池容量", "", mockResolve))
@@ -34,7 +34,7 @@ class DeviceInfoFieldsTest {
     }
 
     @Test
-    fun `duplicate title falls back to value - cpu`() {
+    fun `duplicate title uses cpu value`() {
         // 处理器 title 命中 cpuName + cpuDetail 两个 → 走 value
         // 不含 GHz → cpuName（简称）
         assertEquals(
@@ -49,7 +49,7 @@ class DeviceInfoFieldsTest {
     }
 
     @Test
-    fun `no title falls back to value regex`() {
+    fun `no title uses value regex`() {
         assertEquals("settings_device_baseband", DeviceInfoFields.resolveKey("", "MPSS.DE.9.0-e64d0ee8fe", mockResolve))
         assertEquals("settings_device_android_version", DeviceInfoFields.resolveKey("", "17 | Android 安全更新：2026年8月1日", mockResolve))
         assertEquals(

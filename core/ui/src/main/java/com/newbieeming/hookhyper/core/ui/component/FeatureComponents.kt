@@ -293,7 +293,7 @@ fun SwitchPreference(
     }
 }
 
-/** 打开 Hook 分类二级页的列表项。 */
+/** 打开 Hook 分类二级页的列表项. */
 @Composable
 fun HookCategoryPreference(
     category: HookCategory,

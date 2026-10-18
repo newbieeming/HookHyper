@@ -54,12 +54,6 @@ class DeviceInfoHook :
         summaryResId = R.string.settings_edit_device_info_summary,
     )
 
-    private companion object {
-        private const val CARD_INFO = "com.android.settings.device.DeviceCardInfo"
-        private const val BASE_CARD = "com.android.settings.device.BaseDeviceCardItem"
-        private const val ABOUT_PHONE = "com.android.settings.device.MiuiAboutPhoneUtils"
-    }
-
     @Composable
     override fun Content() {
         val repo = LocalPreferencesRepository.current
@@ -180,20 +174,11 @@ class DeviceInfoHook :
         hookSafely("BaseDeviceCardItem.setValue") {
             // 特殊处理摄像头FirstValue、SecondValue
             BASE_CARD.toClass().resolve().optional(silent = true).method {
-                name = "setValue"
+                name = SET_VALUE
                 parameterCount = 2
             }.forEach { method ->
                 xposed.hook(method.self).intercept { chain ->
-                    val info = chain.args[0]
-                    val title = info?.call("getTitle")?.toString().orEmpty()
-                    val str = resolveString(DeviceInfoFields.camera.stringsName)
-                    if (title != str) return@intercept chain.proceed()
-                    val value = info?.call("getValue")?.toString().orEmpty()
-                    info?.call("setValue", value)
-                    if (info?.call("getFirstValue") != null) {
-                        info.call("setFirstValue", value)
-                        info.call("setSecondValue", "")
-                    }
+                    updateCameraValues(chain.args[0], resolveString)
                     chain.proceed()
                 }
             }
@@ -201,20 +186,36 @@ class DeviceInfoHook :
 
         hookSafely("DeviceCardInfo.setValue") {
             val method = CARD_INFO.toClass().resolve().firstMethod {
-                name = "setValue"
+                name = SET_VALUE
                 parameters(String::class)
-            }.self
+            }
+                .self
             xposed.hook(method).intercept { chain ->
                 val cardInfo = requireNotNull(chain.thisObject)
                 val title = cardInfo.call("getTitle")?.toString()?.trim().orEmpty()
                 val value = chain.args[0]?.toString().orEmpty()
                 val key = DeviceInfoFields.resolveKey(title, value, resolveString)
-                    ?: return@intercept chain.proceed()
-                val replacement = featurePreferences.getString(key).takeIf(String::isNotBlank)
-                    ?: return@intercept chain.proceed()
-                val arguments = chain.args.toTypedArray()
-                arguments[0] = replacement
-                chain.proceed(arguments)
+                val replacement = key?.let { featurePreferences.getString(it) }?.takeIf(String::isNotBlank)
+                if (replacement == null) {
+                    chain.proceed()
+                } else {
+                    val arguments = chain.args.toTypedArray()
+                    arguments[0] = replacement
+                    chain.proceed(arguments)
+                }
+            }
+        }
+    }
+
+    private fun updateCameraValues(info: Any?, resolveString: (String) -> String?) {
+        val title = info?.call("getTitle")?.toString().orEmpty()
+        val str = resolveString(DeviceInfoFields.camera.stringsName)
+        if (title == str) {
+            val value = info?.call(GET_VALUE)?.toString().orEmpty()
+            info?.call(SET_VALUE, value)
+            if (info?.call("getFirstValue") != null) {
+                info.call("setFirstValue", value)
+                info.call("setSecondValue", "")
             }
         }
     }
@@ -232,12 +233,20 @@ class DeviceInfoHook :
                 val method = aboutPhone.firstMethod {
                     name = methodName
                     emptyParameters()
-                }.self
+                }
+                    .self
                 xposed.hook(method).intercept { chain ->
                     val original = chain.proceed()
                     featurePreferences.getString(prefKey).takeIf(String::isNotBlank) ?: original
                 }
             }
         }
+    }
+    private companion object {
+        private const val CARD_INFO = "com.android.settings.device.DeviceCardInfo"
+        private const val BASE_CARD = "com.android.settings.device.BaseDeviceCardItem"
+        private const val SET_VALUE = "setValue"
+        private const val GET_VALUE = "getValue"
+        private const val ABOUT_PHONE = "com.android.settings.device.MiuiAboutPhoneUtils"
     }
 }

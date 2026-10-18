@@ -19,10 +19,16 @@ internal class ShortcutGlassMaterial(classLoader: ClassLoader) {
         View::class.java.getDeclaredMethod("getMiBackgroundBlurEnhanceFlag")
     }.getOrNull()
     private val glassRadius = glass.getDeclaredMethod(
-        "setMiGlassBlurRadius", View::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType,
+        "setMiGlassBlurRadius",
+        View::class.java,
+        Int::class.javaPrimitiveType,
+        Int::class.javaPrimitiveType,
     )
     private val glassSize = glass.getDeclaredMethod(
-        "setMiGlassSdfMaxSizeCompat", View::class.java, Float::class.javaPrimitiveType, Float::class.javaPrimitiveType,
+        "setMiGlassSdfMaxSizeCompat",
+        View::class.java,
+        Float::class.javaPrimitiveType,
+        Float::class.javaPrimitiveType,
     )
     private val viewMode = blur.getDeclaredMethod("setMiViewBlurModeCompat", Int::class.javaPrimitiveType, View::class.java)
     private val clearBlend = blur.getDeclaredMethod("clearMiBackgroundBlendColorCompat", View::class.java)
@@ -56,9 +62,12 @@ internal class ShortcutGlassMaterial(classLoader: ClassLoader) {
     /** Let native glass consume the outline without an additional View clipping pass. */
     fun configureClipping(view: View) {
         val nativeOutlineEnabled = runCatching {
-            if (getEnhanceFlag == null) return@runCatching false
-            glassOutline.invoke(null, view, true)
-            ((getEnhanceFlag.invoke(view) as Number).toInt() and GLASS_OUTLINE_FLAG) != 0
+            if (getEnhanceFlag == null) {
+                false
+            } else {
+                glassOutline.invoke(null, view, true)
+                (getEnhanceFlag.invoke(view) as Number).toInt() and GLASS_OUTLINE_FLAG != 0
+            }
         }.getOrDefault(false)
         if (!nativeOutlineEnabled) glassOutline.invoke(null, view, false)
         view.clipToOutline = !nativeOutlineEnabled
@@ -82,7 +91,7 @@ internal class ShortcutGlassMaterial(classLoader: ClassLoader) {
         glassOutline.invoke(null, view, false)
     }
 
-    /** Native GlassToken ABI: match KeyguardEditorHelper's conversion to 42 shader slots. */
+    /* Native GlassToken ABI: match KeyguardEditorHelper's conversion to 42 shader slots. */
     @Suppress("MagicNumber")
     private fun buildParameters(token: Any): FloatArray {
         val result = FloatArray(42)

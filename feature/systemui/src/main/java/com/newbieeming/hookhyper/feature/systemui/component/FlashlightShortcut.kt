@@ -35,6 +35,7 @@ internal class FlashlightShortcut(
     private var registered = false
     private var originalTint: ColorStateList? = null
     private var selected = false
+
     // The system's Folme touch handler also owns the icon's scale. Animate the shared
     // container so the icon and glass respond together without competing for that property.
     private val pressTarget = icon.parent as? View ?: icon
@@ -74,15 +75,16 @@ internal class FlashlightShortcut(
         if (manager.call("getTalkbackEnabled") == true) toggle()
     }
 
-    private fun toggle(): Boolean =
-        runCatching {
-            val enabled = controller.call("isEnabled") == true
-            if (isFlashlight() && (enabled || controller.call("isAvailable") == true)) {
-                controller.call("setFlashlight", !enabled)
-                icon.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                true
-            } else false
-        }.onFailure { Log.e(TAG, "Unable to toggle flashlight", it) }.getOrDefault(false)
+    private fun toggle(): Boolean = runCatching {
+        val enabled = controller.call("isEnabled") == true
+        if (isFlashlight() && (enabled || controller.call("isAvailable") == true)) {
+            controller.call("setFlashlight", !enabled)
+            icon.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            true
+        } else {
+            false
+        }
+    }.onFailure { Log.e(TAG, "Unable to toggle flashlight", it) }.getOrDefault(false)
 
     fun onTouch(event: MotionEvent): Boolean {
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
@@ -96,7 +98,9 @@ internal class FlashlightShortcut(
             when (event.actionMasked) {
                 MotionEvent.ACTION_MOVE -> if (
                     kotlin.math.hypot(event.x - downX, event.y - downY) > touchSlop
-                ) cancelGesture()
+                ) {
+                    cancelGesture()
+                }
                 MotionEvent.ACTION_POINTER_DOWN -> cancelGesture()
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> cancelGesture()
             }
@@ -132,17 +136,21 @@ internal class FlashlightShortcut(
             }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    if (pressAnimator !== animation) return
-                    pressAnimator = null
-                    if (!pressed) {
-                        pressTarget.scaleX = restingScaleX
-                        pressTarget.scaleY = restingScaleY
-                        pressVisualActive = false
-                    }
+                    finishPressAnimation(animation, pressed)
                 }
             })
         }
         pressAnimator?.start()
+    }
+
+    private fun finishPressAnimation(animation: Animator, pressed: Boolean) {
+        if (pressAnimator !== animation) return
+        pressAnimator = null
+        if (!pressed) {
+            pressTarget.scaleX = restingScaleX
+            pressTarget.scaleY = restingScaleY
+            pressVisualActive = false
+        }
     }
 
     private fun stopPressAnimator() {
@@ -174,7 +182,10 @@ internal class FlashlightShortcut(
         if (registered) return
         registered = true
         runCatching { controller.call("addCallback", listener) }
-            .onFailure { registered = false; Log.e(TAG, "Unable to observe flashlight", it) }
+            .onFailure {
+                registered = false
+                Log.e(TAG, "Unable to observe flashlight", it)
+            }
         refresh()
     }
 

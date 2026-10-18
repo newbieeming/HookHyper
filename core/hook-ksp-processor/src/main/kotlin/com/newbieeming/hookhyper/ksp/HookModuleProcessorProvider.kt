@@ -21,8 +21,11 @@ import com.squareup.kotlinpoet.ksp.writeTo
 
 private const val ANNOTATION_NAME = "com.newbieeming.hookhyper.core.hook.HookModule"
 private const val AGGREGATE_FILE = "hookhyper-registrars.txt"
+private const val HOOK_PACKAGE = "com.newbieeming.hookhyper.core.hook"
+private const val HOOKER_CLASS = "FeatureHooker"
+private const val REGISTRAR_CLASS = "FeatureRegistrar"
 
-/**
+/*
  * Generated registries depend on every annotated class in their module.
  *
  * Marking them as aggregating is essential: an incremental KSP round may otherwise expose
@@ -31,12 +34,11 @@ private const val AGGREGATE_FILE = "hookhyper-registrars.txt"
 private val AGGREGATING_DEPENDENCIES = Dependencies(aggregating = true)
 
 class HookModuleProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
-        HookModuleProcessor(
-            environment.codeGenerator,
-            environment.logger,
-            environment.options["hookhyper.aggregate"] == "true",
-        )
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor = HookModuleProcessor(
+        environment.codeGenerator,
+        environment.logger,
+        environment.options["hookhyper.aggregate"] == "true",
+    )
 }
 
 private class HookModuleProcessor(
@@ -55,24 +57,11 @@ private class HookModuleProcessor(
         val entries = mutableListOf<HookEntry>()
 
         for (symbol in symbols) {
-            if (!symbol.validate()) { deferred += symbol; continue }
-            if (symbol !is KSClassDeclaration) {
-                logger.error("@HookModule must annotate a class", symbol); continue
+            if (!symbol.validate()) {
+                deferred += symbol
+            } else {
+                parseEntry(symbol)?.let(entries::add)
             }
-
-            val annotation = symbol.annotations.first {
-                it.annotationType.resolve().declaration.qualifiedName?.asString() == ANNOTATION_NAME
-            }
-            val targetPkg = annotation.arg("packageName") as? String
-            if (targetPkg.isNullOrBlank()) {
-                logger.error("@HookModule requires packageName", symbol); continue
-            }
-
-            val fqName = symbol.qualifiedName?.asString()
-                ?: run { logger.error("Cannot resolve qualified name", symbol); continue }
-
-            val classPkg = symbol.packageName.asString()
-            entries += HookEntry(targetPkg, classPkg, ClassName.bestGuess(fqName))
         }
 
         if (deferred.isNotEmpty()) return deferred
@@ -90,8 +79,28 @@ private class HookModuleProcessor(
         return deferred
     }
 
-    private fun com.google.devtools.ksp.symbol.KSAnnotation.arg(name: String): Any? =
-        arguments.firstOrNull { it.name?.asString() == name }?.value
+    private fun parseEntry(symbol: KSAnnotated): HookEntry? {
+        if (symbol !is KSClassDeclaration) {
+            logger.error("@HookModule must annotate a class", symbol)
+            return null
+        }
+        val annotation = symbol.annotations.first {
+            it.annotationType.resolve().declaration.qualifiedName?.asString() == ANNOTATION_NAME
+        }
+        val targetPkg = annotation.arg("packageName") as? String
+        if (targetPkg.isNullOrBlank()) {
+            logger.error("@HookModule requires packageName", symbol)
+            return null
+        }
+        val fqName = symbol.qualifiedName?.asString()
+        if (fqName == null) {
+            logger.error("Cannot resolve qualified name", symbol)
+            return null
+        }
+        return HookEntry(targetPkg, symbol.packageName.asString(), ClassName.bestGuess(fqName))
+    }
+
+    private fun com.google.devtools.ksp.symbol.KSAnnotation.arg(name: String): Any? = arguments.firstOrNull { it.name?.asString() == name }?.value
 
     // ── Feature 模块 ──────────────────────────────────────────────
 
@@ -105,7 +114,7 @@ private class HookModuleProcessor(
     }
 
     private fun generateHookRegistry(pkg: String, entries: List<HookEntry>) {
-        val subHooker = ClassName("com.newbieeming.hookhyper.core.hook", "SubHooker")
+        val subHooker = ClassName(HOOK_PACKAGE, "SubHooker")
         val listType = List::class.asTypeName().parameterizedBy(subHooker)
 
         val code = CodeBlock.builder().add("listOf(\n").indent()
@@ -125,41 +134,42 @@ private class HookModuleProcessor(
     }
 
     private fun generateHooker(genPkg: String, targetPkg: String) {
-        val modularHooker = ClassName("com.newbieeming.hookhyper.core.hook", "ModularHooker")
-        val obj = TypeSpec.objectBuilder("FeatureHooker")
+        val modularHooker = ClassName(HOOK_PACKAGE, "ModularHooker")
+        val obj = TypeSpec.objectBuilder(HOOKER_CLASS)
             .superclass(modularHooker)
             .addSuperclassConstructorParameter("%S", "HookHyper")
             .addSuperclassConstructorParameter("%S", targetPkg)
             .addKdoc("Auto-generated. Main hooker for [%L].", targetPkg)
             .build()
 
-        FileSpec.builder(genPkg, "FeatureHooker").addType(obj).build()
+        FileSpec.builder(genPkg, HOOKER_CLASS).addType(obj).build()
             .writeTo(codeGenerator, AGGREGATING_DEPENDENCIES)
     }
 
     private fun generateRegistrar(genPkg: String) {
-        val registrarIface = ClassName("com.newbieeming.hookhyper.core.hook", "Registrar")
-        val modularHooker = ClassName("com.newbieeming.hookhyper.core.hook", "ModularHooker")
-        val hookerClass = ClassName(genPkg, "FeatureHooker")
+        val registrarIface = ClassName(HOOK_PACKAGE, "Registrar")
+        val modularHooker = ClassName(HOOK_PACKAGE, "ModularHooker")
+        val hookerClass = ClassName(genPkg, HOOKER_CLASS)
 
-        val obj = TypeSpec.objectBuilder("FeatureRegistrar")
+        val obj = TypeSpec.objectBuilder(REGISTRAR_CLASS)
             .addSuperinterface(registrarIface)
             .addFunction(
                 FunSpec.builder("hooker")
                     .addModifiers(com.squareup.kotlinpoet.KModifier.OVERRIDE)
                     .returns(modularHooker)
                     .addStatement("return %T", hookerClass)
-                    .build()
+                    .build(),
             )
             .addKdoc("Auto-generated. Discovered by ServiceLoader at runtime.")
             .build()
 
-        FileSpec.builder(genPkg, "FeatureRegistrar").addType(obj).build()
+        FileSpec.builder(genPkg, REGISTRAR_CLASS).addType(obj).build()
             .writeTo(codeGenerator, AGGREGATING_DEPENDENCIES)
 
         // 写入聚合文件，供 app 模块读取
         codeGenerator.createNewFile(AGGREGATING_DEPENDENCIES, "", AGGREGATE_FILE, "")
-            .bufferedWriter().use { it.write("$genPkg.FeatureRegistrar\n") }
+            .bufferedWriter()
+            .use { it.write("$genPkg.FeatureRegistrar\n") }
     }
 
     // ── App 模块 ──────────────────────────────────────────────────
@@ -172,7 +182,7 @@ private class HookModuleProcessor(
         }
 
         val genPkg = "com.newbieeming.hookhyper.hook.gen"
-        val registrarIface = ClassName("com.newbieeming.hookhyper.core.hook", "Registrar")
+        val registrarIface = ClassName(HOOK_PACKAGE, "Registrar")
 
         val listCode = CodeBlock.builder().add("listOf(\n").indent()
         for (fqn in registrars) {
@@ -181,13 +191,13 @@ private class HookModuleProcessor(
         listCode.unindent().add(")\n")
 
         val listType = List::class.asTypeName().parameterizedBy(
-            Class::class.asTypeName().parameterizedBy(WildcardTypeName.producerOf(registrarIface))
+            Class::class.asTypeName().parameterizedBy(WildcardTypeName.producerOf(registrarIface)),
         )
 
         val registerFun = FunSpec.builder("register")
-            .addParameter("context", ClassName("com.newbieeming.hookhyper.core.hook", "HookContext"))
+            .addParameter("context", ClassName(HOOK_PACKAGE, "HookContext"))
             .addStatement(
-                "registrars.forEach { it.getDeclaredConstructor().newInstance().hooker().onHook(context) }"
+                "registrars.forEach { it.getDeclaredConstructor().newInstance().hooker().onHook(context) }",
             )
             .build()
 
@@ -196,7 +206,7 @@ private class HookModuleProcessor(
             .addProperty(
                 PropertySpec.builder("registrars", listType)
                     .initializer(listCode.build())
-                    .build()
+                    .build(),
             )
             .addFunction(registerFun)
             .build()

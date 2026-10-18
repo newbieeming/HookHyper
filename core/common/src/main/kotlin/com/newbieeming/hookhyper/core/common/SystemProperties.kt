@@ -1,10 +1,10 @@
 package com.newbieeming.hookhyper.core.common
 
 /**
- * 读取 Android System Properties 的工具类。
+ * 读取 Android System Properties 的工具类.
  *
  * 由于 [android.os.SystemProperties] 是 @hide API，
- * 通过反射调用以避免编译时依赖。
+ * 通过反射调用以避免编译时依赖.
  */
 object SystemProperties {
 
@@ -18,7 +18,7 @@ object SystemProperties {
     }
 
     /**
-     * 读取系统属性。
+     * 读取系统属性.
      *
      * @param key 属性名
      * @param default 默认值，属性不存在或反射失败时返回

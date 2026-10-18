@@ -18,7 +18,8 @@ internal class ShortcutGlassBackground private constructor(
     private val icon: ImageView,
     settings: LockScreenShortcutGlassSettings,
     private val material: ShortcutGlassMaterial,
-) : ImageView(context), ViewTreeObserver.OnPreDrawListener {
+) : ImageView(context),
+    ViewTreeObserver.OnPreDrawListener {
     private val radiusPx = settings.cornerRadiusDp * resources.displayMetrics.density
     private var observer: ViewTreeObserver? = null
     private var materialReady = false
@@ -52,7 +53,7 @@ internal class ShortcutGlassBackground private constructor(
             if (width > 0 && height > 0) material.updateSize(this)
             materialReady = true
         }.onFailure { Log.e(TAG, "Unable to initialize native glass material", it) }
-        observer = icon.viewTreeObserver.also { it.addOnPreDrawListener(this) }
+        observer = icon.viewTreeObserver.apply { addOnPreDrawListener(this@ShortcutGlassBackground) }
     }
 
     override fun onDetachedFromWindow() {

@@ -115,8 +115,21 @@ object DeviceInfoFields {
         kernelVersion,
     )
 
+    private val CPU_REGEX = Regex(
+        """平台|澎湃|高通|天玑|骁龙|玄戒|Snapdragon|Dimensity|MediaTek|Qualcomm|Mobile\s+Platform""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    // 基带版本：高通 MPSS、联发科 MOLY、展锐 SRNC/SP、通用 MODEM 等
+    private val BASEBAND_REGEX = Regex(
+        """\b(?:MPSS|MOLY|MODEM|SRNC|BP_)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+    private val ANDROID_VERSION_REGEX = Regex("""^\d+\s*\|""")
+    private val KERNEL_VERSION_REGEX = Regex("""^\d+\.\d+\.\d+-android\d+""")
+
     /**
-     * 仅当 stringsName 为空时，通过 value 正则匹配字段。
+     * 仅当 stringsName 为空时，通过 value 正则匹配字段.
      */
     fun preferenceKeyForValue(value: String): String? = when {
         // 处理器详情：含 GHz
@@ -133,20 +146,21 @@ object DeviceInfoFields {
     }
 
     /**
-     * 通过 stringsName 从应用资源解析实际字符串，匹配 all 中的字段。
+     * 通过 stringsName 从应用资源解析实际字符串，匹配 all 中的字段.
+     * @param title 设备信息标题
      * @param resolve 资源名 → 实际字符串的解析函数
      */
     fun matchByTitle(title: String, resolve: (String) -> String?): List<DeviceInfoField> {
         val normalizedTitle = title.normalizedTitle()
         return all.filter { field ->
-            if (field.stringsName.isBlank()) return@filter false
-            val resolved = resolve(field.stringsName) ?: return@filter false
-            resolved.normalizedTitle() == normalizedTitle
+            field.stringsName.isNotBlank() && resolve(field.stringsName)?.normalizedTitle() == normalizedTitle
         }
     }
 
     /**
-     * 统一匹配：stringsName 在 all 中唯一命中则用 stringsName 结果，否则走 value 正则。
+     * 统一匹配：stringsName 在 all 中唯一命中则用 stringsName 结果，否则走 value 正则.
+     * @param title 设备信息标题
+     * @param value 设备信息原始值
      * @param resolve 资源名 → 实际字符串的解析函数
      */
     fun resolveKey(title: String, value: String, resolve: (String) -> String?): String? {
@@ -158,17 +172,4 @@ object DeviceInfoFields {
     }
 
     private fun String.normalizedTitle() = filterNot(Char::isWhitespace).lowercase()
-
-    private val CPU_REGEX = Regex(
-        """平台|澎湃|高通|天玑|骁龙|玄戒|Snapdragon|Dimensity|MediaTek|Qualcomm|Mobile\s+Platform""",
-        RegexOption.IGNORE_CASE,
-    )
-
-    // 基带版本：高通 MPSS、联发科 MOLY、展锐 SRNC/SP、通用 MODEM 等
-    private val BASEBAND_REGEX = Regex(
-        """\b(?:MPSS|MOLY|MODEM|SRNC|BP_)\b""",
-        RegexOption.IGNORE_CASE,
-    )
-    private val ANDROID_VERSION_REGEX = Regex("""^\d+\s*\|""")
-    private val KERNEL_VERSION_REGEX = Regex("""^\d+\.\d+\.\d+-android\d+""")
 }
