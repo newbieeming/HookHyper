@@ -101,5 +101,5 @@ internal object TimeFormatSettings {
     const val NOTIFICATION_BAR = "systemui_time_format_notification_bar"
     const val DEFAULT_PATTERN = "HH:mm a"
 
-    fun fontSize(value: String): Float? = value.toFloatOrNull()?.takeIf { it.isFinite() && it in 1f..100f }
+    fun fontSize(value: String): Float? = SystemUiDimension.CLOCK_FONT_SIZE.parse(value)
 }

@@ -68,9 +68,11 @@ class ClockFormatTest {
         listOf("", " ", "HH:mm q", "'HH:mm", "aaa", "HHH").forEach {
             assertTrue(runCatching { ClockFormat(it, false) }.isFailure)
         }
-        listOf("", "NaN", "Infinity", "-1", "0", "101").forEach {
+        listOf("", "NaN", "Infinity").forEach {
             assertNull(TimeFormatSettings.fontSize(it))
         }
         assertEquals(13.5f, TimeFormatSettings.fontSize("13.5"))
+        assertEquals(0f, TimeFormatSettings.fontSize("0"))
+        assertEquals(30f, TimeFormatSettings.fontSize("101"))
     }
 }

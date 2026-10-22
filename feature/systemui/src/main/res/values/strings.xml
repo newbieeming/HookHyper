@@ -1,14 +1,12 @@
 <resources>
     <string name="systemui_network_speed_title">Network speed</string>
     <string name="systemui_network_speed_summary">Customize speed display and position</string>
-    <string name="systemui_network_speed_font_size_title">Custom size</string>
-    <string name="systemui_network_speed_font_size_summary">Use the same size for the number and unit</string>
     <string name="systemui_network_speed_font_size_label">Font size (dp)</string>
-    <string name="systemui_network_speed_font_size_hint">Suggested: 13.5 dp. Enter a positive number; blank or invalid values use the system default.</string>
+    <string name="systemui_network_speed_font_size_hint">0–30 dp · Step 0.5 dp · Default uses the system size</string>
     <string name="systemui_network_speed_single_line_title">Single line</string>
     <string name="systemui_network_speed_single_line_summary">Place the number and unit side by side with regular font weight</string>
     <string name="systemui_network_speed_unit_gap_label">Unit spacing (dp)</string>
-    <string name="systemui_network_speed_unit_gap_hint">Default: 0 dp. Use a non-negative number; blank uses the default.</string>
+    <string name="systemui_network_speed_unit_gap_hint">−5–5 dp · Step 0.1 dp</string>
     <string name="systemui_network_speed_hide_unit_title">Hide B/s suffix</string>
     <string name="systemui_network_speed_hide_unit_summary">Show KB/s as K and MB/s as M</string>
     <string name="systemui_force_clock_colon_title">Clock colon</string>
@@ -26,7 +24,7 @@
     <string name="systemui_time_font_size_title">Text size (dp)</string>
     <string name="systemui_time_notification_bar_title">Notification shade</string>
     <string name="systemui_time_notification_bar_summary">Use the same format in the shade and Control Center; keep system text sizes</string>
-    <string name="systemui_time_font_size_hint">Status bar only. Range: 1–100 dp, decimals supported; blank keeps the system size.</string>
+    <string name="systemui_time_font_size_hint">Status bar only · 0–30 dp · Step 0.5 dp · Default uses the system size</string>
     <string name="systemui_replace_fingerprint_icon_title">Fingerprint icon</string>
     <string name="systemui_replace_fingerprint_icon_summary">Choose the lock screen fingerprint style</string>
     <string name="systemui_fingerprint_style_title">Icon style</string>
@@ -73,15 +71,13 @@
     <string name="systemui_data_sim_carrier_only_title">Data SIM carrier</string>
     <string name="systemui_data_sim_carrier_only_summary">Show only the data SIM carrier and its HD icon on the lock screen</string>
     <string name="systemui_network_speed_vertical_offset_label">Vertical offset</string>
-    <string name="systemui_network_speed_vertical_offset_hint">0.5 dp per step. Negative moves up; positive moves down.</string>
+    <string name="systemui_network_speed_vertical_offset_hint">−5–5 dp · Step 0.1 dp · Negative moves up</string>
     <string name="systemui_network_speed_end_padding_label">Right spacing</string>
-    <string name="systemui_network_speed_end_padding_hint">0.5 dp per step, minimum 0 dp. Follows the layout direction.</string>
-    <string name="systemui_network_speed_decrease">Decrease by 0.5 dp</string>
-    <string name="systemui_network_speed_increase">Increase by 0.5 dp</string>
-    <string name="systemui_network_speed_position_value">%1$s dp</string>
+    <string name="systemui_network_speed_end_padding_hint">−5–5 dp · Step 0.1 dp</string>
+    <string name="systemui_dimension_value">%1$s dp</string>
     <string name="systemui_data_sim_carrier_notification_bar_title">Shade and Control Center</string>
     <string name="systemui_data_sim_carrier_notification_bar_summary">Also show only data SIM information; requires the main switch</string>
-    <string name="systemui_network_speed_reset_position">Reset</string>
+    <string name="systemui_dimension_reset">Reset</string>
     <string name="systemui_shortcut_glass_title">Shortcut background</string>
     <string name="systemui_shortcut_glass_summary">Customize glass behind lock screen shortcuts</string>
     <string name="systemui_shortcut_glass_width">Background width (dp)</string>
@@ -93,4 +89,5 @@
     <string name="systemui_flashlight_long_press_summary">Use a long press for the lock screen flashlight</string>
     <string name="systemui_hide_wifi_plus_title">Hide Wi-Fi plus sign</string>
     <string name="systemui_hide_wifi_plus_summary">Use the default Wi-Fi icon for dual Wi-Fi and Wi-Fi 7 MLO connections</string>
+    <string name="systemui_dimension_default">Default</string>
 </resources>

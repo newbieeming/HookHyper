@@ -1,7 +1,5 @@
 package com.newbieeming.hookhyper.feature.systemui.model
 
-import kotlin.math.round
-
 /** Settings and display rules shared by the form and the SystemUI hook. */
 internal object NetworkSpeedSettings {
     const val CUSTOM_FONT_SIZE = "systemui_network_speed_custom_font_size"
@@ -11,19 +9,17 @@ internal object NetworkSpeedSettings {
     const val UNIT_GAP = "systemui_network_speed_unit_gap"
     const val VERTICAL_OFFSET = "systemui_network_speed_vertical_offset"
     const val END_PADDING = "systemui_network_speed_end_padding"
-    const val DEFAULT_FONT_SIZE = "13.5"
+    const val DEFAULT_FONT_SIZE = ""
     const val DEFAULT_UNIT_GAP = "0"
     const val DEFAULT_POSITION = "0"
-    const val POSITION_STEP = 0.5f
 
-    fun parseFontSize(value: String): Float? = value.trim().toFloatOrNull()?.takeIf { it.isFinite() && it > 0f }
+    fun parseFontSize(value: String): Float? = SystemUiDimension.FONT_SIZE.parse(value)
 
-    fun parseUnitGap(value: String): Float = value.trim().toFloatOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: DEFAULT_UNIT_GAP.toFloat()
+    fun parseUnitGap(value: String): Float = SystemUiDimension.UNIT_GAP.parse(value) ?: 0f
 
-    fun parsePosition(value: String, allowNegative: Boolean): Float {
-        val parsed = value.trim().toFloatOrNull()?.takeIf { it.isFinite() && (allowNegative || it >= 0f) } ?: return 0f
-        return (round(parsed / POSITION_STEP) * POSITION_STEP).takeIf { it.isFinite() } ?: 0f
-    }
+    fun parseVerticalOffset(value: String): Float = SystemUiDimension.VERTICAL_OFFSET.parse(value) ?: 0f
+
+    fun parseEndPadding(value: String): Float = SystemUiDimension.END_PADDING.parse(value) ?: 0f
 
     fun displayText(value: String, singleLine: Boolean): String = if (singleLine) value.trimEnd() else "$value "
 

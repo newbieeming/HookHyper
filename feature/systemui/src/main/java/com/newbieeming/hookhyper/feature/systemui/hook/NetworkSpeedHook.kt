@@ -54,13 +54,11 @@ class NetworkSpeedHook :
         val unitGap = NetworkSpeedSettings.parseUnitGap(
             preferences.getString(NetworkSpeedSettings.UNIT_GAP, NetworkSpeedSettings.DEFAULT_UNIT_GAP),
         )
-        val verticalOffset = NetworkSpeedSettings.parsePosition(
+        val verticalOffset = NetworkSpeedSettings.parseVerticalOffset(
             preferences.getString(NetworkSpeedSettings.VERTICAL_OFFSET, NetworkSpeedSettings.DEFAULT_POSITION),
-            allowNegative = true,
         )
-        val endPadding = NetworkSpeedSettings.parsePosition(
+        val endPadding = NetworkSpeedSettings.parseEndPadding(
             preferences.getString(NetworkSpeedSettings.END_PADDING, NetworkSpeedSettings.DEFAULT_POSITION),
-            allowNegative = false,
         )
         hookSafely("NetworkSpeedView") {
             val viewClass = NETWORK_SPEED_VIEW.toClass()

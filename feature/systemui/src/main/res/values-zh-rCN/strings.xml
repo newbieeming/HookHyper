@@ -1,14 +1,12 @@
 <resources>
     <string name="systemui_network_speed_title">网速</string>
     <string name="systemui_network_speed_summary">调整网速显示与位置</string>
-    <string name="systemui_network_speed_font_size_title">自定义字号</string>
-    <string name="systemui_network_speed_font_size_summary">同时控制网速数字与单位的字号</string>
     <string name="systemui_network_speed_font_size_label">字体大小（dp）</string>
-    <string name="systemui_network_speed_font_size_hint">参考值：13.5 dp。请输入正数；留空或无效值使用系统默认字号。</string>
+    <string name="systemui_network_speed_font_size_hint">0–30 dp · 步进 0.5 dp · 默认使用系统字号</string>
     <string name="systemui_network_speed_single_line_title">单行显示</string>
     <string name="systemui_network_speed_single_line_summary">数字与单位横向排列，并使用常规字重</string>
     <string name="systemui_network_speed_unit_gap_label">单位间距（dp）</string>
-    <string name="systemui_network_speed_unit_gap_hint">默认 0 dp，支持非负数；留空使用默认值。</string>
+    <string name="systemui_network_speed_unit_gap_hint">−5–5 dp · 步进 0.1 dp</string>
     <string name="systemui_network_speed_hide_unit_title">隐藏 B/s 单位</string>
     <string name="systemui_network_speed_hide_unit_summary">将 KB/s 显示为 K，MB/s 显示为 M</string>
     <string name="systemui_force_clock_colon_title">时间冒号</string>
@@ -26,7 +24,7 @@
     <string name="systemui_time_font_size_title">字号（dp）</string>
     <string name="systemui_time_notification_bar_title">应用于通知栏</string>
     <string name="systemui_time_notification_bar_summary">同步通知栏与控制中心格式，保留系统字号</string>
-    <string name="systemui_time_font_size_hint">仅调整状态栏字号，范围 1–100 dp，支持小数；留空使用系统字号。</string>
+    <string name="systemui_time_font_size_hint">仅状态栏 · 0–30 dp · 步进 0.5 dp · 默认使用系统字号</string>
     <string name="systemui_replace_fingerprint_icon_title">指纹图标</string>
     <string name="systemui_replace_fingerprint_icon_summary">选择锁屏指纹样式</string>
     <string name="systemui_fingerprint_style_title">图标样式</string>
@@ -73,15 +71,13 @@
     <string name="systemui_data_sim_carrier_only_title">上网卡运营商</string>
     <string name="systemui_data_sim_carrier_only_summary">锁屏仅显示上网卡运营商及其 HD 图标</string>
     <string name="systemui_network_speed_vertical_offset_label">垂直偏移</string>
-    <string name="systemui_network_speed_vertical_offset_hint">每次 0.5 dp，负数向上，正数向下。</string>
+    <string name="systemui_network_speed_vertical_offset_hint">−5–5 dp · 步进 0.1 dp · 负数向上</string>
     <string name="systemui_network_speed_end_padding_label">右侧间距</string>
-    <string name="systemui_network_speed_end_padding_hint">每次 0.5 dp，最小 0 dp，跟随布局方向。</string>
-    <string name="systemui_network_speed_decrease">减少 0.5 dp</string>
-    <string name="systemui_network_speed_increase">增加 0.5 dp</string>
-    <string name="systemui_network_speed_position_value">%1$s dp</string>
+    <string name="systemui_network_speed_end_padding_hint">−5–5 dp · 步进 0.1 dp</string>
+    <string name="systemui_dimension_value">%1$s dp</string>
     <string name="systemui_data_sim_carrier_notification_bar_title">通知栏与控制中心</string>
     <string name="systemui_data_sim_carrier_notification_bar_summary">同时仅显示上网卡信息，需开启主开关</string>
-    <string name="systemui_network_speed_reset_position">重置</string>
+    <string name="systemui_dimension_reset">重置</string>
     <string name="systemui_shortcut_glass_title">快捷按钮背景</string>
     <string name="systemui_shortcut_glass_summary">调整锁屏快捷按钮的柔光玻璃背景</string>
     <string name="systemui_shortcut_glass_width">背景宽度（dp）</string>
@@ -93,4 +89,5 @@
     <string name="systemui_flashlight_long_press_summary">将锁屏手电筒改为长按操作</string>
     <string name="systemui_hide_wifi_plus_title">隐藏 Wi-Fi 加号</string>
     <string name="systemui_hide_wifi_plus_summary">双 Wi-Fi 和 Wi-Fi 7 MLO 连接使用默认 Wi-Fi 图标</string>
+    <string name="systemui_dimension_default">默认</string>
 </resources>

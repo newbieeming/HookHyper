@@ -6,22 +6,22 @@ import org.junit.Test
 class NetworkSpeedSettingsTest {
     @Test
     fun signedOffset() {
-        assertEquals(-0.5f, NetworkSpeedSettings.parsePosition("-0.5", allowNegative = true))
-        assertEquals(0.5f, NetworkSpeedSettings.parsePosition("0.5", allowNegative = true))
-        assertEquals(0f, NetworkSpeedSettings.parsePosition("0", allowNegative = true))
+        assertEquals(-0.5f, NetworkSpeedSettings.parseVerticalOffset("-0.5"))
+        assertEquals(0.5f, NetworkSpeedSettings.parseVerticalOffset("0.5"))
+        assertEquals(0f, NetworkSpeedSettings.parseVerticalOffset("0"))
     }
 
     @Test
-    fun nonNegativeSpacing() {
-        assertEquals(0f, NetworkSpeedSettings.parsePosition("-0.5", allowNegative = false))
-        assertEquals(1.5f, NetworkSpeedSettings.parsePosition("1.5", allowNegative = false))
-        assertEquals(1.5f, NetworkSpeedSettings.parsePosition("1.4", allowNegative = false))
+    fun signedRightSpacing() {
+        assertEquals(-0.5f, NetworkSpeedSettings.parseEndPadding("-0.5"))
+        assertEquals(1.5f, NetworkSpeedSettings.parseEndPadding("1.5"))
+        assertEquals(1.4f, NetworkSpeedSettings.parseEndPadding("1.4"))
     }
 
     @Test
     fun invalidPositionDefaults() {
-        listOf("", "invalid", "NaN", "Infinity", "-Infinity", "3.4e38").forEach {
-            assertEquals(0f, NetworkSpeedSettings.parsePosition(it, allowNegative = true))
+        listOf("", "invalid", "NaN", "Infinity", "-Infinity").forEach {
+            assertEquals(0f, NetworkSpeedSettings.parseVerticalOffset(it))
         }
     }
 

@@ -3,7 +3,6 @@ package com.newbieeming.hookhyper.feature.systemui.component
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.newbieeming.hookhyper.core.ui.component.HookSwitchPreference
 import com.newbieeming.hookhyper.core.ui.component.LocalPreferencesRepository
@@ -20,6 +18,7 @@ import com.newbieeming.hookhyper.core.ui.component.PreferenceTextField
 import com.newbieeming.hookhyper.core.ui.component.SettingsPreferenceGroup
 import com.newbieeming.hookhyper.feature.systemui.R
 import com.newbieeming.hookhyper.feature.systemui.model.ClockFormat
+import com.newbieeming.hookhyper.feature.systemui.model.SystemUiDimension
 import com.newbieeming.hookhyper.feature.systemui.model.SystemUiHookDef
 import com.newbieeming.hookhyper.feature.systemui.model.TimeFormatSettings
 
@@ -32,7 +31,6 @@ internal fun TimeFormatPreferences(preferenceKey: String) {
         mutableStateOf(repo.getString(TimeFormatSettings.PATTERN, if (legacyPrefix) "a HH:mm" else TimeFormatSettings.DEFAULT_PATTERN))
     }
     var english by remember { mutableStateOf(repo.getBoolean(TimeFormatSettings.ENGLISH_AM_PM)) }
-    var fontSize by remember { mutableStateOf(repo.getString(TimeFormatSettings.FONT_SIZE)) }
     val formatter = remember(pattern, english) { runCatching { ClockFormat(pattern, english) }.getOrNull() }
     SettingsPreferenceGroup {
         HookSwitchPreference(
@@ -72,17 +70,10 @@ internal fun TimeFormatPreferences(preferenceKey: String) {
                     title = stringResource(R.string.systemui_time_notification_bar_title),
                     summary = stringResource(R.string.systemui_time_notification_bar_summary),
                 )
-                PreferenceTextField(
-                    label = stringResource(R.string.systemui_time_font_size_title),
-                    value = fontSize,
-                    onValueChange = {
-                        fontSize = it
-                        repo.putString(TimeFormatSettings.FONT_SIZE, it)
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    supportingText = { Text(stringResource(R.string.systemui_time_font_size_hint)) },
+                SystemUiSliderPreference(
+                    dimension = SystemUiDimension.CLOCK_FONT_SIZE,
+                    labelRes = R.string.systemui_time_font_size_title,
+                    hintRes = R.string.systemui_time_font_size_hint,
                 )
             }
         }
